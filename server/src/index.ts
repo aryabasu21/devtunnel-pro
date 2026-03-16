@@ -1,15 +1,15 @@
-import express, { Request, Response } from 'express';
-import { createServer, IncomingMessage } from 'http';
-import { WebSocketServer, WebSocket } from 'ws';
-import cors from 'cors';
-import { v4 as uuidv4 } from 'uuid';
-import { TunnelManager } from './tunnelManager';
-import { RequestForwarder } from './requestForwarder';
+import express, { Request, Response } from "express";
+import { createServer, IncomingMessage } from "http";
+import { WebSocketServer, WebSocket } from "ws";
+import cors from "cors";
+import { v4 as uuidv4 } from "uuid";
+import { TunnelManager } from "./tunnelManager";
+import { RequestForwarder } from "./requestForwarder";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const DOMAIN = process.env.DOMAIN || 'localhost:3001';
-const WS_PATH = '/ws';
+const DOMAIN = process.env.DOMAIN || "localhost:3001";
+const WS_PATH = "/ws";
 
 // Tunnel manager
 const tunnelManager = new TunnelManager();
@@ -17,19 +17,19 @@ const requestForwarder = new RequestForwarder(tunnelManager);
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.raw({ type: '*/*', limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.raw({ type: "*/*", limit: "10mb" }));
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', tunnels: tunnelManager.getActiveTunnelCount() });
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", tunnels: tunnelManager.getActiveTunnelCount() });
 });
 
 // API: Get tunnel info
-app.get('/api/tunnels/:tunnelId', (req, res) => {
+app.get("/api/tunnels/:tunnelId", (req, res) => {
   const tunnel = tunnelManager.getTunnel(req.params.tunnelId);
   if (!tunnel) {
-    return res.status(404).json({ error: 'Tunnel not found' });
+    return res.status(404).json({ error: "Tunnel not found" });
   }
   res.json({
     id: tunnel.id,
@@ -41,43 +41,45 @@ app.get('/api/tunnels/:tunnelId', (req, res) => {
 });
 
 // API: List tunnels for device
-app.get('/api/devices/:deviceId/tunnels', (req, res) => {
+app.get("/api/devices/:deviceId/tunnels", (req, res) => {
   const tunnels = tunnelManager.getTunnelsByDevice(req.params.deviceId);
-  res.json(tunnels.map(t => ({
-    id: t.id,
-    name: t.name,
-    url: t.url,
-    status: t.status,
-    createdAt: t.createdAt,
-  })));
+  res.json(
+    tunnels.map((t) => ({
+      id: t.id,
+      name: t.name,
+      url: t.url,
+      status: t.status,
+      createdAt: t.createdAt,
+    })),
+  );
 });
 
 // Wildcard route - forward to tunnel
-app.all('*', async (req: Request, res: Response) => {
+app.all("*", async (req: Request, res: Response) => {
   // Skip WebSocket upgrade path
   if (req.path === WS_PATH) {
-    return res.status(400).json({ error: 'Use WebSocket connection' });
+    return res.status(400).json({ error: "Use WebSocket connection" });
   }
 
-  const host = req.headers.host || '';
-  const subdomain = host.split('.')[0];
+  const host = req.headers.host || "";
+  const subdomain = host.split(".")[0];
 
   // Check if this is a tunnel request
   const tunnel = tunnelManager.getTunnelByName(subdomain);
 
-  if (!tunnel || tunnel.status !== 'live') {
+  if (!tunnel || tunnel.status !== "live") {
     return res.status(404).json({
-      error: 'Tunnel not found',
+      error: "Tunnel not found",
       message: `No active tunnel found for ${subdomain}`,
-      hint: 'Make sure the tunnel is running and the subdomain is correct',
+      hint: "Make sure the tunnel is running and the subdomain is correct",
     });
   }
 
   // Check password protection
   if (tunnel.password) {
-    const authHeader = req.headers['x-tunnel-password'] || req.query.password;
+    const authHeader = req.headers["x-tunnel-password"] || req.query.password;
     if (authHeader !== tunnel.password) {
-      return res.status(401).json({ error: 'Password required' });
+      return res.status(401).json({ error: "Password required" });
     }
   }
 
@@ -86,16 +88,16 @@ app.all('*', async (req: Request, res: Response) => {
     const response = await requestForwarder.forward(tunnel, req);
     res.status(response.status);
     Object.entries(response.headers).forEach(([key, value]) => {
-      if (value && key.toLowerCase() !== 'transfer-encoding') {
+      if (value && key.toLowerCase() !== "transfer-encoding") {
         res.setHeader(key, value);
       }
     });
     res.send(response.body);
   } catch (error: any) {
-    console.error('Forward error:', error.message);
+    console.error("Forward error:", error.message);
     res.status(502).json({
-      error: 'Bad Gateway',
-      message: 'Failed to connect to local server',
+      error: "Bad Gateway",
+      message: "Failed to connect to local server",
       details: error.message,
     });
   }
@@ -107,63 +109,73 @@ const httpServer = createServer(app);
 // WebSocket server on the same port, different path
 const wss = new WebSocketServer({ server: httpServer, path: WS_PATH });
 
-wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
-  console.log('New CLI connection from:', req.socket.remoteAddress);
+wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
+  console.log("New CLI connection from:", req.socket.remoteAddress);
 
   let tunnelId: string | null = null;
 
-  ws.on('message', (data: Buffer) => {
+  ws.on("message", (data: Buffer) => {
     try {
       const message = JSON.parse(data.toString());
-      handleClientMessage(ws, message, (id) => { tunnelId = id; });
+      handleClientMessage(ws, message, (id) => {
+        tunnelId = id;
+      });
     } catch (error) {
-      console.error('Invalid message:', error);
-      ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format' }));
+      console.error("Invalid message:", error);
+      ws.send(
+        JSON.stringify({ type: "error", message: "Invalid message format" }),
+      );
     }
   });
 
-  ws.on('close', () => {
-    console.log('CLI disconnected');
+  ws.on("close", () => {
+    console.log("CLI disconnected");
     if (tunnelId) {
       tunnelManager.removeTunnel(tunnelId);
     }
   });
 
-  ws.on('error', (error) => {
-    console.error('WebSocket error:', error);
+  ws.on("error", (error) => {
+    console.error("WebSocket error:", error);
   });
 
   // Send welcome message
-  ws.send(JSON.stringify({ type: 'welcome', server: 'DevPortal', version: '1.0.0' }));
+  ws.send(
+    JSON.stringify({ type: "welcome", server: "DevPortal", version: "1.0.0" }),
+  );
 });
 
 function handleClientMessage(
   ws: WebSocket,
   message: any,
-  setTunnelId: (id: string) => void
+  setTunnelId: (id: string) => void,
 ) {
   switch (message.type) {
-    case 'register': {
+    case "register": {
       const { deviceId, localPort, subdomain, password, demo } = message;
 
       // Check if subdomain is already taken
       if (subdomain && tunnelManager.getTunnelByName(subdomain)) {
-        ws.send(JSON.stringify({
-          type: 'error',
-          message: `Subdomain "${subdomain}" is already in use`,
-        }));
+        ws.send(
+          JSON.stringify({
+            type: "error",
+            message: `Subdomain "${subdomain}" is already in use`,
+          }),
+        );
         return;
       }
 
       // Generate tunnel name
       const name = subdomain || generateTunnelName();
       const id = `t-${uuidv4().slice(0, 8)}`;
-      const url = DOMAIN.includes('localhost')
+      const url = DOMAIN.includes("localhost")
         ? `http://${name}.localhost:${PORT}`
         : `https://${name}.${DOMAIN}`;
 
       // Calculate expiry for demo mode
-      const expiresAt = demo ? new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() : null;
+      const expiresAt = demo
+        ? new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+        : null;
 
       // Register tunnel
       tunnelManager.addTunnel({
@@ -173,7 +185,7 @@ function handleClientMessage(
         deviceId,
         localPort,
         password: password || null,
-        status: 'live',
+        status: "live",
         createdAt: new Date().toISOString(),
         expiresAt,
         ws,
@@ -182,41 +194,71 @@ function handleClientMessage(
       setTunnelId(id);
 
       // Send success response
-      ws.send(JSON.stringify({
-        type: 'registered',
-        tunnel: { id, name, url, expiresAt },
-      }));
+      ws.send(
+        JSON.stringify({
+          type: "registered",
+          tunnel: { id, name, url, expiresAt },
+        }),
+      );
 
-      console.log(`Tunnel registered: ${name} -> localhost:${localPort} (${deviceId})`);
+      console.log(
+        `Tunnel registered: ${name} -> localhost:${localPort} (${deviceId})`,
+      );
       break;
     }
 
-    case 'response': {
+    case "response": {
       const { requestId, status, headers, body } = message;
       requestForwarder.handleResponse(requestId, { status, headers, body });
       break;
     }
 
-    case 'ping': {
-      ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+    case "ping": {
+      ws.send(JSON.stringify({ type: "pong", timestamp: Date.now() }));
       break;
     }
 
-    case 'stop': {
+    case "stop": {
       const { tunnelId } = message;
       tunnelManager.removeTunnel(tunnelId);
-      ws.send(JSON.stringify({ type: 'stopped', tunnelId }));
+      ws.send(JSON.stringify({ type: "stopped", tunnelId }));
       break;
     }
 
     default:
-      console.warn('Unknown message type:', message.type);
+      console.warn("Unknown message type:", message.type);
   }
 }
 
 // Tunnel name generator
-const adjectives = ['purple', 'cosmic', 'hidden', 'crystal', 'silent', 'golden', 'frozen', 'blazing', 'lunar', 'neon', 'swift', 'bright'];
-const nouns = ['horizon', 'lake', 'forest', 'ocean', 'canyon', 'river', 'meadow', 'summit', 'valley', 'storm', 'cloud', 'wave'];
+const adjectives = [
+  "purple",
+  "cosmic",
+  "hidden",
+  "crystal",
+  "silent",
+  "golden",
+  "frozen",
+  "blazing",
+  "lunar",
+  "neon",
+  "swift",
+  "bright",
+];
+const nouns = [
+  "horizon",
+  "lake",
+  "forest",
+  "ocean",
+  "canyon",
+  "river",
+  "meadow",
+  "summit",
+  "valley",
+  "storm",
+  "cloud",
+  "wave",
+];
 
 function generateTunnelName(): string {
   const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -244,11 +286,11 @@ setInterval(() => {
 }, 60000);
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('Shutting down...');
+process.on("SIGTERM", () => {
+  console.log("Shutting down...");
   wss.close();
   httpServer.close(() => {
-    console.log('Server closed');
+    console.log("Server closed");
     process.exit(0);
   });
 });
