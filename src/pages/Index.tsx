@@ -6,9 +6,29 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight, Github } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+const getDeviceId = (): string => {
+  const storageKey = "devportal_device_id";
+  let deviceId = localStorage.getItem(storageKey);
+  if (!deviceId) {
+    deviceId = `dev_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(storageKey, deviceId);
+  }
+  return deviceId;
+};
 
 const Index = () => {
   const navigate = useNavigate();
+  const [deviceId, setDeviceId] = useState<string>("");
+
+  useEffect(() => {
+    setDeviceId(getDeviceId());
+  }, []);
+
+  const goToDashboard = () => {
+    navigate(`/dashboard/${deviceId}`);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -38,15 +58,20 @@ const Index = () => {
               Expose your local dev server with a single command. Inspect traffic, replay requests, and debug APIs — all from your terminal or dashboard.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
-              <Button variant="hero" size="xl" className="w-full sm:w-auto" onClick={() => navigate("/dashboard")}>
+              <Button variant="hero" size="xl" className="w-full sm:w-auto" onClick={goToDashboard}>
                 Open Dashboard <ArrowRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="xl" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="xl"
+                className="w-full sm:w-auto"
+                onClick={() => window.open("https://github.com", "_blank", "noopener,noreferrer")}
+              >
                 <Github className="w-4 h-4" /> Star on GitHub
               </Button>
             </div>
             <p className="text-xs text-muted-foreground font-mono">
-              npm install -g devportal
+              curl -fsSL https://devportal.live/install.sh | sh
             </p>
           </motion.div>
         </div>
@@ -77,7 +102,7 @@ const Index = () => {
           </p>
           <div className="surface-card inline-block px-4 sm:px-6 py-3 font-mono text-xs sm:text-sm">
             <span className="text-muted-foreground">$ </span>
-            <span className="text-foreground">npx devportal 3000</span>
+            <span className="text-foreground">devportal 3000</span>
           </div>
         </div>
       </section>
@@ -87,9 +112,9 @@ const Index = () => {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>© 2026 DevPortal. All rights reserved.</span>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-foreground transition-colors">Docs</a>
-            <a href="#" className="hover:text-foreground transition-colors">GitHub</a>
-            <a href="#" className="hover:text-foreground transition-colors">Twitter</a>
+            <a href="/docs" className="hover:text-foreground transition-colors">Docs</a>
+            <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <a href="https://x.com" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">Twitter</a>
           </div>
         </div>
       </footer>

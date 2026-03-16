@@ -1,0 +1,103 @@
+#!/usr/bin/env node
+
+import { Command } from 'commander';
+import chalk from 'chalk';
+import { startTunnel } from './commands/start';
+import { listTunnels } from './commands/list';
+import { stopTunnel } from './commands/stop';
+import { replayRequest } from './commands/replay';
+import { showLogs } from './commands/logs';
+import { configCommand } from './commands/config';
+import { getDeviceId } from './utils/device';
+import { getConfig } from './utils/config';
+
+const program = new Command();
+
+// ASCII art logo
+const logo = `
+${chalk.cyan('╔═══════════════════════════════════════╗')}
+${chalk.cyan('║')}  ${chalk.bold.white('DevPortal')} - Share localhost instantly  ${chalk.cyan('║')}
+${chalk.cyan('╚═══════════════════════════════════════╝')}
+`;
+
+program
+  .name('devportal')
+  .description('Expose your localhost to the internet with a single command')
+  .version('1.0.0')
+  .hook('preAction', () => {
+    console.log(logo);
+  });
+
+// Main command: devportal <port>
+program
+  .argument('[port]', 'Local port to expose', '3000')
+  .option('-s, --subdomain <name>', 'Custom subdomain for your URL')
+  .option('-p, --password <pass>', 'Password protect the tunnel')
+  .option('--demo', 'Create a temporary link that expires in 2 hours')
+  .option('--qr', 'Display QR code in terminal')
+  .option('--auth-header <header>', 'Add authorization header to requests')
+  .option('--local', 'Run in local simulation mode (no server required)')
+  .action(async (port, options) => {
+    if (port && !isNaN(parseInt(port))) {
+      await startTunnel(parseInt(port), options);
+    } else {
+      program.help();
+    }
+  });
+
+// List tunnels: devportal ls
+program
+  .command('ls')
+  .alias('list')
+  .description('List all active tunnels')
+  .action(async () => {
+    await listTunnels();
+  });
+
+// Stop tunnel: devportal stop <id>
+program
+  .command('stop [tunnelId]')
+  .description('Stop a tunnel by ID')
+  .option('-a, --all', 'Stop all active tunnels')
+  .action(async (tunnelId, options) => {
+    await stopTunnel(tunnelId, options);
+  });
+
+// Replay request: devportal replay <requestId>
+program
+  .command('replay <requestId>')
+  .description('Replay a captured request')
+  .option('-H, --header <header>', 'Add or override a header')
+  .option('-b, --body <body>', 'Override request body')
+  .action(async (requestId, options) => {
+    await replayRequest(requestId, options);
+  });
+
+// Stream logs: devportal logs <tunnelId>
+program
+  .command('logs <tunnelId>')
+  .description('Stream live request logs from a tunnel')
+  .action(async (tunnelId) => {
+    await showLogs(tunnelId);
+  });
+
+// Config command
+program
+  .command('config [action] [value]')
+  .description('View or update configuration')
+  .action(async (action, value) => {
+    await configCommand(action, value);
+  });
+
+// Device info command
+program
+  .command('whoami')
+  .description('Show current device ID and dashboard URL')
+  .action(() => {
+    const deviceId = getDeviceId();
+    const config = getConfig();
+    console.log(chalk.gray('Device ID:'), chalk.cyan(deviceId));
+    console.log(chalk.gray('Dashboard:'), chalk.underline(`${config.serverUrl}/dashboard/${deviceId}`));
+  });
+
+program.parse();

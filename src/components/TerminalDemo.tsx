@@ -3,10 +3,10 @@ import { Terminal, Copy, Check } from "lucide-react";
 import { useState } from "react";
 
 const lines = [
-  { text: "$ npm install -g devportal", delay: 0, color: "text-muted-foreground" },
+  { text: "$ curl -fsSL https://devportal.live/install.sh | sh", delay: 0, color: "text-muted-foreground" },
   { text: "$ devportal 3000", delay: 0.3, color: "text-foreground" },
   { text: "", delay: 0.6, color: "" },
-  { text: "🚀 DevPortal tunnel established", delay: 0.8, color: "text-foreground" },
+  { text: "DevPortal tunnel established", delay: 0.8, color: "text-foreground" },
   { text: "", delay: 1, color: "" },
   { text: "  Local server:  http://localhost:3000", delay: 1.1, color: "text-muted-foreground" },
   { text: "  Public URL:    https://purple-horizon-218.devportal.live", delay: 1.3, color: "text-primary" },
@@ -22,7 +22,7 @@ const TerminalDemo = () => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText("npm install -g devportal");
+    navigator.clipboard.writeText("curl -fsSL https://devportal.live/install.sh | sh");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

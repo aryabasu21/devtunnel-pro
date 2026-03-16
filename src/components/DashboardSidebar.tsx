@@ -1,11 +1,14 @@
-import { Globe, Code2, Settings, Menu } from "lucide-react";
+import { Globe, Code2, Settings, Menu, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type View = "tunnels" | "playground";
 
 interface Props {
   view: View;
   onViewChange: (v: View) => void;
+  deviceId?: string;
   mobileMenuOpen?: boolean;
   onToggleMobileMenu?: () => void;
 }
@@ -15,8 +18,15 @@ const items = [
   { id: "playground" as View, icon: Code2, label: "API Playground" },
 ];
 
-const DashboardSidebar = ({ view, onViewChange, mobileMenuOpen, onToggleMobileMenu }: Props) => {
+const DashboardSidebar = ({ view, onViewChange, deviceId, mobileMenuOpen, onToggleMobileMenu }: Props) => {
   const navigate = useNavigate();
+
+  const copyDeviceId = () => {
+    if (deviceId) {
+      navigator.clipboard.writeText(deviceId);
+      toast.success("Device ID copied to clipboard");
+    }
+  };
 
   return (
     <>
@@ -45,7 +55,27 @@ const DashboardSidebar = ({ view, onViewChange, mobileMenuOpen, onToggleMobileMe
         ))}
 
         <div className="flex-1" />
+
+        {deviceId && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={copyDeviceId}
+                className="w-10 h-10 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors mb-1"
+              >
+                <User className="w-4 h-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="max-w-[200px]">
+              <p className="text-xs font-medium mb-1">Device ID</p>
+              <p className="text-[10px] font-mono text-muted-foreground break-all">{deviceId}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Click to copy</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
         <button
+          onClick={() => toast.info("Settings panel will be available in the next update")}
           className="w-10 h-10 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors"
           title="Settings"
         >
@@ -62,6 +92,15 @@ const DashboardSidebar = ({ view, onViewChange, mobileMenuOpen, onToggleMobileMe
           <span className="text-[10px] font-bold text-primary-foreground font-mono">D</span>
         </button>
         <span className="text-xs font-semibold flex-1">DevPortal</span>
+        {deviceId && (
+          <button
+            onClick={copyDeviceId}
+            className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground"
+            title={`Device: ${deviceId}`}
+          >
+            <User className="w-4 h-4" />
+          </button>
+        )}
         {items.map((item) => (
           <button
             key={item.id}

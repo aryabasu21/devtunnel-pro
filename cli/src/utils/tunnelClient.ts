@@ -1,0 +1,268 @@
+import WebSocket from 'ws';
+import http from 'http';
+import https from 'https';
+import chalk from 'chalk';
+import { EventEmitter } from 'events';
+
+export interface TunnelConfig {
+  serverUrl: string;
+  wsUrl: string;
+  deviceId: string;
+  localPort: number;
+  subdomain?: string;
+  password?: string;
+  demo?: boolean;
+  authHeader?: string;
+}
+
+export interface TunnelInfo {
+  id: string;
+  name: string;
+  url: string;
+  expiresAt: string | null;
+}
+
+export class TunnelClient extends EventEmitter {
+  private ws: WebSocket | null = null;
+  private config: TunnelConfig;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelay = 1000;
+  private isConnected = false;
+  private tunnelInfo: TunnelInfo | null = null;
+
+  constructor(config: TunnelConfig) {
+    super();
+    this.config = config;
+  }
+
+  async connect(): Promise<TunnelInfo> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.ws = new WebSocket(this.config.wsUrl);
+
+        this.ws.on('open', () => {
+          this.isConnected = true;
+          this.reconnectAttempts = 0;
+
+          // Register tunnel
+          this.send({
+            type: 'register',
+            deviceId: this.config.deviceId,
+            localPort: this.config.localPort,
+            subdomain: this.config.subdomain,
+            password: this.config.password,
+            demo: this.config.demo,
+          });
+        });
+
+        this.ws.on('message', async (data: Buffer) => {
+          try {
+            const message = JSON.parse(data.toString());
+            await this.handleMessage(message, resolve, reject);
+          } catch (error) {
+            console.error('Failed to parse message:', error);
+          }
+        });
+
+        this.ws.on('close', () => {
+          this.isConnected = false;
+          this.emit('disconnected');
+
+          if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            console.log(chalk.yellow(`Reconnecting... (attempt ${this.reconnectAttempts})`));
+            setTimeout(() => this.connect(), this.reconnectDelay * this.reconnectAttempts);
+          }
+        });
+
+        this.ws.on('error', (error) => {
+          if (!this.isConnected) {
+            reject(error);
+          }
+          this.emit('error', error);
+        });
+
+        // Ping to keep connection alive
+        const pingInterval = setInterval(() => {
+          if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
+            this.send({ type: 'ping' });
+          }
+        }, 30000);
+
+        this.on('disconnected', () => clearInterval(pingInterval));
+
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  private async handleMessage(
+    message: any,
+    resolve: (info: TunnelInfo) => void,
+    reject: (error: Error) => void
+  ): Promise<void> {
+    switch (message.type) {
+      case 'registered':
+        this.tunnelInfo = message.tunnel;
+        this.emit('registered', message.tunnel);
+        resolve(message.tunnel);
+        break;
+
+      case 'request':
+        await this.handleIncomingRequest(message);
+        break;
+
+      case 'error':
+        console.error(chalk.red('Server error:'), message.message);
+        reject(new Error(message.message));
+        break;
+
+      case 'pong':
+        // Connection alive
+        break;
+
+      case 'stopped':
+        this.emit('stopped', message.tunnelId);
+        break;
+    }
+  }
+
+  private async handleIncomingRequest(message: any): Promise<void> {
+    const { requestId, method, path, headers, query, body } = message;
+
+    // Log the request
+    this.emit('request', { method, path, requestId });
+
+    // Build URL with query params
+    let url = `http://localhost:${this.config.localPort}${path}`;
+    if (query && Object.keys(query).length > 0) {
+      const params = new URLSearchParams(query as Record<string, string>);
+      url += `?${params.toString()}`;
+    }
+
+    // Add auth header if configured
+    const requestHeaders = { ...headers };
+    if (this.config.authHeader) {
+      const [key, value] = this.config.authHeader.split(': ');
+      if (key && value) {
+        requestHeaders[key] = value;
+      }
+    }
+
+    try {
+      const response = await this.makeLocalRequest(method, url, requestHeaders, body);
+      this.emit('response', { method, path, status: response.status, requestId });
+
+      // Send response back to server
+      this.send({
+        type: 'response',
+        requestId,
+        status: response.status,
+        headers: response.headers,
+        body: response.body,
+      });
+    } catch (error: any) {
+      this.emit('error', error);
+
+      // Send error response
+      this.send({
+        type: 'response',
+        requestId,
+        status: 502,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ error: 'Failed to connect to local server', message: error.message }),
+      });
+    }
+  }
+
+  private makeLocalRequest(
+    method: string,
+    url: string,
+    headers: Record<string, string>,
+    body: string | null
+  ): Promise<{ status: number; headers: Record<string, string>; body: string }> {
+    return new Promise((resolve, reject) => {
+      const urlObj = new URL(url);
+
+      const options: http.RequestOptions = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || 80,
+        path: urlObj.pathname + urlObj.search,
+        method,
+        headers,
+        timeout: 30000,
+      };
+
+      const req = http.request(options, (res) => {
+        const chunks: Buffer[] = [];
+
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+
+        res.on('end', () => {
+          const bodyBuffer = Buffer.concat(chunks);
+          const responseHeaders: Record<string, string> = {};
+
+          // Convert headers
+          for (const [key, value] of Object.entries(res.headers)) {
+            if (value) {
+              responseHeaders[key] = Array.isArray(value) ? value.join(', ') : value;
+            }
+          }
+
+          // Check if body is binary
+          const contentType = responseHeaders['content-type'] || '';
+          const isBinary = !contentType.includes('text') &&
+                          !contentType.includes('json') &&
+                          !contentType.includes('xml') &&
+                          !contentType.includes('javascript');
+
+          let bodyString: string;
+          if (isBinary) {
+            bodyString = bodyBuffer.toString('base64');
+            responseHeaders['x-body-encoding'] = 'base64';
+          } else {
+            bodyString = bodyBuffer.toString('utf-8');
+          }
+
+          resolve({
+            status: res.statusCode || 500,
+            headers: responseHeaders,
+            body: bodyString,
+          });
+        });
+      });
+
+      req.on('error', reject);
+      req.on('timeout', () => reject(new Error('Request timeout')));
+
+      if (body) {
+        // Decode base64 body if it was encoded
+        const bodyBuffer = body.startsWith('ey') || body.includes('=')
+          ? Buffer.from(body, 'base64')
+          : Buffer.from(body);
+        req.write(bodyBuffer);
+      }
+
+      req.end();
+    });
+  }
+
+  private send(data: any): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(data));
+    }
+  }
+
+  stop(): void {
+    if (this.tunnelInfo) {
+      this.send({ type: 'stop', tunnelId: this.tunnelInfo.id });
+    }
+    this.ws?.close();
+  }
+
+  getTunnelInfo(): TunnelInfo | null {
+    return this.tunnelInfo;
+  }
+}

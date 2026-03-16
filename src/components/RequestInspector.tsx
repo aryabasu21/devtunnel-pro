@@ -1,6 +1,6 @@
 import type { RequestLog } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
-import { Play, Copy, Check, RotateCcw } from "lucide-react";
+import { Play, Copy, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -12,7 +12,6 @@ const RequestInspector = ({ request }: Props) => {
   const [activeTab, setActiveTab] = useState<"headers" | "request" | "response">("headers");
   const [replaying, setReplaying] = useState(false);
   const [editableBody, setEditableBody] = useState<string | null>(null);
-  const [editableHeaders, setEditableHeaders] = useState<string | null>(null);
   const [replayResponse, setReplayResponse] = useState<string | null>(null);
 
   if (!request) {
@@ -24,6 +23,16 @@ const RequestInspector = ({ request }: Props) => {
   }
 
   const handleReplay = () => {
+    let parsedBody: unknown = null;
+    if (editableBody !== null && editableBody.trim()) {
+      try {
+        parsedBody = JSON.parse(editableBody);
+      } catch {
+        toast.error("Edited body must be valid JSON before replay");
+        return;
+      }
+    }
+
     setReplaying(true);
     toast.info(`Replaying ${request.method} ${request.path}...`);
     setTimeout(() => {
@@ -32,12 +41,28 @@ const RequestInspector = ({ request }: Props) => {
         originalStatus: request.status,
         newStatus: 200,
         timestamp: new Date().toISOString(),
+        requestBody: parsedBody,
         data: { message: "Request replayed successfully" }
       }, null, 2));
       setReplaying(false);
       setActiveTab("response");
       toast.success("Request replayed successfully");
     }, 800);
+  };
+
+  const handleCopyHeaders = () => {
+    navigator.clipboard.writeText(JSON.stringify(request.headers, null, 2));
+    toast.success("Headers copied to clipboard");
+  };
+
+  const handleCopyRequestBody = () => {
+    if (!request.requestBody) {
+      toast.info("No request body to copy");
+      return;
+    }
+
+    navigator.clipboard.writeText(request.requestBody);
+    toast.success("Request body copied to clipboard");
   };
 
   const handleCopyResponse = () => {
@@ -89,6 +114,11 @@ const RequestInspector = ({ request }: Props) => {
       <div className="flex-1 overflow-auto p-3 sm:p-4">
         {activeTab === "headers" && (
           <div className="space-y-1">
+            <div className="flex items-center justify-end mb-2">
+              <Button size="sm" variant="ghost" className="h-6 text-[10px] gap-1" onClick={handleCopyHeaders}>
+                <Copy className="w-3 h-3" /> Copy
+              </Button>
+            </div>
             {Object.entries(request.headers).map(([key, value]) => (
               <div key={key} className="flex flex-col sm:flex-row font-mono text-xs gap-0.5 sm:gap-0">
                 <span className="text-primary sm:w-48 shrink-0">{key}:</span>
@@ -107,18 +137,30 @@ const RequestInspector = ({ request }: Props) => {
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                 {editableBody !== null ? "Editing body (edits apply on replay)" : "Request body"}
               </span>
-              {request.requestBody && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 text-[10px]"
-                  onClick={() =>
-                    setEditableBody(editableBody !== null ? null : (request.requestBody || ""))
-                  }
-                >
-                  {editableBody !== null ? "Cancel Edit" : "Edit for Replay"}
-                </Button>
-              )}
+              <div className="flex items-center gap-1">
+                {request.requestBody && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 text-[10px] gap-1"
+                    onClick={handleCopyRequestBody}
+                  >
+                    <Copy className="w-3 h-3" /> Copy
+                  </Button>
+                )}
+                {request.requestBody && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 text-[10px]"
+                    onClick={() =>
+                      setEditableBody(editableBody !== null ? null : (request.requestBody || ""))
+                    }
+                  >
+                    {editableBody !== null ? "Cancel Edit" : "Edit for Replay"}
+                  </Button>
+                )}
+              </div>
             </div>
             {editableBody !== null ? (
               <textarea

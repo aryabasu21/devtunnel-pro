@@ -37,8 +37,8 @@ const QRCodeModal = ({ url, tunnelName, onClose }: Props) => {
             <QRCodeSVG
               value={url}
               size={180}
-              bgColor="hsl(0, 0%, 93%)"
-              fgColor="hsl(0, 0%, 4%)"
+              bgColor="hsl(var(--background))"
+              fgColor="hsl(var(--foreground))"
               level="M"
             />
           </div>

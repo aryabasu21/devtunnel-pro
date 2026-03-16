@@ -28,9 +28,9 @@ const commands = [
     example: "devportal 3000 --subdomain my-app",
   },
   {
-    cmd: "devportal status",
-    desc: "Show all active tunnels and their public URLs",
-    example: "devportal status",
+    cmd: "devportal ls",
+    desc: "List all active tunnels and their public URLs",
+    example: "devportal ls",
   },
   {
     cmd: "devportal stop <tunnel-id>",
@@ -38,19 +38,19 @@ const commands = [
     example: "devportal stop purple-horizon-218",
   },
   {
+    cmd: "devportal stop --all",
+    desc: "Stop all active tunnels at once",
+    example: "devportal stop --all",
+  },
+  {
     cmd: "devportal logs <tunnel-id>",
     desc: "Stream live request logs from a specific tunnel",
     example: "devportal logs purple-horizon-218",
   },
   {
-    cmd: "devportal login",
-    desc: "Authenticate with your DevPortal account",
-    example: "devportal login",
-  },
-  {
-    cmd: "devportal whoami",
-    desc: "Display the currently authenticated user",
-    example: "devportal whoami",
+    cmd: "devportal replay <request-id>",
+    desc: "Replay a captured request from the log",
+    example: "devportal replay req-abc123",
   },
 ];
 

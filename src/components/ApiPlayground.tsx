@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, RotateCcw, Copy, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,6 +22,8 @@ const mockResponses: Record<string, { status: number; statusText: string; body: 
 const ApiPlayground = () => {
   const [endpoints, setEndpoints] = useState(defaultEndpoints);
   const [selectedEndpoint, setSelectedEndpoint] = useState(0);
+  const [newMethod, setNewMethod] = useState("GET");
+  const [newPath, setNewPath] = useState("/api/new-endpoint");
   const [requestBody, setRequestBody] = useState('{\n  "email": "test@example.com",\n  "password": "secret"\n}');
   const [headers, setHeaders] = useState([
     { key: "Content-Type", value: "application/json" },
@@ -31,9 +33,25 @@ const ApiPlayground = () => {
   const [loading, setLoading] = useState(false);
   const [mobileTab, setMobileTab] = useState<"endpoints" | "request" | "response">("endpoints");
 
+  const selected = useMemo(
+    () => Math.min(selectedEndpoint, Math.max(endpoints.length - 1, 0)),
+    [selectedEndpoint, endpoints.length]
+  );
+
+  useEffect(() => {
+    if (selected !== selectedEndpoint) {
+      setSelectedEndpoint(selected);
+    }
+  }, [selected, selectedEndpoint]);
+
   const handleSend = () => {
+    if (endpoints.length === 0) {
+      toast.error("Create an endpoint first");
+      return;
+    }
+
     setLoading(true);
-    const ep = endpoints[selectedEndpoint];
+    const ep = endpoints[selected];
     const key = `${ep.method} ${ep.path}`;
     const startTime = Date.now();
 
@@ -66,7 +84,40 @@ const ApiPlayground = () => {
     setHeaders(headers.filter((_, i) => i !== index));
   };
 
-  const ep = endpoints[selectedEndpoint];
+  const handleAddEndpoint = () => {
+    const method = newMethod.toUpperCase();
+    const path = newPath.trim();
+
+    if (!path.startsWith("/")) {
+      toast.error("Endpoint path must start with '/'");
+      return;
+    }
+
+    if (endpoints.some((ep) => ep.method === method && ep.path === path)) {
+      toast.error("Endpoint already exists");
+      return;
+    }
+
+    const updated = [...endpoints, { method, path }];
+    setEndpoints(updated);
+    setSelectedEndpoint(updated.length - 1);
+    toast.success(`Added ${method} ${path}`);
+  };
+
+  const handleDeleteSelectedEndpoint = () => {
+    if (endpoints.length <= 1) {
+      toast.error("Keep at least one endpoint");
+      return;
+    }
+
+    const current = endpoints[selected];
+    const updated = endpoints.filter((_, index) => index !== selected);
+    setEndpoints(updated);
+    setSelectedEndpoint(Math.max(0, selected - 1));
+    toast.info(`Removed ${current.method} ${current.path}`);
+  };
+
+  const ep = endpoints[selected] || { method: "GET", path: "/" };
 
   // Mobile tabs
   const mobileTabs = ["endpoints", "request", "response"] as const;
@@ -92,7 +143,44 @@ const ApiPlayground = () => {
         {/* Endpoint list */}
         <div className={`w-full lg:w-56 border-r border-border overflow-auto flex-col ${mobileTab === "endpoints" ? "flex" : "hidden lg:flex"}`}>
           <div className="p-3 border-b border-border">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Endpoints</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Endpoints</h3>
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <select
+                  value={newMethod}
+                  onChange={(e) => setNewMethod(e.target.value)}
+                  className="w-20 bg-background border border-border rounded px-2 py-1 text-[10px] font-mono text-foreground"
+                >
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
+                  <option value="PATCH">PATCH</option>
+                  <option value="DELETE">DELETE</option>
+                </select>
+                <input
+                  value={newPath}
+                  onChange={(e) => setNewPath(e.target.value)}
+                  className="flex-1 bg-background border border-border rounded px-2 py-1 text-[10px] font-mono text-foreground min-w-0"
+                  placeholder="/api/resource"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={handleAddEndpoint}
+                  className="h-6 px-2 text-[10px] rounded border border-border text-muted-foreground hover:text-foreground hover:bg-surface-hover inline-flex items-center gap-1"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add
+                </button>
+                <button
+                  onClick={handleDeleteSelectedEndpoint}
+                  className="h-6 px-2 text-[10px] rounded border border-border text-muted-foreground hover:text-destructive hover:bg-surface-hover inline-flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Delete Selected
+                </button>
+              </div>
+            </div>
           </div>
           <div className="divide-y divide-border flex-1">
             {endpoints.map((e, i) => (
@@ -100,7 +188,7 @@ const ApiPlayground = () => {
                 key={i}
                 onClick={() => { setSelectedEndpoint(i); setMobileTab("request"); }}
                 className={`w-full text-left px-3 py-2.5 text-xs font-mono flex items-center gap-2 transition-colors ${
-                  i === selectedEndpoint ? "bg-surface-hover" : "hover:bg-surface-hover"
+                  i === selected ? "bg-surface-hover" : "hover:bg-surface-hover"
                 }`}
               >
                 <MethodLabel method={e.method} />

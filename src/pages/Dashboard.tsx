@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import TunnelList from "@/components/TunnelList";
 import RequestInspector from "@/components/RequestInspector";
@@ -19,7 +20,20 @@ const generateTunnelName = () => {
   return `${adj}-${noun}-${num}`;
 };
 
+const getDeviceId = (): string => {
+  const storageKey = "devportal_device_id";
+  let deviceId = localStorage.getItem(storageKey);
+  if (!deviceId) {
+    deviceId = `dev_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(storageKey, deviceId);
+  }
+  return deviceId;
+};
+
 const Dashboard = () => {
+  const { deviceId: urlDeviceId } = useParams();
+  const navigate = useNavigate();
+  const [deviceId, setDeviceId] = useState<string>("");
   const [view, setView] = useState<View>("tunnels");
   const [tunnels, setTunnels] = useState<TunnelData[]>(initialTunnels);
   const [requests, setRequests] = useState<RequestLog[]>(initialRequests);
@@ -27,6 +41,16 @@ const Dashboard = () => {
   const [selectedTunnelId, setSelectedTunnelId] = useState("t1");
   const [qrTunnel, setQrTunnel] = useState<TunnelData | null>(null);
   const [mobilePanel, setMobilePanel] = useState<"list" | "inspector">("list");
+
+  useEffect(() => {
+    const localDeviceId = getDeviceId();
+    setDeviceId(localDeviceId);
+
+    // If no deviceId in URL or mismatched, redirect to correct URL
+    if (!urlDeviceId || urlDeviceId !== localDeviceId) {
+      navigate(`/dashboard/${localDeviceId}`, { replace: true });
+    }
+  }, [urlDeviceId, navigate]);
 
   const filteredRequests = requests.filter((r) => r.tunnelId === selectedTunnelId);
 
@@ -60,7 +84,7 @@ const Dashboard = () => {
 
   return (
     <div className="h-screen flex flex-col sm:flex-row bg-background overflow-hidden">
-      <DashboardSidebar view={view} onViewChange={setView} />
+      <DashboardSidebar view={view} onViewChange={setView} deviceId={deviceId} />
 
       {qrTunnel && (
         <QRCodeModal
