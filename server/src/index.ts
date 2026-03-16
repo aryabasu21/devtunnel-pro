@@ -62,7 +62,27 @@ app.all("*", async (req: Request, res: Response) => {
   }
 
   const host = req.headers.host || "";
-  const subdomain = host.split(".")[0];
+  const hostParts = host.split(".");
+
+  // Check if this is the base domain (tunnel.stylnode.in, localhost, or onrender.com)
+  const isBaseDomain =
+    hostParts[0] === "tunnel" ||
+    host.startsWith("localhost") ||
+    host.includes("onrender.com") ||
+    hostParts.length <= 2;
+
+  if (isBaseDomain) {
+    return res.json({
+      service: "DevPortal Tunnel Server",
+      version: "1.0.0",
+      status: "running",
+      activeTunnels: tunnelManager.getActiveTunnelCount(),
+      docs: "https://devportal.stylnode.in/docs",
+      usage: "Install CLI: npm install -g devportal-tunnel && devportal start 3000",
+    });
+  }
+
+  const subdomain = hostParts[0];
 
   // Check if this is a tunnel request
   const tunnel = tunnelManager.getTunnelByName(subdomain);
