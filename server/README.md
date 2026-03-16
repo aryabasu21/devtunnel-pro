@@ -24,6 +24,7 @@
 ### Custom Domain Setup
 
 After deployment:
+
 1. Go to your service → **Settings** → **Custom Domains**
 2. Add `tunnel.stylnode.in`
 3. Add `*.tunnel.stylnode.in` (for wildcard subdomains)
@@ -33,10 +34,10 @@ After deployment:
 
 Add these to your domain registrar:
 
-| Type  | Name     | Value                              |
-|-------|----------|------------------------------------|
-| CNAME | tunnel   | `<your-service>.onrender.com`      |
-| CNAME | *.tunnel | `<your-service>.onrender.com`      |
+| Type  | Name      | Value                         |
+| ----- | --------- | ----------------------------- |
+| CNAME | tunnel    | `<your-service>.onrender.com` |
+| CNAME | \*.tunnel | `<your-service>.onrender.com` |
 
 ## Local Development
 
