@@ -29,7 +29,7 @@ const TerminalDemo = () => {
 
   return (
     <div className="surface-card overflow-hidden max-w-2xl w-full">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+      <div className="flex items-center gap-2 px-3 sm:px-4 py-3 border-b border-border">
         <div className="flex gap-1.5">
           <div className="w-3 h-3 rounded-full bg-destructive/70" />
           <div className="w-3 h-3 rounded-full bg-warning/70" />
@@ -44,14 +44,14 @@ const TerminalDemo = () => {
           {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
-      <div className="p-4 font-mono text-sm leading-7 min-h-[340px]">
+      <div className="p-3 sm:p-4 font-mono text-[11px] sm:text-sm leading-6 sm:leading-7 min-h-[280px] sm:min-h-[340px] overflow-x-auto">
         {lines.map((line, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: line.delay, duration: 0.05 }}
-            className={line.color}
+            className={`${line.color} whitespace-nowrap`}
           >
             {line.text || "\u00A0"}
           </motion.div>
