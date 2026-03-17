@@ -1,6 +1,12 @@
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -18,7 +24,7 @@ import {
   Mail,
   User,
   CheckCircle2,
-  Loader2
+  Loader2,
 } from "lucide-react";
 
 interface FilePreview {
@@ -27,7 +33,12 @@ interface FilePreview {
   type: "image" | "video";
 }
 
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/wav", "video/webm"];
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -45,7 +56,9 @@ const Support = () => {
     message: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -61,9 +74,12 @@ const Support = () => {
       const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
 
       if (!isImage && !isVideo) {
-        toast.error("Please upload images (JPEG, PNG, WebP) or videos (MP4, WAV, WebM)", {
-          icon: "❌",
-        });
+        toast.error(
+          "Please upload images (JPEG, PNG, WebP) or videos (MP4, WAV, WebM)",
+          {
+            icon: "❌",
+          },
+        );
         return;
       }
 
@@ -146,13 +162,20 @@ const Support = () => {
       }
 
       setIsSubmitted(true);
-      toast.success("Message sent! We'll get back to you as soon as possible.", {
-        icon: "✉️",
-      });
+      toast.success(
+        "Message sent! We'll get back to you as soon as possible.",
+        {
+          icon: "✉️",
+        },
+      );
     } catch (error: any) {
-      toast.error(error.message || "Failed to send. Please try again or email us directly.", {
-        icon: "❌",
-      });
+      toast.error(
+        error.message ||
+          "Failed to send. Please try again or email us directly.",
+        {
+          icon: "❌",
+        },
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -178,9 +201,12 @@ const Support = () => {
             <MessageSquare className="w-3 h-3" />
             Support
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Need Help?</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+            Need Help?
+          </h1>
           <p className="text-muted-foreground max-w-xl mx-auto text-lg">
-            Having issues setting up or using DevPortal? Send us a message and we'll help you out.
+            Having issues setting up or using DevPortal? Send us a message and
+            we'll help you out.
           </p>
         </motion.div>
 
@@ -193,7 +219,8 @@ const Support = () => {
             <CardHeader>
               <CardTitle>Contact Form</CardTitle>
               <CardDescription>
-                Describe your issue and attach screenshots or videos to help us understand better.
+                Describe your issue and attach screenshots or videos to help us
+                understand better.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -208,7 +235,8 @@ const Support = () => {
                   </div>
                   <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
                   <p className="text-muted-foreground mb-6">
-                    Thank you for reaching out. We'll get back to you within 24-48 hours.
+                    Thank you for reaching out. We'll get back to you within
+                    24-48 hours.
                   </p>
                   <Button variant="outline" onClick={resetForm}>
                     Send Another Message
@@ -232,7 +260,10 @@ const Support = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center gap-2">
+                      <Label
+                        htmlFor="email"
+                        className="flex items-center gap-2"
+                      >
                         <Mail className="w-3.5 h-3.5" />
                         Email <span className="text-destructive">*</span>
                       </Label>
@@ -249,7 +280,10 @@ const Support = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="subject" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="subject"
+                      className="flex items-center gap-2"
+                    >
                       <FileText className="w-3.5 h-3.5" />
                       Subject
                     </Label>
@@ -263,7 +297,10 @@ const Support = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="message"
+                      className="flex items-center gap-2"
+                    >
                       <MessageSquare className="w-3.5 h-3.5" />
                       Message <span className="text-destructive">*</span>
                     </Label>
@@ -284,7 +321,8 @@ const Support = () => {
                       Attachments
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Upload screenshots (JPEG, PNG, WebP) or videos (MP4, WebM) - Max 50MB each, up to 5 files
+                      Upload screenshots (JPEG, PNG, WebP) or videos (MP4, WebM)
+                      - Max 50MB each, up to 5 files
                     </p>
 
                     <input
@@ -310,7 +348,7 @@ const Support = () => {
                               onClick={() => {
                                 // Create download link
                                 const url = URL.createObjectURL(f.file);
-                                const a = document.createElement('a');
+                                const a = document.createElement("a");
                                 a.href = url;
                                 a.download = f.file.name;
                                 a.click();
@@ -324,7 +362,7 @@ const Support = () => {
                               onClick={() => {
                                 // Create download link
                                 const url = URL.createObjectURL(f.file);
-                                const a = document.createElement('a');
+                                const a = document.createElement("a");
                                 a.href = url;
                                 a.download = f.file.name;
                                 a.click();
@@ -353,7 +391,8 @@ const Support = () => {
                               {f.file.name}
                             </span>
                             <span className="text-[8px] text-white/70">
-                              {(f.file.size / 1024 / 1024).toFixed(1)}MB • Click to download
+                              {(f.file.size / 1024 / 1024).toFixed(1)}MB • Click
+                              to download
                             </span>
                           </div>
                         </div>
@@ -369,8 +408,12 @@ const Support = () => {
                             <Upload className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
                           </div>
                           <div className="text-center">
-                            <span className="text-xs text-muted-foreground block">Add file</span>
-                            <span className="text-[10px] text-muted-foreground/60">Up to 50MB</span>
+                            <span className="text-xs text-muted-foreground block">
+                              Add file
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              Up to 50MB
+                            </span>
                           </div>
                         </button>
                       )}
@@ -414,7 +457,8 @@ const Support = () => {
               </div>
               <h3 className="font-medium mb-2">Screenshots Help</h3>
               <p className="text-sm text-muted-foreground">
-                Attach screenshots of error messages, terminal output, or unexpected behavior to help us diagnose faster.
+                Attach screenshots of error messages, terminal output, or
+                unexpected behavior to help us diagnose faster.
               </p>
             </CardContent>
           </Card>
@@ -425,7 +469,8 @@ const Support = () => {
               </div>
               <h3 className="font-medium mb-2">Videos Welcome</h3>
               <p className="text-sm text-muted-foreground">
-                For complex issues, a short screen recording showing the problem can be incredibly helpful.
+                For complex issues, a short screen recording showing the problem
+                can be incredibly helpful.
               </p>
             </CardContent>
           </Card>

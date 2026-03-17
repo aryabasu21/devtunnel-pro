@@ -10,7 +10,12 @@ import { Github, Copy, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { detectPlatform, getInstallCommand, getStartCommand, getPlatformName } from "@/utils/platform";
+import {
+  detectPlatform,
+  getInstallCommand,
+  getStartCommand,
+  getPlatformName,
+} from "@/utils/platform";
 
 const getDeviceId = (): string => {
   const storageKey = "devportal_device_id";
@@ -26,7 +31,9 @@ const Index = () => {
   const navigate = useNavigate();
   const [deviceId, setDeviceId] = useState<string>("");
   const [copied, setCopied] = useState(false);
-  const [platform, setPlatform] = useState<'windows' | 'mac' | 'linux'>('linux');
+  const [platform, setPlatform] = useState<"windows" | "mac" | "linux">(
+    "linux",
+  );
 
   useEffect(() => {
     setDeviceId(getDeviceId());
@@ -45,10 +52,13 @@ const Index = () => {
     try {
       await navigator.clipboard.writeText(installCommand);
       setCopied(true);
-      toast.success(`📋 Copied for ${platformName}!\nRun in terminal, then: ${startCommand}`, {
-        duration: 6000,
-        icon: "⚡",
-      });
+      toast.success(
+        `📋 Copied for ${platformName}!\nRun in terminal, then: ${startCommand}`,
+        {
+          duration: 6000,
+          icon: "⚡",
+        },
+      );
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       // Fallback for browsers that don't support clipboard API
@@ -61,10 +71,13 @@ const Index = () => {
       document.execCommand("copy");
       document.body.removeChild(textArea);
       setCopied(true);
-      toast.success(`📋 Copied for ${platformName}!\nRun in terminal, then: ${startCommand}`, {
-        duration: 6000,
-        icon: "⚡",
-      });
+      toast.success(
+        `📋 Copied for ${platformName}!\nRun in terminal, then: ${startCommand}`,
+        {
+          duration: 6000,
+          icon: "⚡",
+        },
+      );
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -98,7 +111,10 @@ const Index = () => {
       <Navbar />
 
       {/* Glow effect */}
-      <div className="fixed inset-0 pointer-events-none" style={{ background: "var(--gradient-glow)" }} />
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{ background: "var(--gradient-glow)" }}
+      />
 
       {/* Hero */}
       <section className="pt-24 sm:pt-32 pb-12 sm:pb-16 px-4 sm:px-6 relative">
@@ -118,11 +134,22 @@ const Index = () => {
               <span className="text-gradient">the internet</span>
             </h1>
             <p className="text-sm sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2">
-              Expose your local dev server with a single command. Inspect traffic, replay requests, and debug APIs — all from your terminal or dashboard.
+              Expose your local dev server with a single command. Inspect
+              traffic, replay requests, and debug APIs — all from your terminal
+              or dashboard.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
-              <Button variant="hero" size="xl" className="w-full sm:w-auto" onClick={copyInstallCommand}>
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              <Button
+                variant="hero"
+                size="xl"
+                className="w-full sm:w-auto"
+                onClick={copyInstallCommand}
+              >
+                {copied ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
                 {copied ? "Copied!" : "Get Started"}
               </Button>
               <Button
@@ -139,7 +166,8 @@ const Index = () => {
               onClick={copyInstallCommand}
               title="Click to copy install command"
             >
-              {installCommand} <span className="text-muted-foreground/70">({platformName})</span>
+              {installCommand}{" "}
+              <span className="text-muted-foreground/70">({platformName})</span>
             </p>
           </motion.div>
         </div>
@@ -164,7 +192,9 @@ const Index = () => {
       {/* CTA */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 border-t border-border">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-3">Ready to ship faster?</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+            Ready to ship faster?
+          </h2>
           <p className="text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base">
             Get a public URL for your localhost in under 10 seconds.
           </p>

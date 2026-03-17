@@ -7,14 +7,18 @@ interface TerminalBlockProps {
   showOutput?: boolean;
 }
 
-const TerminalBlock = ({ code, title = "terminal", showOutput = false }: TerminalBlockProps) => {
+const TerminalBlock = ({
+  code,
+  title = "terminal",
+  showOutput = false,
+}: TerminalBlockProps) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     const commandsOnly = code
       .split("\n")
-      .filter(line => line.startsWith("$") || line.startsWith("#"))
-      .map(line => line.replace(/^\$\s*/, "").replace(/^#.*$/, ""))
+      .filter((line) => line.startsWith("$") || line.startsWith("#"))
+      .map((line) => line.replace(/^\$\s*/, "").replace(/^#.*$/, ""))
       .filter(Boolean)
       .join("\n");
     navigator.clipboard.writeText(commandsOnly || code);
@@ -32,24 +36,61 @@ const TerminalBlock = ({ code, title = "terminal", showOutput = false }: Termina
       );
     }
     if (line.startsWith("#")) {
-      return <span key={index} className="text-zinc-500">{line}</span>;
+      return (
+        <span key={index} className="text-zinc-500">
+          {line}
+        </span>
+      );
     }
     if (line.includes("→") || line.includes("✓") || line.includes("active")) {
-      return <span key={index} className="text-primary">{line}</span>;
+      return (
+        <span key={index} className="text-primary">
+          {line}
+        </span>
+      );
     }
     if (line.includes("GET") || line.includes("200")) {
-      return <span key={index} className="text-success">{line}</span>;
+      return (
+        <span key={index} className="text-success">
+          {line}
+        </span>
+      );
     }
-    if (line.includes("POST") || line.includes("401") || line.includes("Warning")) {
-      return <span key={index} className="text-warning">{line}</span>;
+    if (
+      line.includes("POST") ||
+      line.includes("401") ||
+      line.includes("Warning")
+    ) {
+      return (
+        <span key={index} className="text-warning">
+          {line}
+        </span>
+      );
     }
     if (line.includes("Error") || line.includes("DELETE")) {
-      return <span key={index} className="text-destructive">{line}</span>;
+      return (
+        <span key={index} className="text-destructive">
+          {line}
+        </span>
+      );
     }
-    if (line.startsWith("│") || line.startsWith("├") || line.startsWith("└") || line.startsWith("┌")) {
-      return <span key={index} className="text-zinc-500">{line}</span>;
+    if (
+      line.startsWith("│") ||
+      line.startsWith("├") ||
+      line.startsWith("└") ||
+      line.startsWith("┌")
+    ) {
+      return (
+        <span key={index} className="text-zinc-500">
+          {line}
+        </span>
+      );
     }
-    return <span key={index} className="text-zinc-400">{line}</span>;
+    return (
+      <span key={index} className="text-zinc-400">
+        {line}
+      </span>
+    );
   };
 
   return (
@@ -70,7 +111,11 @@ const TerminalBlock = ({ code, title = "terminal", showOutput = false }: Termina
           className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-zinc-800"
           title="Copy commands"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? (
+            <Check className="w-3.5 h-3.5 text-success" />
+          ) : (
+            <Copy className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
       <pre className="bg-gradient-to-b from-zinc-950 to-black p-4 text-xs sm:text-sm font-mono leading-6 overflow-x-auto">

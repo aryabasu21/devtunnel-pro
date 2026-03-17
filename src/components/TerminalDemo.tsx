@@ -3,26 +3,74 @@ import { Terminal, Copy, Check } from "lucide-react";
 import { useState } from "react";
 
 const lines = [
-  { text: "$ npx devportal-tunnel@latest", delay: 0, color: "text-muted-foreground" },
+  {
+    text: "$ npx devportal-tunnel@latest",
+    delay: 0,
+    color: "text-muted-foreground",
+  },
   { text: "$ devportal start 3000", delay: 0.3, color: "text-foreground" },
   { text: "", delay: 0.6, color: "" },
-  { text: "╔═══════════════════════════════════════╗", delay: 0.7, color: "text-primary/60" },
-  { text: "║  DevPortal - Share localhost instantly  ║", delay: 0.75, color: "text-primary/60" },
-  { text: "╚═══════════════════════════════════════╝", delay: 0.8, color: "text-primary/60" },
+  {
+    text: "╔═══════════════════════════════════════╗",
+    delay: 0.7,
+    color: "text-primary/60",
+  },
+  {
+    text: "║  DevPortal - Share localhost instantly  ║",
+    delay: 0.75,
+    color: "text-primary/60",
+  },
+  {
+    text: "╚═══════════════════════════════════════╝",
+    delay: 0.8,
+    color: "text-primary/60",
+  },
   { text: "", delay: 0.9, color: "" },
   { text: "✓ Tunnel established", delay: 1.0, color: "text-success" },
   { text: "", delay: 1.1, color: "" },
-  { text: "  Local server:  http://localhost:3000", delay: 1.2, color: "text-muted-foreground" },
-  { text: "  Public URL:    https://purple-horizon-218.tunnel.stylnode.in", delay: 1.4, color: "text-primary" },
-  { text: "  Tunnel ID:     t-f8a448a7", delay: 1.6, color: "text-muted-foreground" },
+  {
+    text: "  Local server:  http://localhost:3000",
+    delay: 1.2,
+    color: "text-muted-foreground",
+  },
+  {
+    text: "  Public URL:    https://purple-horizon-218.tunnel.stylnode.in",
+    delay: 1.4,
+    color: "text-primary",
+  },
+  {
+    text: "  Tunnel ID:     t-f8a448a7",
+    delay: 1.6,
+    color: "text-muted-foreground",
+  },
   { text: "", delay: 1.8, color: "" },
-  { text: "  Dashboard:     https://devportal.stylnode.in/dashboard/dev_abc123", delay: 1.9, color: "text-muted-foreground" },
+  {
+    text: "  Dashboard:     https://devportal.stylnode.in/dashboard/dev_abc123",
+    delay: 1.9,
+    color: "text-muted-foreground",
+  },
   { text: "", delay: 2.0, color: "" },
-  { text: "  Forwarding requests... (Press Ctrl+C to stop)", delay: 2.1, color: "text-muted-foreground" },
+  {
+    text: "  Forwarding requests... (Press Ctrl+C to stop)",
+    delay: 2.1,
+    color: "text-muted-foreground",
+  },
   { text: "", delay: 2.3, color: "" },
-  { text: "3:45:12 PM GET   /api/users        200", delay: 2.6, color: "text-success" },
-  { text: "3:45:14 PM POST  /api/auth         401", delay: 3.0, color: "text-warning" },
-  { text: "3:45:16 PM GET   /dashboard        200", delay: 3.4, color: "text-success" },
+  {
+    text: "3:45:12 PM GET   /api/users        200",
+    delay: 2.6,
+    color: "text-success",
+  },
+  {
+    text: "3:45:14 PM POST  /api/auth         401",
+    delay: 3.0,
+    color: "text-warning",
+  },
+  {
+    text: "3:45:16 PM GET   /dashboard        200",
+    delay: 3.4,
+    color: "text-success",
+  },
   { text: "", delay: 3.8, color: "", cursor: true },
 ];
 
@@ -53,7 +101,11 @@ const TerminalDemo = () => {
           className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-zinc-800"
           title="Copy install command"
         >
-          {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+          {copied ? (
+            <Check className="w-4 h-4 text-success" />
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
         </button>
       </div>
       <div className="bg-gradient-to-b from-zinc-950 to-black p-3 sm:p-4 font-mono text-[11px] sm:text-sm leading-6 sm:leading-7 min-h-[320px] sm:min-h-[380px] overflow-x-auto">
@@ -74,7 +126,7 @@ const TerminalDemo = () => {
                   delay: line.delay + 0.1,
                   duration: 1.2,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
                 className="inline-block w-2 h-4 bg-primary/80 ml-1"
               />

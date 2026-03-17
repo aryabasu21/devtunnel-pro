@@ -11,7 +11,7 @@ import {
   Zap,
   Copy,
   ExternalLink,
-  Play
+  Play,
 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -31,31 +31,35 @@ const Examples = () => {
     {
       icon: Monitor,
       title: "Local Development",
-      description: "Share your localhost with team members or test on different devices",
+      description:
+        "Share your localhost with team members or test on different devices",
       command: "devportal-tunnel start 3000",
-      details: "Perfect for sharing React, Vue, or Angular apps running locally"
+      details:
+        "Perfect for sharing React, Vue, or Angular apps running locally",
     },
     {
       icon: Smartphone,
       title: "Mobile Testing",
       description: "Test your web app on real mobile devices instantly",
       command: "devportal-tunnel start 8080 --qr",
-      details: "QR code makes it easy to open on phones and tablets"
+      details: "QR code makes it easy to open on phones and tablets",
     },
     {
       icon: Globe,
       title: "Webhooks & APIs",
-      description: "Receive webhooks from external services for local development",
+      description:
+        "Receive webhooks from external services for local development",
       command: "devportal-tunnel start 4000 --subdomain myapi",
-      details: "Get a stable URL for webhook endpoints like payment gateways"
+      details: "Get a stable URL for webhook endpoints like payment gateways",
     },
     {
       icon: Zap,
       title: "Port Forwarding",
       description: "Map different ports for complex application setups",
       command: "devportal-tunnel start 3000 --forward 8080:3000",
-      details: "Expose local port 3000 as remote port 8080 for specific configurations"
-    }
+      details:
+        "Expose local port 3000 as remote port 8080 for specific configurations",
+    },
   ];
 
   const quickstartExamples = [
@@ -65,7 +69,7 @@ const Examples = () => {
       steps: [
         "npm run dev",
         "devportal-tunnel start 3000",
-        "Share the public URL with your team"
+        "Share the public URL with your team",
       ],
       code: `# Start your React app
 npm run dev
@@ -77,7 +81,7 @@ devportal-tunnel start 3000
 # ✓ Tunnel established
 # Local server:  http://localhost:3000
 # Public URL:    https://happy-tiger-a1b2c3d4.tunnel.stylnode.in
-# Tunnel ID:     t-abc123`
+# Tunnel ID:     t-abc123`,
     },
     {
       title: "Express API with Custom Subdomain",
@@ -85,7 +89,7 @@ devportal-tunnel start 3000
       steps: [
         "Start your Express server on port 4000",
         "Use custom subdomain for easy sharing",
-        "Test API endpoints from anywhere"
+        "Test API endpoints from anywhere",
       ],
       code: `# Start tunnel with custom subdomain
 devportal-tunnel start 4000 --subdomain myapi
@@ -95,7 +99,7 @@ devportal-tunnel start 4000 --subdomain myapi
 
 # Test your endpoints:
 curl https://myapi.tunnel.stylnode.in/api/users
-curl -X POST https://myapi.tunnel.stylnode.in/api/login`
+curl -X POST https://myapi.tunnel.stylnode.in/api/login`,
     },
     {
       title: "Next.js with Mobile Testing",
@@ -103,7 +107,7 @@ curl -X POST https://myapi.tunnel.stylnode.in/api/login`
       steps: [
         "npm run dev",
         "Start tunnel with QR code generation",
-        "Scan QR code on mobile devices"
+        "Scan QR code on mobile devices",
       ],
       code: `# Start Next.js
 npm run dev
@@ -112,15 +116,16 @@ npm run dev
 devportal-tunnel start 3000 --qr
 
 # QR code will be displayed in terminal
-# Scan with your phone to test mobile experience`
+# Scan with your phone to test mobile experience`,
     },
     {
       title: "Webhook Development",
-      description: "Receive webhooks from services like Stripe, GitHub, or Slack",
+      description:
+        "Receive webhooks from services like Stripe, GitHub, or Slack",
       steps: [
         "Create webhook endpoint in your app",
         "Start tunnel with stable subdomain",
-        "Configure webhook URL in external service"
+        "Configure webhook URL in external service",
       ],
       code: `# Start your webhook server
 node webhook-server.js
@@ -130,7 +135,7 @@ devportal-tunnel start 3001 --subdomain webhooks
 
 # Use this URL in your webhook configuration:
 # https://webhooks.tunnel.stylnode.in/stripe
-# https://webhooks.tunnel.stylnode.in/github`
+# https://webhooks.tunnel.stylnode.in/github`,
     },
     {
       title: "Multiple Services with Port Forwarding",
@@ -138,7 +143,7 @@ devportal-tunnel start 3001 --subdomain webhooks
       steps: [
         "Start frontend on port 3000",
         "Start API on port 4000",
-        "Use port forwarding to expose both"
+        "Use port forwarding to expose both",
       ],
       code: `# Terminal 1: Frontend
 npm run dev # (runs on port 3000)
@@ -154,8 +159,8 @@ devportal-tunnel start 4000 --forward 8080:4000
 
 # Now you have:
 # Frontend: https://tunnel1.tunnel.stylnode.in
-# API:      https://tunnel2.tunnel.stylnode.in (port 8080)`
-    }
+# API:      https://tunnel2.tunnel.stylnode.in (port 8080)`,
+    },
   ];
 
   const advancedExamples = [
@@ -177,7 +182,7 @@ jobs:
       - name: Create Tunnel
         run: |
           npx devportal-tunnel start 3000 --subdomain pr-\${{ github.event.number }}
-          echo "Preview: https://pr-\${{ github.event.number }}.tunnel.stylnode.in"`
+          echo "Preview: https://pr-\${{ github.event.number }}.tunnel.stylnode.in"`,
     },
     {
       title: "Docker Integration",
@@ -193,7 +198,7 @@ CMD ["sh", "-c", "npm start & devportal-tunnel start 3000"]
 
 # Run with Docker
 docker build -t my-app .
-docker run -p 3000:3000 my-app`
+docker run -p 3000:3000 my-app`,
     },
     {
       title: "Load Testing Setup",
@@ -206,8 +211,8 @@ devportal-tunnel start 3000 --subdomain loadtest
 # Terminal 3: Run load test
 artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
 
-# Monitor requests in terminal 2 for real-time feedback`
-    }
+# Monitor requests in terminal 2 for real-time feedback`,
+    },
   ];
 
   return (
@@ -223,8 +228,8 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Examples & Use Cases</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Learn how to use DevPortal for common development scenarios.
-              From local testing to webhook development and mobile debugging.
+              Learn how to use DevPortal for common development scenarios. From
+              local testing to webhook development and mobile debugging.
             </p>
           </div>
 
@@ -245,20 +250,28 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                       <useCase.icon className="w-6 h-6 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold mb-2">{useCase.title}</h3>
-                      <p className="text-muted-foreground text-base mb-3">{useCase.description}</p>
+                      <h3 className="text-lg font-semibold mb-2">
+                        {useCase.title}
+                      </h3>
+                      <p className="text-muted-foreground text-base mb-3">
+                        {useCase.description}
+                      </p>
                       <div className="flex items-center justify-between">
                         <code className="text-sm bg-background border border-border rounded px-2 py-1">
                           {useCase.command}
                         </code>
                         <button
-                          onClick={() => copyToClipboard(useCase.command, `usecase-${index}`)}
+                          onClick={() =>
+                            copyToClipboard(useCase.command, `usecase-${index}`)
+                          }
                           className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                         >
                           <Copy className="w-4 h-4" />
                         </button>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">{useCase.details}</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {useCase.details}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -286,8 +299,12 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-xl font-semibold mb-2">{example.title}</h3>
-                      <p className="text-muted-foreground text-base">{example.description}</p>
+                      <h3 className="text-xl font-semibold mb-2">
+                        {example.title}
+                      </h3>
+                      <p className="text-muted-foreground text-base">
+                        {example.description}
+                      </p>
                     </div>
                   </div>
 
@@ -295,7 +312,10 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                     <h4 className="text-base font-semibold mb-2">Steps:</h4>
                     <ol className="space-y-1">
                       {example.steps.map((step, stepIndex) => (
-                        <li key={stepIndex} className="text-base text-muted-foreground">
+                        <li
+                          key={stepIndex}
+                          className="text-base text-muted-foreground"
+                        >
                           {stepIndex + 1}. {step}
                         </li>
                       ))}
@@ -303,8 +323,13 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                   </div>
 
                   <div>
-                    <h4 className="text-base font-semibold mb-3">Code Example:</h4>
-                    <TerminalBlock code={example.code} title={example.title.toLowerCase().replace(/\s+/g, '-')} />
+                    <h4 className="text-base font-semibold mb-3">
+                      Code Example:
+                    </h4>
+                    <TerminalBlock
+                      code={example.code}
+                      title={example.title.toLowerCase().replace(/\s+/g, "-")}
+                    />
                   </div>
                 </motion.div>
               ))}
@@ -333,7 +358,10 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                     <h3 className="text-lg font-semibold">{example.title}</h3>
                   </div>
 
-                  <TerminalBlock code={example.code} title={example.title.toLowerCase().replace(/\s+/g, '-')} />
+                  <TerminalBlock
+                    code={example.code}
+                    title={example.title.toLowerCase().replace(/\s+/g, "-")}
+                  />
                 </motion.div>
               ))}
             </div>
@@ -345,36 +373,82 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
             <div className="bg-surface border border-border rounded-lg p-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">🛡️ Security Tips</h3>
+                  <h3 className="text-lg font-semibold mb-3">
+                    🛡️ Security Tips
+                  </h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li className="text-base">• Use password protection for sensitive applications: <code className="bg-background px-2 py-1 rounded text-sm">--password mypass</code></li>
-                    <li className="text-base">• Use demo mode for temporary shares: <code className="bg-background px-2 py-1 rounded text-sm">--demo</code> (expires in 2 hours)</li>
-                    <li className="text-base">• Be cautious when exposing database admin interfaces or internal tools</li>
+                    <li className="text-base">
+                      • Use password protection for sensitive applications:{" "}
+                      <code className="bg-background px-2 py-1 rounded text-sm">
+                        --password mypass
+                      </code>
+                    </li>
+                    <li className="text-base">
+                      • Use demo mode for temporary shares:{" "}
+                      <code className="bg-background px-2 py-1 rounded text-sm">
+                        --demo
+                      </code>{" "}
+                      (expires in 2 hours)
+                    </li>
+                    <li className="text-base">
+                      • Be cautious when exposing database admin interfaces or
+                      internal tools
+                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">⚡ Performance Tips</h3>
+                  <h3 className="text-lg font-semibold mb-3">
+                    ⚡ Performance Tips
+                  </h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li className="text-base">• Use custom subdomains for better caching: <code className="bg-background px-2 py-1 rounded text-sm">--subdomain myapp</code></li>
-                    <li className="text-base">• Stop unused tunnels to free up resources: <code className="bg-background px-2 py-1 rounded text-sm">devportal-tunnel stop-all</code></li>
-                    <li className="text-base">• Check port availability before starting: <code className="bg-background px-2 py-1 rounded text-sm">devportal-tunnel port check 3000</code></li>
+                    <li className="text-base">
+                      • Use custom subdomains for better caching:{" "}
+                      <code className="bg-background px-2 py-1 rounded text-sm">
+                        --subdomain myapp
+                      </code>
+                    </li>
+                    <li className="text-base">
+                      • Stop unused tunnels to free up resources:{" "}
+                      <code className="bg-background px-2 py-1 rounded text-sm">
+                        devportal-tunnel stop-all
+                      </code>
+                    </li>
+                    <li className="text-base">
+                      • Check port availability before starting:{" "}
+                      <code className="bg-background px-2 py-1 rounded text-sm">
+                        devportal-tunnel port check 3000
+                      </code>
+                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">🔧 Development Tips</h3>
+                  <h3 className="text-lg font-semibold mb-3">
+                    🔧 Development Tips
+                  </h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li className="text-base">• Use QR codes for mobile testing: <code className="bg-background px-2 py-1 rounded text-sm">--qr</code></li>
-                    <li className="text-base">• Monitor request logs in terminal for debugging</li>
-                    <li className="text-base">• Use port forwarding for microservice architectures</li>
-                    <li className="text-base">• Set up webhooks with stable subdomains for consistent URLs</li>
+                    <li className="text-base">
+                      • Use QR codes for mobile testing:{" "}
+                      <code className="bg-background px-2 py-1 rounded text-sm">
+                        --qr
+                      </code>
+                    </li>
+                    <li className="text-base">
+                      • Monitor request logs in terminal for debugging
+                    </li>
+                    <li className="text-base">
+                      • Use port forwarding for microservice architectures
+                    </li>
+                    <li className="text-base">
+                      • Set up webhooks with stable subdomains for consistent
+                      URLs
+                    </li>
                   </ul>
                 </div>
               </div>
             </div>
           </section>
-
         </motion.div>
       </div>
 

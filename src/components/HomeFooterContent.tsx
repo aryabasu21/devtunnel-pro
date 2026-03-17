@@ -9,7 +9,7 @@ import {
   Coffee,
   Star,
   Users,
-  Activity
+  Activity,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -19,47 +19,53 @@ const HomeFooterContent = () => {
     activeTunnels: 0,
     developers: 0,
     requests: 0,
-    uptime: 99.9
+    uptime: 99.9,
   });
 
   // Initialize and update stats
   useEffect(() => {
     // Get stored stats from localStorage or initialize
-    const storedStats = localStorage.getItem('devportal_stats');
-    const initialStats = storedStats ? JSON.parse(storedStats) : {
-      activeTunnels: 12,
-      developers: 8,
-      requests: 450,
-      uptime: 99.9,
-      lastUpdate: Date.now()
-    };
+    const storedStats = localStorage.getItem("devportal_stats");
+    const initialStats = storedStats
+      ? JSON.parse(storedStats)
+      : {
+          activeTunnels: 12,
+          developers: 8,
+          requests: 450,
+          uptime: 99.9,
+          lastUpdate: Date.now(),
+        };
 
     // Simulate organic growth since last visit
-    const timeSinceLastUpdate = Date.now() - (initialStats.lastUpdate || Date.now());
+    const timeSinceLastUpdate =
+      Date.now() - (initialStats.lastUpdate || Date.now());
     const hoursSince = Math.floor(timeSinceLastUpdate / (1000 * 60 * 60));
 
     const updatedStats = {
       activeTunnels: initialStats.activeTunnels + Math.floor(hoursSince * 0.1),
       developers: initialStats.developers + Math.floor(hoursSince * 0.05),
       requests: initialStats.requests + Math.floor(hoursSince * 25),
-      uptime: initialStats.uptime
+      uptime: initialStats.uptime,
     };
 
     setStats(updatedStats);
 
     // Save updated stats
-    localStorage.setItem('devportal_stats', JSON.stringify({
-      ...updatedStats,
-      lastUpdate: Date.now()
-    }));
+    localStorage.setItem(
+      "devportal_stats",
+      JSON.stringify({
+        ...updatedStats,
+        lastUpdate: Date.now(),
+      }),
+    );
 
     // Update stats periodically (simulate real-time growth)
     const interval = setInterval(() => {
-      setStats(prev => ({
+      setStats((prev) => ({
         activeTunnels: prev.activeTunnels + (Math.random() > 0.7 ? 1 : 0),
         developers: prev.developers + (Math.random() > 0.9 ? 1 : 0),
         requests: prev.requests + Math.floor(Math.random() * 5 + 2),
-        uptime: prev.uptime
+        uptime: prev.uptime,
       }));
     }, 30000); // Update every 30 seconds
 
@@ -68,10 +74,13 @@ const HomeFooterContent = () => {
 
   // Update localStorage when stats change
   useEffect(() => {
-    localStorage.setItem('devportal_stats', JSON.stringify({
-      ...stats,
-      lastUpdate: Date.now()
-    }));
+    localStorage.setItem(
+      "devportal_stats",
+      JSON.stringify({
+        ...stats,
+        lastUpdate: Date.now(),
+      }),
+    );
   }, [stats]);
 
   const quickLinks = [
@@ -86,15 +95,33 @@ const HomeFooterContent = () => {
   ];
 
   const displayStats = [
-    { label: "Active Tunnels", value: `${stats.activeTunnels.toLocaleString()}+`, icon: Activity, color: "text-success" },
-    { label: "Developers", value: `${stats.developers.toLocaleString()}+`, icon: Users, color: "text-primary" },
+    {
+      label: "Active Tunnels",
+      value: `${stats.activeTunnels.toLocaleString()}+`,
+      icon: Activity,
+      color: "text-success",
+    },
+    {
+      label: "Developers",
+      value: `${stats.developers.toLocaleString()}+`,
+      icon: Users,
+      color: "text-primary",
+    },
     {
       label: "Requests Handled",
-      value: stats.requests >= 1000 ? `${Math.floor(stats.requests / 1000)}K+` : `${stats.requests.toLocaleString()}+`,
+      value:
+        stats.requests >= 1000
+          ? `${Math.floor(stats.requests / 1000)}K+`
+          : `${stats.requests.toLocaleString()}+`,
       icon: Zap,
-      color: "text-warning"
+      color: "text-warning",
     },
-    { label: "Uptime", value: `${stats.uptime}%`, icon: Star, color: "text-yellow-500" },
+    {
+      label: "Uptime",
+      value: `${stats.uptime}%`,
+      icon: Star,
+      color: "text-yellow-500",
+    },
   ];
 
   return (
@@ -127,7 +154,9 @@ const HomeFooterContent = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-surface border border-border group-hover:border-primary/50 transition-colors mb-3">
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
               </div>
-              <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
+              <div className="text-2xl font-bold text-foreground mb-1">
+                {stat.value}
+              </div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
             </motion.div>
           ))}
@@ -145,13 +174,15 @@ const HomeFooterContent = () => {
           >
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                <span className="text-sm font-bold text-primary-foreground font-mono">D</span>
+                <span className="text-sm font-bold text-primary-foreground font-mono">
+                  D
+                </span>
               </div>
               <span className="text-lg font-bold">DevPortal</span>
             </div>
             <p className="text-base text-muted-foreground mb-4 leading-relaxed max-w-md">
-              The fastest way to share your localhost with the world. Built with passion,
-              designed for developers. Zero config, maximum speed. ⚡
+              The fastest way to share your localhost with the world. Built with
+              passion, designed for developers. Zero config, maximum speed. ⚡
             </p>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <span>Made with</span>

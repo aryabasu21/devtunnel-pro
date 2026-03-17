@@ -1,13 +1,17 @@
-import chalk from 'chalk';
-import ora from 'ora';
-import * as http from 'http';
-import { TunnelClient, TunnelInfo } from '../utils/tunnelClient';
-import { addTunnel, getTunnels, TunnelInfo as StoredTunnel } from '../utils/tunnels';
-import { getDeviceId } from '../utils/device';
-import { getConfig } from '../utils/config';
+import chalk from "chalk";
+import ora from "ora";
+import * as http from "http";
+import { TunnelClient, TunnelInfo } from "../utils/tunnelClient";
+import {
+  addTunnel,
+  getTunnels,
+  TunnelInfo as StoredTunnel,
+} from "../utils/tunnels";
+import { getDeviceId } from "../utils/device";
+import { getConfig } from "../utils/config";
 
 // @ts-ignore - qrcode-terminal doesn't have types
-import * as qrcode from 'qrcode-terminal';
+import * as qrcode from "qrcode-terminal";
 
 interface StartOptions {
   subdomain?: string;
@@ -19,25 +23,36 @@ interface StartOptions {
   forward?: string; // Port forwarding format: "remote:local" e.g., "8080:3000"
 }
 
-export async function startTunnel(port: number, options: StartOptions): Promise<void> {
-  const spinner = ora('Connecting to DevPortal...').start();
+export async function startTunnel(
+  port: number,
+  options: StartOptions,
+): Promise<void> {
+  const spinner = ora("Connecting to DevPortal...").start();
 
   // Parse port forwarding if provided
   let localPort = port;
   let remotePort = port;
 
   if (options.forward) {
-    const [remote, local] = options.forward.split(':');
+    const [remote, local] = options.forward.split(":");
     if (!remote || !local) {
-      spinner.fail(chalk.red('Invalid port forwarding format. Use: --forward <remote>:<local>'));
-      console.log(chalk.gray('Example: --forward 8080:3000 (forwards remote port 8080 to local port 3000)'));
+      spinner.fail(
+        chalk.red(
+          "Invalid port forwarding format. Use: --forward <remote>:<local>",
+        ),
+      );
+      console.log(
+        chalk.gray(
+          "Example: --forward 8080:3000 (forwards remote port 8080 to local port 3000)",
+        ),
+      );
       process.exit(1);
     }
     remotePort = parseInt(remote);
     localPort = parseInt(local);
 
     if (isNaN(remotePort) || isNaN(localPort)) {
-      spinner.fail(chalk.red('Invalid port numbers in forwarding'));
+      spinner.fail(chalk.red("Invalid port numbers in forwarding"));
       process.exit(1);
     }
 
@@ -45,23 +60,31 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
   }
 
   // Check for existing tunnels on the same local port
-  const existingTunnels = getTunnels().filter(t => t.status === 'live' && t.localPort === localPort);
+  const existingTunnels = getTunnels().filter(
+    (t) => t.status === "live" && t.localPort === localPort,
+  );
 
   if (existingTunnels.length > 0) {
     spinner.fail(chalk.red(`Port ${localPort} is already being tunneled`));
     console.log();
-    console.log(chalk.yellow('Existing tunnel:'));
-    existingTunnels.forEach(tunnel => {
+    console.log(chalk.yellow("Existing tunnel:"));
+    existingTunnels.forEach((tunnel) => {
       console.log(chalk.gray(`  ID: ${tunnel.id}`));
       console.log(chalk.gray(`  Name: ${tunnel.name}`));
       console.log(chalk.gray(`  URL: ${tunnel.url}`));
       console.log(chalk.gray(`  Local Port: ${tunnel.localPort}`));
     });
     console.log();
-    console.log(chalk.gray('Options:'));
-    console.log(chalk.gray('  1. Stop the existing tunnel: ') + chalk.cyan(`devportal-tunnel stop ${existingTunnels[0].id}`));
-    console.log(chalk.gray('  2. Use a different local port'));
-    console.log(chalk.gray('  3. Use port forwarding: ') + chalk.cyan(`--forward ${remotePort}:<different-port>`));
+    console.log(chalk.gray("Options:"));
+    console.log(
+      chalk.gray("  1. Stop the existing tunnel: ") +
+        chalk.cyan(`devportal-tunnel stop ${existingTunnels[0].id}`),
+    );
+    console.log(chalk.gray("  2. Use a different local port"));
+    console.log(
+      chalk.gray("  3. Use port forwarding: ") +
+        chalk.cyan(`--forward ${remotePort}:<different-port>`),
+    );
     process.exit(1);
   }
 
@@ -70,12 +93,16 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
   if (!isPortOpen) {
     spinner.fail(chalk.red(`No server running on port ${localPort}`));
     console.log();
-    console.log(chalk.gray('  Make sure your local server is running first:'));
-    console.log(chalk.gray('  Example: npm run dev'));
+    console.log(chalk.gray("  Make sure your local server is running first:"));
+    console.log(chalk.gray("  Example: npm run dev"));
     console.log();
-    console.log(chalk.gray('  Then run:'));
+    console.log(chalk.gray("  Then run:"));
     if (options.forward) {
-      console.log(chalk.cyan(`  devportal-tunnel start ${port} --forward ${options.forward}`));
+      console.log(
+        chalk.cyan(
+          `  devportal-tunnel start ${port} --forward ${options.forward}`,
+        ),
+      );
     } else {
       console.log(chalk.cyan(`  devportal-tunnel start ${port}`));
     }
@@ -88,7 +115,7 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
 
   // Use local simulation if no server configured or --local flag
   if (options.local || !config.serverUrl) {
-    spinner.text = 'Starting local simulation mode...';
+    spinner.text = "Starting local simulation mode...";
     await startSimulatedTunnel(localPort, remotePort, options, spinner);
     return;
   }
@@ -108,69 +135,87 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
     });
 
     // Handle events
-    client.on('request', ({ method, path }) => {
+    client.on("request", ({ method, path }) => {
       const methodColor = getMethodColor(method);
       const timestamp = new Date().toLocaleTimeString();
-      process.stdout.write(chalk.gray(timestamp) + ' ');
+      process.stdout.write(chalk.gray(timestamp) + " ");
       process.stdout.write(methodColor(method.padEnd(7)));
-      process.stdout.write(chalk.white(path) + ' ');
+      process.stdout.write(chalk.white(path) + " ");
     });
 
-    client.on('response', ({ status }) => {
-      const statusColor = status < 300 ? chalk.green : status < 400 ? chalk.yellow : chalk.red;
+    client.on("response", ({ status }) => {
+      const statusColor =
+        status < 300 ? chalk.green : status < 400 ? chalk.yellow : chalk.red;
       console.log(statusColor(status.toString()));
     });
 
-    client.on('error', (error) => {
-      console.error(chalk.red('Error:'), error.message);
+    client.on("error", (error) => {
+      console.error(chalk.red("Error:"), error.message);
     });
 
-    client.on('disconnected', () => {
-      console.log(chalk.yellow('\nConnection lost. Reconnecting...'));
+    client.on("disconnected", () => {
+      console.log(chalk.yellow("\nConnection lost. Reconnecting..."));
     });
 
-    spinner.text = 'Establishing tunnel...';
+    spinner.text = "Establishing tunnel...";
 
     const tunnelInfo = await client.connect();
 
-    spinner.succeed(chalk.green('Tunnel established'));
+    spinner.succeed(chalk.green("Tunnel established"));
     console.log();
 
     // Display tunnel info
-    console.log(chalk.gray('  Local server: '), chalk.white(`http://localhost:${localPort}`));
+    console.log(
+      chalk.gray("  Local server: "),
+      chalk.white(`http://localhost:${localPort}`),
+    );
 
     if (options.forward) {
-      console.log(chalk.gray('  Port forward: '), chalk.white(`Remote ${remotePort} → Local ${localPort}`));
+      console.log(
+        chalk.gray("  Port forward: "),
+        chalk.white(`Remote ${remotePort} → Local ${localPort}`),
+      );
     }
 
-    console.log(chalk.gray('  Public URL:   '), chalk.cyan.underline(tunnelInfo.url));
-    console.log(chalk.gray('  Tunnel ID:    '), chalk.white(tunnelInfo.id));
+    console.log(
+      chalk.gray("  Public URL:   "),
+      chalk.cyan.underline(tunnelInfo.url),
+    );
+    console.log(chalk.gray("  Tunnel ID:    "), chalk.white(tunnelInfo.id));
 
     if (options.password) {
-      console.log(chalk.gray('  Password:     '), chalk.yellow('Protected'));
+      console.log(chalk.gray("  Password:     "), chalk.yellow("Protected"));
     }
 
     if (tunnelInfo.expiresAt) {
-      const expiresIn = Math.round((new Date(tunnelInfo.expiresAt).getTime() - Date.now()) / 60000);
-      console.log(chalk.gray('  Expires in:   '), chalk.yellow(`${expiresIn} minutes`));
+      const expiresIn = Math.round(
+        (new Date(tunnelInfo.expiresAt).getTime() - Date.now()) / 60000,
+      );
+      console.log(
+        chalk.gray("  Expires in:   "),
+        chalk.yellow(`${expiresIn} minutes`),
+      );
     }
 
     console.log();
-    console.log(chalk.gray('  Dashboard:    '), chalk.underline(`${config.frontendUrl}/dashboard/${deviceId}`));
+    console.log(
+      chalk.gray("  Dashboard:    "),
+      chalk.underline(`${config.frontendUrl}/dashboard/${deviceId}`),
+    );
     console.log();
 
     // Show QR code if requested
     if (options.qr) {
-      console.log(chalk.gray('  Scan to open on mobile:'));
+      console.log(chalk.gray("  Scan to open on mobile:"));
       console.log();
       try {
         // Force flush before QR generation
-        process.stdout.write('');
+        process.stdout.write("");
         qrcode.generate(tunnelInfo.url, { small: true });
         // Force flush after QR generation
-        process.stdout.write('');
+        process.stdout.write("");
       } catch (error: any) {
-        console.log(chalk.red('  Failed to generate QR code:'), error.message);
+        console.log(chalk.red("  Failed to generate QR code:"), error.message);
       }
       console.log();
     }
@@ -181,40 +226,48 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
       name: tunnelInfo.name,
       url: tunnelInfo.url,
       localPort,
-      status: 'live',
+      status: "live",
       createdAt: new Date().toISOString(),
       pid: process.pid,
     };
     addTunnel(storedTunnel);
 
-    console.log(chalk.gray('  Forwarding requests... (Press Ctrl+C to stop)'));
+    console.log(chalk.gray("  Forwarding requests... (Press Ctrl+C to stop)"));
     console.log();
 
     // Handle shutdown
-    process.on('SIGINT', () => {
+    process.on("SIGINT", () => {
       console.log();
-      console.log(chalk.yellow('Stopping tunnel...'));
+      console.log(chalk.yellow("Stopping tunnel..."));
       client.stop();
       process.exit(0);
     });
 
     // Keep process alive
     await new Promise(() => {});
-
   } catch (error: any) {
-    spinner.fail(chalk.red('Failed to connect'));
+    spinner.fail(chalk.red("Failed to connect"));
     console.log();
-    console.log(chalk.red('Error:'), error.message);
+    console.log(chalk.red("Error:"), error.message);
     console.log();
-    console.log(chalk.gray('Troubleshooting:'));
-    console.log(chalk.gray('  1. Check your internet connection'));
-    console.log(chalk.gray('  2. Verify the server URL in ~/.devportal/config.json'));
-    console.log(chalk.gray('  3. Try running with --local for simulation mode'));
+    console.log(chalk.gray("Troubleshooting:"));
+    console.log(chalk.gray("  1. Check your internet connection"));
+    console.log(
+      chalk.gray("  2. Verify the server URL in ~/.devportal/config.json"),
+    );
+    console.log(
+      chalk.gray("  3. Try running with --local for simulation mode"),
+    );
     process.exit(1);
   }
 }
 
-async function startSimulatedTunnel(localPort: number, remotePort: number, options: StartOptions, spinner: ora.Ora): Promise<void> {
+async function startSimulatedTunnel(
+  localPort: number,
+  remotePort: number,
+  options: StartOptions,
+  spinner: ora.Ora,
+): Promise<void> {
   // Simulate connection delay
   await sleep(1000);
 
@@ -222,45 +275,51 @@ async function startSimulatedTunnel(localPort: number, remotePort: number, optio
   const tunnelId = `t-${Date.now().toString(36)}`;
   const url = `https://${name}.devportal.local`;
 
-  spinner.succeed(chalk.green('Tunnel established (simulation mode)'));
+  spinner.succeed(chalk.green("Tunnel established (simulation mode)"));
   console.log();
 
-  console.log(chalk.gray('  Local server: '), chalk.white(`http://localhost:${localPort}`));
+  console.log(
+    chalk.gray("  Local server: "),
+    chalk.white(`http://localhost:${localPort}`),
+  );
 
   if (options.forward) {
-    console.log(chalk.gray('  Port forward: '), chalk.white(`Remote ${remotePort} → Local ${localPort}`));
+    console.log(
+      chalk.gray("  Port forward: "),
+      chalk.white(`Remote ${remotePort} → Local ${localPort}`),
+    );
   }
 
-  console.log(chalk.gray('  Public URL:   '), chalk.cyan.underline(url));
-  console.log(chalk.gray('  Tunnel ID:    '), chalk.white(tunnelId));
+  console.log(chalk.gray("  Public URL:   "), chalk.cyan.underline(url));
+  console.log(chalk.gray("  Tunnel ID:    "), chalk.white(tunnelId));
   console.log();
-  console.log(chalk.yellow('  ⚠ Running in simulation mode'));
-  console.log(chalk.gray('  Configure server URL to enable real tunneling'));
+  console.log(chalk.yellow("  ⚠ Running in simulation mode"));
+  console.log(chalk.gray("  Configure server URL to enable real tunneling"));
   console.log();
 
   if (options.qr) {
-    console.log(chalk.gray('  Scan to open on mobile:'));
+    console.log(chalk.gray("  Scan to open on mobile:"));
     console.log();
     try {
       // Force flush before QR generation
-      process.stdout.write('');
+      process.stdout.write("");
       qrcode.generate(url, { small: true });
       // Force flush after QR generation
-      process.stdout.write('');
+      process.stdout.write("");
     } catch (error: any) {
-      console.log(chalk.red('  Failed to generate QR code:'), error.message);
+      console.log(chalk.red("  Failed to generate QR code:"), error.message);
     }
     console.log();
   }
 
-  console.log(chalk.gray('  Simulating requests... (Press Ctrl+C to stop)'));
+  console.log(chalk.gray("  Simulating requests... (Press Ctrl+C to stop)"));
   console.log();
 
   simulateRequests(localPort);
 
-  process.on('SIGINT', () => {
+  process.on("SIGINT", () => {
     console.log();
-    console.log(chalk.yellow('Tunnel stopped'));
+    console.log(chalk.yellow("Tunnel stopped"));
     process.exit(0);
   });
 
@@ -268,8 +327,8 @@ async function startSimulatedTunnel(localPort: number, remotePort: number, optio
 }
 
 function simulateRequests(port: number): void {
-  const methods = ['GET', 'POST', 'PUT', 'DELETE'];
-  const paths = ['/api/users', '/api/auth', '/api/data', '/webhook', '/health'];
+  const methods = ["GET", "POST", "PUT", "DELETE"];
+  const paths = ["/api/users", "/api/auth", "/api/data", "/webhook", "/health"];
   const statuses = [200, 200, 200, 201, 400, 401, 404];
 
   const logRequest = () => {
@@ -280,14 +339,15 @@ function simulateRequests(port: number): void {
 
     const timestamp = new Date().toLocaleTimeString();
     const methodColor = getMethodColor(method);
-    const statusColor = status < 300 ? chalk.green : status < 400 ? chalk.yellow : chalk.red;
+    const statusColor =
+      status < 300 ? chalk.green : status < 400 ? chalk.yellow : chalk.red;
 
     console.log(
       chalk.gray(timestamp),
       methodColor(method.padEnd(7)),
       chalk.white(path.padEnd(20)),
       statusColor(status.toString()),
-      chalk.gray(`${duration}ms`)
+      chalk.gray(`${duration}ms`),
     );
 
     const nextInterval = Math.floor(Math.random() * 6000) + 2000;
@@ -310,11 +370,11 @@ function getMethodColor(method: string): chalk.Chalk {
 
 async function checkPort(port: number): Promise<boolean> {
   return new Promise((resolve) => {
-    const req = http.request({ host: 'localhost', port, timeout: 1000 }, () => {
+    const req = http.request({ host: "localhost", port, timeout: 1000 }, () => {
       resolve(true);
     });
-    req.on('error', () => resolve(false));
-    req.on('timeout', () => resolve(false));
+    req.on("error", () => resolve(false));
+    req.on("timeout", () => resolve(false));
     req.end();
   });
 }
@@ -323,8 +383,30 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const adjectives = ['purple', 'cosmic', 'hidden', 'crystal', 'silent', 'golden', 'frozen', 'blazing', 'lunar', 'neon'];
-const nouns = ['horizon', 'lake', 'forest', 'ocean', 'canyon', 'river', 'meadow', 'summit', 'valley', 'storm'];
+const adjectives = [
+  "purple",
+  "cosmic",
+  "hidden",
+  "crystal",
+  "silent",
+  "golden",
+  "frozen",
+  "blazing",
+  "lunar",
+  "neon",
+];
+const nouns = [
+  "horizon",
+  "lake",
+  "forest",
+  "ocean",
+  "canyon",
+  "river",
+  "meadow",
+  "summit",
+  "valley",
+  "storm",
+];
 
 function generateTunnelName(): string {
   const adj = adjectives[Math.floor(Math.random() * adjectives.length)];

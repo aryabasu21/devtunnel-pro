@@ -1,7 +1,17 @@
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Terminal, Zap, Shield, Globe, Code, Layers, ArrowRight, Copy, Check } from "lucide-react";
+import {
+  Terminal,
+  Zap,
+  Shield,
+  Globe,
+  Code,
+  Layers,
+  ArrowRight,
+  Copy,
+  Check,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface TerminalBlockProps {
@@ -10,14 +20,18 @@ interface TerminalBlockProps {
   showOutput?: boolean;
 }
 
-const TerminalBlock = ({ code, title = "terminal", showOutput = false }: TerminalBlockProps) => {
+const TerminalBlock = ({
+  code,
+  title = "terminal",
+  showOutput = false,
+}: TerminalBlockProps) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     const commandsOnly = code
       .split("\n")
-      .filter(line => line.startsWith("$") || line.startsWith("#"))
-      .map(line => line.replace(/^\$\s*/, "").replace(/^#.*$/, ""))
+      .filter((line) => line.startsWith("$") || line.startsWith("#"))
+      .map((line) => line.replace(/^\$\s*/, "").replace(/^#.*$/, ""))
       .filter(Boolean)
       .join("\n");
     navigator.clipboard.writeText(commandsOnly || code);
@@ -35,24 +49,61 @@ const TerminalBlock = ({ code, title = "terminal", showOutput = false }: Termina
       );
     }
     if (line.startsWith("#")) {
-      return <span key={index} className="text-zinc-500">{line}</span>;
+      return (
+        <span key={index} className="text-zinc-500">
+          {line}
+        </span>
+      );
     }
     if (line.includes("→") || line.includes("✓") || line.includes("active")) {
-      return <span key={index} className="text-primary">{line}</span>;
+      return (
+        <span key={index} className="text-primary">
+          {line}
+        </span>
+      );
     }
     if (line.includes("GET") || line.includes("200")) {
-      return <span key={index} className="text-success">{line}</span>;
+      return (
+        <span key={index} className="text-success">
+          {line}
+        </span>
+      );
     }
-    if (line.includes("POST") || line.includes("401") || line.includes("Warning")) {
-      return <span key={index} className="text-warning">{line}</span>;
+    if (
+      line.includes("POST") ||
+      line.includes("401") ||
+      line.includes("Warning")
+    ) {
+      return (
+        <span key={index} className="text-warning">
+          {line}
+        </span>
+      );
     }
     if (line.includes("Error") || line.includes("DELETE")) {
-      return <span key={index} className="text-destructive">{line}</span>;
+      return (
+        <span key={index} className="text-destructive">
+          {line}
+        </span>
+      );
     }
-    if (line.startsWith("│") || line.startsWith("├") || line.startsWith("└") || line.startsWith("┌")) {
-      return <span key={index} className="text-zinc-500">{line}</span>;
+    if (
+      line.startsWith("│") ||
+      line.startsWith("├") ||
+      line.startsWith("└") ||
+      line.startsWith("┌")
+    ) {
+      return (
+        <span key={index} className="text-zinc-500">
+          {line}
+        </span>
+      );
     }
-    return <span key={index} className="text-zinc-400">{line}</span>;
+    return (
+      <span key={index} className="text-zinc-400">
+        {line}
+      </span>
+    );
   };
 
   return (
@@ -73,7 +124,11 @@ const TerminalBlock = ({ code, title = "terminal", showOutput = false }: Termina
           className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-zinc-800"
           title="Copy commands"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? (
+            <Check className="w-3.5 h-3.5 text-success" />
+          ) : (
+            <Copy className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
       <pre className="bg-gradient-to-b from-zinc-950 to-black p-4 text-xs sm:text-sm font-mono leading-6 overflow-x-auto">
@@ -94,12 +149,12 @@ const Docs = () => {
     const handleScroll = () => {
       setShowScroll(window.scrollY > 200);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -111,17 +166,26 @@ const Docs = () => {
             <span className="w-1.5 h-1.5 rounded-full bg-primary" />
             v1.0.0
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Documentation</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+            Documentation
+          </h1>
           <p className="text-muted-foreground max-w-2xl text-lg">
-            Everything you need to create tunnels, inspect traffic, replay requests, and debug APIs with DevPortal.
+            Everything you need to create tunnels, inspect traffic, replay
+            requests, and debug APIs with DevPortal.
           </p>
         </div>
 
         <Tabs defaultValue="quickstart" className="space-y-8">
           <TabsList className="grid w-full grid-cols-3 h-auto">
-            <TabsTrigger value="quickstart" className="text-xs sm:text-sm py-2">Quick Start</TabsTrigger>
-            <TabsTrigger value="cli" className="text-xs sm:text-sm py-2">CLI Reference</TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-xs sm:text-sm py-2">Dashboard</TabsTrigger>
+            <TabsTrigger value="quickstart" className="text-xs sm:text-sm py-2">
+              Quick Start
+            </TabsTrigger>
+            <TabsTrigger value="cli" className="text-xs sm:text-sm py-2">
+              CLI Reference
+            </TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-xs sm:text-sm py-2">
+              Dashboard
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="quickstart" className="space-y-8">
@@ -132,14 +196,25 @@ const Docs = () => {
               </h2>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">1</div>
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
+                    1
+                  </div>
                   <div className="flex-1">
                     <p className="font-medium mb-3">Install DevPortal CLI</p>
                     <Tabs defaultValue="mac" className="w-full">
                       <TabsList className="mb-3 h-8">
-                        <TabsTrigger value="mac" className="text-xs px-3 h-6">macOS</TabsTrigger>
-                        <TabsTrigger value="windows" className="text-xs px-3 h-6">Windows</TabsTrigger>
-                        <TabsTrigger value="linux" className="text-xs px-3 h-6">Linux</TabsTrigger>
+                        <TabsTrigger value="mac" className="text-xs px-3 h-6">
+                          macOS
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="windows"
+                          className="text-xs px-3 h-6"
+                        >
+                          Windows
+                        </TabsTrigger>
+                        <TabsTrigger value="linux" className="text-xs px-3 h-6">
+                          Linux
+                        </TabsTrigger>
                       </TabsList>
                       <TabsContent value="mac" className="mt-0">
                         <TerminalBlock
@@ -184,9 +259,13 @@ $ npx devportal-tunnel start 3000`}
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">2</div>
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
+                    2
+                  </div>
                   <div className="flex-1">
-                    <p className="font-medium mb-3">Start a tunnel for your local server</p>
+                    <p className="font-medium mb-3">
+                      Start a tunnel for your local server
+                    </p>
                     <TerminalBlock
                       code={`$ devportal-tunnel start 3000
 
@@ -197,9 +276,13 @@ Dashboard     → Open browser to inspect traffic`}
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">3</div>
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
+                    3
+                  </div>
                   <div className="flex-1">
-                    <p className="font-medium mb-3">Watch incoming requests in real-time</p>
+                    <p className="font-medium mb-3">
+                      Watch incoming requests in real-time
+                    </p>
                     <TerminalBlock
                       code={`GET  /api/users          200   85ms
 POST /api/login          401   43ms
@@ -223,7 +306,10 @@ POST /api/webhook        200   23ms`}
                       <Terminal className="w-5 h-5 text-primary" />
                     </div>
                     <h3 className="font-medium mb-2">Local Server</h3>
-                    <p className="text-sm text-muted-foreground">Your app runs on localhost. DevPortal CLI connects and creates a secure tunnel.</p>
+                    <p className="text-sm text-muted-foreground">
+                      Your app runs on localhost. DevPortal CLI connects and
+                      creates a secure tunnel.
+                    </p>
                   </CardContent>
                 </Card>
                 <Card className="border-border/50">
@@ -232,7 +318,10 @@ POST /api/webhook        200   23ms`}
                       <Layers className="w-5 h-5 text-primary" />
                     </div>
                     <h3 className="font-medium mb-2">Edge Network</h3>
-                    <p className="text-sm text-muted-foreground">Traffic routes through our global edge for low latency and high availability.</p>
+                    <p className="text-sm text-muted-foreground">
+                      Traffic routes through our global edge for low latency and
+                      high availability.
+                    </p>
                   </CardContent>
                 </Card>
                 <Card className="border-border/50">
@@ -241,7 +330,10 @@ POST /api/webhook        200   23ms`}
                       <Globe className="w-5 h-5 text-primary" />
                     </div>
                     <h3 className="font-medium mb-2">Public URL</h3>
-                    <p className="text-sm text-muted-foreground">Get a unique HTTPS URL anyone can access from anywhere in the world.</p>
+                    <p className="text-sm text-muted-foreground">
+                      Get a unique HTTPS URL anyone can access from anywhere in
+                      the world.
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -257,10 +349,14 @@ POST /api/webhook        200   23ms`}
               <div className="space-y-6">
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-mono">devportal &lt;port&gt;</CardTitle>
+                    <CardTitle className="text-base font-mono">
+                      devportal &lt;port&gt;
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">Start a tunnel to expose your local port</p>
+                    <p className="text-sm text-muted-foreground">
+                      Start a tunnel to expose your local port
+                    </p>
                     <TerminalBlock
                       title="devportal-tunnel"
                       code={`# Expose port 3000
@@ -277,10 +373,14 @@ $ devportal-tunnel start 3000 --password secret123`}
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-mono">devportal-tunnel ls</CardTitle>
+                    <CardTitle className="text-base font-mono">
+                      devportal-tunnel ls
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">List all active tunnels</p>
+                    <p className="text-sm text-muted-foreground">
+                      List all active tunnels
+                    </p>
                     <TerminalBlock
                       title="devportal-tunnel ls"
                       code={`$ devportal-tunnel ls
@@ -297,10 +397,14 @@ $ devportal-tunnel start 3000 --password secret123`}
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-mono">devportal-tunnel stop &lt;id&gt;</CardTitle>
+                    <CardTitle className="text-base font-mono">
+                      devportal-tunnel stop &lt;id&gt;
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">Stop a specific tunnel or all tunnels</p>
+                    <p className="text-sm text-muted-foreground">
+                      Stop a specific tunnel or all tunnels
+                    </p>
                     <TerminalBlock
                       title="devportal-tunnel stop"
                       code={`# Stop specific tunnel
@@ -318,10 +422,14 @@ $ devportal-tunnel stop --all
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-mono">devportal-tunnel replay &lt;request-id&gt;</CardTitle>
+                    <CardTitle className="text-base font-mono">
+                      devportal-tunnel replay &lt;request-id&gt;
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">Replay a captured request from the log</p>
+                    <p className="text-sm text-muted-foreground">
+                      Replay a captured request from the log
+                    </p>
                     <TerminalBlock
                       title="devportal-tunnel replay"
                       code={`# Replay request
@@ -351,25 +459,53 @@ $ devportal-tunnel replay req-abc123 --body '{"updated": true}'`}
               <div className="grid gap-4 sm:grid-cols-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Tunnel Management</CardTitle>
+                    <CardTitle className="text-base">
+                      Tunnel Management
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />View all active tunnels at a glance</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Copy public URLs with one click</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Generate QR codes for mobile testing</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Stop tunnels when debugging is done</p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      View all active tunnels at a glance
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Copy public URLs with one click
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Generate QR codes for mobile testing
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Stop tunnels when debugging is done
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Request Inspector</CardTitle>
+                    <CardTitle className="text-base">
+                      Request Inspector
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />View headers, params, and body in real-time</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Inspect response payloads and status codes</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Filter requests by method or status</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Search through request history</p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      View headers, params, and body in real-time
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Inspect response payloads and status codes
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Filter requests by method or status
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Search through request history
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -378,22 +514,48 @@ $ devportal-tunnel replay req-abc123 --body '{"updated": true}'`}
                     <CardTitle className="text-base">Request Replay</CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Replay any captured request</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Edit headers and body before replay</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Compare original vs replayed responses</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Debug edge cases quickly</p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Replay any captured request
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Edit headers and body before replay
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Compare original vs replayed responses
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Debug edge cases quickly
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Device Management</CardTitle>
+                    <CardTitle className="text-base">
+                      Device Management
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Unique device isolation for multi-user security</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Copy device ID for CLI synchronization</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Navigate seamlessly between web and terminal</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Persistent session management</p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Unique device isolation for multi-user security
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Copy device ID for CLI synchronization
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Navigate seamlessly between web and terminal
+                    </p>
+                    <p>
+                      <ArrowRight className="w-3 h-3 inline mr-2" />
+                      Persistent session management
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -407,7 +569,10 @@ $ devportal-tunnel replay req-abc123 --body '{"updated": true}'`}
               <Card>
                 <CardContent className="pt-6">
                   <p className="text-sm text-muted-foreground mb-4">
-                    DevPortal uses device-based identification instead of traditional login. Each device gets a unique ID stored locally, giving you instant access without account management.
+                    DevPortal uses device-based identification instead of
+                    traditional login. Each device gets a unique ID stored
+                    locally, giving you instant access without account
+                    management.
                   </p>
                   <TerminalBlock
                     title="device info"
@@ -434,7 +599,7 @@ Scope:     This browser only
           ↑
         </button>
       )}
-    <Footer />
+      <Footer />
     </div>
   );
 };

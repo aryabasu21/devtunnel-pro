@@ -22,7 +22,7 @@ const commands = [
   {
     cmd: "devportal-tunnel start <port> --password <pass>",
     desc: "Password-protect the tunnel so only authorized users can access",
-    example: 'devportal-tunnel start 3000 --password secret123',
+    example: "devportal-tunnel start 3000 --password secret123",
   },
   {
     cmd: "devportal-tunnel start <port> --subdomain <name>",
@@ -78,63 +78,70 @@ const CLICommands = () => {
   };
 
   return (
-  <section className="py-20 sm:py-24 px-4 sm:px-6 border-t border-border">
-    <div className="max-w-4xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="text-center mb-12 sm:mb-16"
-      >
-        <div className="inline-flex items-center gap-2 mb-4 text-primary">
-          <Terminal className="w-5 h-5" />
-          <span className="text-xs font-semibold uppercase tracking-wider">CLI Reference</span>
-        </div>
-        <h2 className="text-2xl sm:text-3xl font-bold mb-3">All available commands</h2>
-        <p className="text-muted-foreground text-sm sm:text-base max-w-lg mx-auto">
-          Everything you can do from the terminal. One tool to expose, debug, and share.
-        </p>
-      </motion.div>
-      <div className="space-y-2">
-        {commands.map((c, i) => (
-          <motion.div
-            key={c.cmd}
-            initial={{ opacity: 0, x: -8 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.03 }}
-            className="surface-card p-3 sm:p-4 hover:border-primary/20 transition-colors group"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
-              <div className="flex items-center gap-2 sm:w-72 shrink-0">
-                <code className="text-xs sm:text-sm font-mono text-primary">
-                  $ {c.cmd}
-                </code>
-                <button
-                  onClick={() => copyCommand(c.example)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
-                  title="Copy example command"
-                >
-                  <Copy className="w-3 h-3 text-muted-foreground hover:text-foreground" />
-                </button>
+    <section className="py-20 sm:py-24 px-4 sm:px-6 border-t border-border">
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12 sm:mb-16"
+        >
+          <div className="inline-flex items-center gap-2 mb-4 text-primary">
+            <Terminal className="w-5 h-5" />
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              CLI Reference
+            </span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+            All available commands
+          </h2>
+          <p className="text-muted-foreground text-sm sm:text-base max-w-lg mx-auto">
+            Everything you can do from the terminal. One tool to expose, debug,
+            and share.
+          </p>
+        </motion.div>
+        <div className="space-y-2">
+          {commands.map((c, i) => (
+            <motion.div
+              key={c.cmd}
+              initial={{ opacity: 0, x: -8 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.03 }}
+              className="surface-card p-3 sm:p-4 hover:border-primary/20 transition-colors group"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
+                <div className="flex items-center gap-2 sm:w-72 shrink-0">
+                  <code className="text-xs sm:text-sm font-mono text-primary">
+                    $ {c.cmd}
+                  </code>
+                  <button
+                    onClick={() => copyCommand(c.example)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                    title="Copy example command"
+                  >
+                    <Copy className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                  </button>
+                </div>
+                <span className="text-xs sm:text-sm text-muted-foreground flex-1">
+                  {c.desc}
+                </span>
               </div>
-              <span className="text-xs sm:text-sm text-muted-foreground flex-1">{c.desc}</span>
-            </div>
-            <div className="mt-2 pl-0 sm:pl-72 sm:ml-4">
-              <code
-                className="text-[10px] sm:text-xs font-mono text-muted-foreground/60 cursor-pointer hover:text-muted-foreground transition-colors"
-                onClick={() => copyCommand(c.example)}
-                title="Click to copy example"
-              >
-                Example: {c.example}
-              </code>
-            </div>
-          </motion.div>
-        ))}
+              <div className="mt-2 pl-0 sm:pl-72 sm:ml-4">
+                <code
+                  className="text-[10px] sm:text-xs font-mono text-muted-foreground/60 cursor-pointer hover:text-muted-foreground transition-colors"
+                  onClick={() => copyCommand(c.example)}
+                  title="Click to copy example"
+                >
+                  Example: {c.example}
+                </code>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
 };
 
 export default CLICommands;

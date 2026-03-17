@@ -16,9 +16,22 @@ const Footer = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
-            <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="/status" className="hover:text-foreground transition-colors flex items-center gap-1">
+            <a
+              href="/privacy"
+              className="hover:text-foreground transition-colors"
+            >
+              Privacy
+            </a>
+            <a
+              href="/terms"
+              className="hover:text-foreground transition-colors"
+            >
+              Terms
+            </a>
+            <a
+              href="/status"
+              className="hover:text-foreground transition-colors flex items-center gap-1"
+            >
               <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
               Status
             </a>

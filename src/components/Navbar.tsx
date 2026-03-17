@@ -51,9 +51,14 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        <button onClick={() => navigate("/")} className="flex items-center gap-2">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2"
+        >
           <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-            <span className="text-xs font-bold text-primary-foreground font-mono">D</span>
+            <span className="text-xs font-bold text-primary-foreground font-mono">
+              D
+            </span>
           </div>
           <span className="font-semibold text-sm">DevPortal</span>
         </button>
@@ -100,7 +105,11 @@ const Navbar = () => {
           >
             Support
           </Button>
-          <Button size="sm" onClick={goToHome} className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={goToHome}
+            className="flex items-center gap-2"
+          >
             <Home className="w-4 h-4" />
             Homepage
           </Button>
@@ -122,7 +131,10 @@ const Navbar = () => {
             variant="ghost"
             size="sm"
             className={`justify-start ${getNavButtonClasses("/dashboard")}`}
-            onClick={() => { goToDashboard(); setMenuOpen(false); }}
+            onClick={() => {
+              goToDashboard();
+              setMenuOpen(false);
+            }}
           >
             Dashboard
           </Button>
@@ -130,7 +142,10 @@ const Navbar = () => {
             variant="ghost"
             size="sm"
             className={`justify-start ${getNavButtonClasses("/docs")}`}
-            onClick={() => { navigate("/docs"); setMenuOpen(false); }}
+            onClick={() => {
+              navigate("/docs");
+              setMenuOpen(false);
+            }}
           >
             Docs
           </Button>
@@ -138,7 +153,10 @@ const Navbar = () => {
             variant="ghost"
             size="sm"
             className={`justify-start ${getNavButtonClasses("/api")}`}
-            onClick={() => { navigate("/api"); setMenuOpen(false); }}
+            onClick={() => {
+              navigate("/api");
+              setMenuOpen(false);
+            }}
           >
             API Reference
           </Button>
@@ -146,7 +164,10 @@ const Navbar = () => {
             variant="ghost"
             size="sm"
             className={`justify-start ${getNavButtonClasses("/examples")}`}
-            onClick={() => { navigate("/examples"); setMenuOpen(false); }}
+            onClick={() => {
+              navigate("/examples");
+              setMenuOpen(false);
+            }}
           >
             Examples
           </Button>
@@ -154,14 +175,20 @@ const Navbar = () => {
             variant="ghost"
             size="sm"
             className={`justify-start ${getNavButtonClasses("/support")}`}
-            onClick={() => { navigate("/support"); setMenuOpen(false); }}
+            onClick={() => {
+              navigate("/support");
+              setMenuOpen(false);
+            }}
           >
             Support
           </Button>
           <Button
             size="sm"
             className="mt-2 justify-start flex items-center gap-2"
-            onClick={() => { goToHome(); setMenuOpen(false); }}
+            onClick={() => {
+              goToHome();
+              setMenuOpen(false);
+            }}
           >
             <Home className="w-4 h-4" />
             Homepage

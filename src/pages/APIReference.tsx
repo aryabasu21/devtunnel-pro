@@ -31,7 +31,7 @@ const APIReference = () => {
     "status": "live",
     "createdAt": "2026-03-18T10:30:00Z"
   }
-]`
+]`,
     },
     {
       method: "GET",
@@ -41,7 +41,7 @@ const APIReference = () => {
       response: `{
   "status": "ok",
   "tunnels": 42
-}`
+}`,
     },
     {
       method: "POST",
@@ -51,7 +51,7 @@ const APIReference = () => {
       response: `{
   "success": true,
   "message": "Tunnel stopped successfully"
-}`
+}`,
     },
     {
       method: "GET",
@@ -72,8 +72,8 @@ const APIReference = () => {
   "total": 156,
   "limit": 10,
   "offset": 0
-}`
-    }
+}`,
+    },
   ];
 
   const CLICommands = [
@@ -85,25 +85,23 @@ const APIReference = () => {
         "--password <pass> - Password protection",
         "--forward <remote:local> - Port forwarding",
         "--qr - Show QR code",
-        "--demo - 2-hour expiry"
-      ]
+        "--demo - 2-hour expiry",
+      ],
     },
     {
       command: "devportal-tunnel stop <id>",
       description: "Stop a specific tunnel",
-      options: [
-        "--all - Stop all tunnels"
-      ]
+      options: ["--all - Stop all tunnels"],
     },
     {
       command: "devportal-tunnel stop-all",
       description: "Stop all active tunnels at once",
-      options: []
+      options: [],
     },
     {
       command: "devportal-tunnel list",
       description: "List all active tunnels",
-      options: []
+      options: [],
     },
     {
       command: "devportal-tunnel port <action>",
@@ -111,14 +109,14 @@ const APIReference = () => {
       options: [
         "check <port> - Check port availability",
         "scan [start] - Scan for available ports",
-        "list - Show all tunneled ports"
-      ]
+        "list - Show all tunneled ports",
+      ],
     },
     {
       command: "devportal-tunnel whoami",
       description: "Show device ID and dashboard URL",
-      options: []
-    }
+      options: [],
+    },
   ];
 
   return (
@@ -134,8 +132,8 @@ const APIReference = () => {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">API Reference</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Complete reference for DevPortal REST API and CLI commands.
-              Build powerful integrations with our tunneling service.
+              Complete reference for DevPortal REST API and CLI commands. Build
+              powerful integrations with our tunneling service.
             </p>
           </div>
 
@@ -158,31 +156,45 @@ const APIReference = () => {
                   className="bg-surface border border-border rounded-lg p-6"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <span className={`px-3 py-1 rounded-md text-sm font-mono font-semibold ${
-                      endpoint.method === 'GET' ? 'bg-success/20 text-success' :
-                      endpoint.method === 'POST' ? 'bg-primary/20 text-primary' :
-                      'bg-warning/20 text-warning'
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-md text-sm font-mono font-semibold ${
+                        endpoint.method === "GET"
+                          ? "bg-success/20 text-success"
+                          : endpoint.method === "POST"
+                            ? "bg-primary/20 text-primary"
+                            : "bg-warning/20 text-warning"
+                      }`}
+                    >
                       {endpoint.method}
                     </span>
                     <code className="text-base font-mono">{endpoint.path}</code>
                   </div>
 
-                  <p className="text-muted-foreground mb-4 text-base">{endpoint.description}</p>
+                  <p className="text-muted-foreground mb-4 text-base">
+                    {endpoint.description}
+                  </p>
 
                   <div className="space-y-4">
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold">Example Request</h4>
+                        <h4 className="text-sm font-semibold">
+                          Example Request
+                        </h4>
                       </div>
-                      <TerminalBlock code={`$ ${endpoint.example}`} title={`${endpoint.method.toLowerCase()}-request`} />
+                      <TerminalBlock
+                        code={`$ ${endpoint.example}`}
+                        title={`${endpoint.method.toLowerCase()}-request`}
+                      />
                     </div>
 
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-semibold">Response</h4>
                       </div>
-                      <TerminalBlock code={endpoint.response} title="json-response" />
+                      <TerminalBlock
+                        code={endpoint.response}
+                        title="json-response"
+                      />
                     </div>
                   </div>
                 </motion.div>
@@ -209,9 +221,13 @@ const APIReference = () => {
                   className="bg-surface border border-border rounded-lg p-6"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <code className="text-base font-mono font-semibold text-primary">{cmd.command}</code>
+                    <code className="text-base font-mono font-semibold text-primary">
+                      {cmd.command}
+                    </code>
                     <button
-                      onClick={() => copyToClipboard(cmd.command, `cmd-${index}`)}
+                      onClick={() =>
+                        copyToClipboard(cmd.command, `cmd-${index}`)
+                      }
                       className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <Copy className="w-3 h-3" />
@@ -219,14 +235,19 @@ const APIReference = () => {
                     </button>
                   </div>
 
-                  <p className="text-muted-foreground mb-4 text-base">{cmd.description}</p>
+                  <p className="text-muted-foreground mb-4 text-base">
+                    {cmd.description}
+                  </p>
 
                   {cmd.options.length > 0 && (
                     <div>
                       <h4 className="text-sm font-semibold mb-2">Options:</h4>
                       <ul className="space-y-1">
                         {cmd.options.map((option, optIndex) => (
-                          <li key={optIndex} className="text-sm text-muted-foreground font-mono">
+                          <li
+                            key={optIndex}
+                            className="text-sm text-muted-foreground font-mono"
+                          >
                             • {option}
                           </li>
                         ))}
@@ -255,7 +276,9 @@ const APIReference = () => {
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="bg-surface border border-border rounded-lg p-6"
               >
-                <h3 className="text-xl font-semibold mb-4">JavaScript/Node.js SDK</h3>
+                <h3 className="text-xl font-semibold mb-4">
+                  JavaScript/Node.js SDK
+                </h3>
                 <p className="text-base text-muted-foreground mb-4">
                   Use DevPortal programmatically in your Node.js applications
                 </p>
@@ -287,9 +310,12 @@ await tunnel.close();`}
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="bg-surface border border-border rounded-lg p-6"
               >
-                <h3 className="text-xl font-semibold mb-4">Webhook Forwarding</h3>
+                <h3 className="text-xl font-semibold mb-4">
+                  Webhook Forwarding
+                </h3>
                 <p className="text-base text-muted-foreground mb-4">
-                  Forward webhooks from services like Stripe, GitHub, or Slack to your local server
+                  Forward webhooks from services like Stripe, GitHub, or Slack
+                  to your local server
                 </p>
                 <TerminalBlock
                   title="webhooks"
@@ -311,7 +337,9 @@ Local server  → http://localhost:3000
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="bg-surface border border-border rounded-lg p-6"
               >
-                <h3 className="text-xl font-semibold mb-4">Environment Variables</h3>
+                <h3 className="text-xl font-semibold mb-4">
+                  Environment Variables
+                </h3>
                 <p className="text-base text-muted-foreground mb-4">
                   Configure DevPortal using environment variables
                 </p>
@@ -354,10 +382,12 @@ $ devportal
                 </div>
 
                 <div>
-                  <h4 className="text-base font-semibold mb-2">Authentication</h4>
+                  <h4 className="text-base font-semibold mb-2">
+                    Authentication
+                  </h4>
                   <p className="text-muted-foreground text-base">
-                    DevPortal uses device-based authentication. No API keys required -
-                    simply use your device ID in the request paths.
+                    DevPortal uses device-based authentication. No API keys
+                    required - simply use your device ID in the request paths.
                   </p>
                 </div>
 
@@ -372,7 +402,6 @@ $ devportal
               </div>
             </div>
           </section>
-
         </motion.div>
       </div>
 
