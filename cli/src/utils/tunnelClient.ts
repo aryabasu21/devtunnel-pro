@@ -1,8 +1,8 @@
-import WebSocket from 'ws';
-import http from 'http';
-import https from 'https';
-import chalk from 'chalk';
-import { EventEmitter } from 'events';
+import WebSocket from "ws";
+import http from "http";
+import https from "https";
+import chalk from "chalk";
+import { EventEmitter } from "events";
 
 export interface TunnelConfig {
   serverUrl: string;
@@ -41,13 +41,13 @@ export class TunnelClient extends EventEmitter {
       try {
         this.ws = new WebSocket(this.config.wsUrl);
 
-        this.ws.on('open', () => {
+        this.ws.on("open", () => {
           this.isConnected = true;
           this.reconnectAttempts = 0;
 
           // Register tunnel
           this.send({
-            type: 'register',
+            type: "register",
             deviceId: this.config.deviceId,
             localPort: this.config.localPort,
             subdomain: this.config.subdomain,
@@ -56,42 +56,48 @@ export class TunnelClient extends EventEmitter {
           });
         });
 
-        this.ws.on('message', async (data: Buffer) => {
+        this.ws.on("message", async (data: Buffer) => {
           try {
             const message = JSON.parse(data.toString());
             await this.handleMessage(message, resolve, reject);
           } catch (error) {
-            console.error('Failed to parse message:', error);
+            console.error("Failed to parse message:", error);
           }
         });
 
-        this.ws.on('close', () => {
+        this.ws.on("close", () => {
           this.isConnected = false;
-          this.emit('disconnected');
+          this.emit("disconnected");
 
           if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-            console.log(chalk.yellow(`Reconnecting... (attempt ${this.reconnectAttempts})`));
-            setTimeout(() => this.connect(), this.reconnectDelay * this.reconnectAttempts);
+            console.log(
+              chalk.yellow(
+                `Reconnecting... (attempt ${this.reconnectAttempts})`,
+              ),
+            );
+            setTimeout(
+              () => this.connect(),
+              this.reconnectDelay * this.reconnectAttempts,
+            );
           }
         });
 
-        this.ws.on('error', (error) => {
+        this.ws.on("error", (error) => {
           if (!this.isConnected) {
             reject(error);
           }
-          this.emit('error', error);
+          this.emit("error", error);
         });
 
         // Ping to keep connection alive
         const pingInterval = setInterval(() => {
           if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
-            this.send({ type: 'ping' });
+            this.send({ type: "ping" });
           }
         }, 30000);
 
-        this.on('disconnected', () => clearInterval(pingInterval));
-
+        this.on("disconnected", () => clearInterval(pingInterval));
       } catch (error) {
         reject(error);
       }
@@ -101,30 +107,30 @@ export class TunnelClient extends EventEmitter {
   private async handleMessage(
     message: any,
     resolve: (info: TunnelInfo) => void,
-    reject: (error: Error) => void
+    reject: (error: Error) => void,
   ): Promise<void> {
     switch (message.type) {
-      case 'registered':
+      case "registered":
         this.tunnelInfo = message.tunnel;
-        this.emit('registered', message.tunnel);
+        this.emit("registered", message.tunnel);
         resolve(message.tunnel);
         break;
 
-      case 'request':
+      case "request":
         await this.handleIncomingRequest(message);
         break;
 
-      case 'error':
-        console.error(chalk.red('Server error:'), message.message);
+      case "error":
+        console.error(chalk.red("Server error:"), message.message);
         reject(new Error(message.message));
         break;
 
-      case 'pong':
+      case "pong":
         // Connection alive
         break;
 
-      case 'stopped':
-        this.emit('stopped', message.tunnelId);
+      case "stopped":
+        this.emit("stopped", message.tunnelId);
         break;
     }
   }
@@ -133,7 +139,7 @@ export class TunnelClient extends EventEmitter {
     const { requestId, method, path, headers, query, body } = message;
 
     // Log the request
-    this.emit('request', { method, path, requestId });
+    this.emit("request", { method, path, requestId });
 
     // Build URL with query params
     let url = `http://localhost:${this.config.localPort}${path}`;
@@ -143,36 +149,61 @@ export class TunnelClient extends EventEmitter {
     }
 
     // Add auth header if configured
-    const requestHeaders = { ...headers };
+    const requestHeaders = {
+      ...headers,
+
+      // 🔥 CRITICAL FIX (THIS fixes your 400)
+      host: `localhost:${this.config.localPort}`,
+      origin: `http://localhost:${this.config.localPort}`,
+      referer: `http://localhost:${this.config.localPort}`,
+    };
+
+    // ❌ remove problematic headers
+    delete requestHeaders["content-length"];
+    delete requestHeaders["transfer-encoding"];
+    delete requestHeaders["connection"];
     if (this.config.authHeader) {
-      const [key, value] = this.config.authHeader.split(': ');
+      const [key, value] = this.config.authHeader.split(": ");
       if (key && value) {
         requestHeaders[key] = value;
       }
     }
 
     try {
-      const response = await this.makeLocalRequest(method, url, requestHeaders, body);
-      this.emit('response', { method, path, status: response.status, requestId });
+      const response = await this.makeLocalRequest(
+        method,
+        url,
+        requestHeaders,
+        body,
+      );
+      this.emit("response", {
+        method,
+        path,
+        status: response.status,
+        requestId,
+      });
 
       // Send response back to server
       this.send({
-        type: 'response',
+        type: "response",
         requestId,
         status: response.status,
         headers: response.headers,
         body: response.body,
       });
     } catch (error: any) {
-      this.emit('error', error);
+      this.emit("error", error);
 
       // Send error response
       this.send({
-        type: 'response',
+        type: "response",
         requestId,
         status: 502,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ error: 'Failed to connect to local server', message: error.message }),
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          error: "Failed to connect to local server",
+          message: error.message,
+        }),
       });
     }
   }
@@ -181,8 +212,12 @@ export class TunnelClient extends EventEmitter {
     method: string,
     url: string,
     headers: Record<string, string>,
-    body: string | null
-  ): Promise<{ status: number; headers: Record<string, string>; body: string }> {
+    body: string | null,
+  ): Promise<{
+    status: number;
+    headers: Record<string, string>;
+    body: string;
+  }> {
     return new Promise((resolve, reject) => {
       const urlObj = new URL(url);
 
@@ -198,32 +233,39 @@ export class TunnelClient extends EventEmitter {
       const req = http.request(options, (res) => {
         const chunks: Buffer[] = [];
 
-        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
 
-        res.on('end', () => {
+        res.on("end", () => {
           const bodyBuffer = Buffer.concat(chunks);
           const responseHeaders: Record<string, string> = {};
-
           // Convert headers
           for (const [key, value] of Object.entries(res.headers)) {
             if (value) {
-              responseHeaders[key] = Array.isArray(value) ? value.join(', ') : value;
+              responseHeaders[key] = Array.isArray(value)
+                ? value.join(", ")
+                : value;
             }
           }
 
+          // 🔥 CRITICAL FIX (add this BELOW the loop)
+          delete responseHeaders["content-length"];
+          delete responseHeaders["transfer-encoding"];
+          delete responseHeaders["connection"];
+
           // Check if body is binary
-          const contentType = responseHeaders['content-type'] || '';
-          const isBinary = !contentType.includes('text') &&
-                          !contentType.includes('json') &&
-                          !contentType.includes('xml') &&
-                          !contentType.includes('javascript');
+          const contentType = responseHeaders["content-type"] || "";
+          const isBinary =
+            !contentType.includes("text") &&
+            !contentType.includes("json") &&
+            !contentType.includes("xml") &&
+            !contentType.includes("javascript");
 
           let bodyString: string;
           if (isBinary) {
-            bodyString = bodyBuffer.toString('base64');
-            responseHeaders['x-body-encoding'] = 'base64';
+            bodyString = bodyBuffer.toString("base64");
+            responseHeaders["x-body-encoding"] = "base64";
           } else {
-            bodyString = bodyBuffer.toString('utf-8');
+            bodyString = bodyBuffer.toString("utf-8");
           }
 
           resolve({
@@ -234,14 +276,10 @@ export class TunnelClient extends EventEmitter {
         });
       });
 
-      req.on('error', reject);
-      req.on('timeout', () => reject(new Error('Request timeout')));
-
+      req.on("error", reject);
+      req.on("timeout", () => reject(new Error("Request timeout")));
       if (body) {
-        // Decode base64 body if it was encoded
-        const bodyBuffer = body.startsWith('ey') || body.includes('=')
-          ? Buffer.from(body, 'base64')
-          : Buffer.from(body);
+        const bodyBuffer = Buffer.from(body, "base64");
         req.write(bodyBuffer);
       }
 
@@ -257,7 +295,7 @@ export class TunnelClient extends EventEmitter {
 
   stop(): void {
     if (this.tunnelInfo) {
-      this.send({ type: 'stop', tunnelId: this.tunnelInfo.id });
+      this.send({ type: "stop", tunnelId: this.tunnelInfo.id });
     }
     this.ws?.close();
   }
