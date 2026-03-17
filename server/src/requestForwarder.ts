@@ -63,7 +63,7 @@ export class RequestForwarder {
         path: req.originalUrl,
 
         headers: headers,
-        query: req.query,
+        // query: req.query,
         body: this.serializeBody(req.body),
       };
 
