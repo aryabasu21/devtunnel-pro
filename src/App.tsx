@@ -8,6 +8,8 @@ import Docs from "./pages/Docs.tsx";
 import APIReference from "./pages/APIReference.tsx";
 import Examples from "./pages/Examples.tsx";
 import Support from "./pages/Support.tsx";
+import Privacy from "./pages/Privacy.tsx";
+import Terms from "./pages/Terms.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/api" element={<APIReference />} />
           <Route path="/examples" element={<Examples />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

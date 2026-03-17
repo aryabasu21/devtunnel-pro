@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
-import InteractiveFooter from "@/components/InteractiveFooter";
+import Footer from "@/components/Footer";
+import TerminalBlock from "@/components/TerminalBlock";
 import { motion } from "framer-motion";
 import {
   Code,
@@ -288,13 +289,6 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                       <h3 className="text-xl font-semibold mb-2">{example.title}</h3>
                       <p className="text-muted-foreground text-base">{example.description}</p>
                     </div>
-                    <button
-                      onClick={() => copyToClipboard(example.code, `example-${index}`)}
-                      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <Copy className="w-4 h-4" />
-                      {copiedExample === `example-${index}` ? "Copied!" : "Copy"}
-                    </button>
                   </div>
 
                   <div className="mb-4">
@@ -310,9 +304,7 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
 
                   <div>
                     <h4 className="text-base font-semibold mb-3">Code Example:</h4>
-                    <pre className="bg-background border border-border rounded-lg p-4 overflow-x-auto">
-                      <code className="text-sm whitespace-pre">{example.code}</code>
-                    </pre>
+                    <TerminalBlock code={example.code} title={example.title.toLowerCase().replace(/\s+/g, '-')} />
                   </div>
                 </motion.div>
               ))}
@@ -339,18 +331,9 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                 >
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">{example.title}</h3>
-                    <button
-                      onClick={() => copyToClipboard(example.code, `advanced-${index}`)}
-                      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <Copy className="w-4 h-4" />
-                      {copiedExample === `advanced-${index}` ? "Copied!" : "Copy"}
-                    </button>
                   </div>
 
-                  <pre className="bg-background border border-border rounded-lg p-4 overflow-x-auto">
-                    <code className="text-sm whitespace-pre">{example.code}</code>
-                  </pre>
+                  <TerminalBlock code={example.code} title={example.title.toLowerCase().replace(/\s+/g, '-')} />
                 </motion.div>
               ))}
             </div>
@@ -395,7 +378,7 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
         </motion.div>
       </div>
 
-      <InteractiveFooter />
+      <Footer />
     </div>
   );
 };

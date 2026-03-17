@@ -2,7 +2,8 @@ import Navbar from "@/components/Navbar";
 import TerminalDemo from "@/components/TerminalDemo";
 import FeaturesGrid from "@/components/FeaturesGrid";
 import CLICommands from "@/components/CLICommands";
-import InteractiveFooter from "@/components/InteractiveFooter";
+import HomeFooterContent from "@/components/HomeFooterContent";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Github, Copy, Check } from "lucide-react";
@@ -68,8 +69,32 @@ const Index = () => {
     }
   };
 
+  const copyStartCommand = async () => {
+    try {
+      await navigator.clipboard.writeText(startCommand);
+      toast.success(`📋 Copied start command!`, {
+        duration: 3000,
+        icon: "⚡",
+      });
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement("textarea");
+      textArea.value = startCommand;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      toast.success(`📋 Copied start command!`, {
+        duration: 3000,
+        icon: "⚡",
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
       {/* Glow effect */}
@@ -109,7 +134,11 @@ const Index = () => {
                 View Dashboard
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground font-mono bg-muted/50 inline-block px-3 py-1.5 rounded-md">
+            <p
+              className="text-xs text-muted-foreground font-mono bg-muted/50 inline-block px-3 py-1.5 rounded-md cursor-pointer hover:bg-muted/70 transition-colors border border-border/50 hover:border-border"
+              onClick={copyInstallCommand}
+              title="Click to copy install command"
+            >
               {installCommand} <span className="text-muted-foreground/70">({platformName})</span>
             </p>
           </motion.div>
@@ -139,14 +168,19 @@ const Index = () => {
           <p className="text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base">
             Get a public URL for your localhost in under 10 seconds.
           </p>
-          <div className="surface-card inline-block px-4 sm:px-6 py-3 font-mono text-xs sm:text-sm">
+          <div
+            className="surface-card inline-block px-4 sm:px-6 py-3 font-mono text-xs sm:text-sm cursor-pointer hover:bg-muted/70 transition-colors border border-border/50 hover:border-border rounded-lg"
+            onClick={copyStartCommand}
+            title="Click to copy command"
+          >
             <span className="text-muted-foreground">$ </span>
             <span className="text-foreground">{startCommand}</span>
           </div>
         </div>
       </section>
 
-      <InteractiveFooter />
+      <HomeFooterContent />
+      <Footer />
     </div>
   );
 };

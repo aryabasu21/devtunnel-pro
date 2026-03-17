@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Terminal, Zap, Shield, Globe, Code, Layers, ArrowRight, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface TerminalBlockProps {
   code: string;
@@ -56,12 +56,12 @@ const TerminalBlock = ({ code, title = "terminal", showOutput = false }: Termina
   };
 
   return (
-    <div className="surface-card overflow-hidden rounded-lg border border-border">
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-zinc-900/50">
+    <div className="surface-card overflow-hidden rounded-lg border border-border shadow-lg">
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-gradient-to-r from-zinc-900/80 to-zinc-800/80">
         <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-destructive/70" />
-          <div className="w-3 h-3 rounded-full bg-warning/70" />
-          <div className="w-3 h-3 rounded-full bg-success/70" />
+          <div className="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors" />
+          <div className="w-3 h-3 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors" />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5">
@@ -71,11 +71,12 @@ const TerminalBlock = ({ code, title = "terminal", showOutput = false }: Termina
         <button
           onClick={handleCopy}
           className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-zinc-800"
+          title="Copy commands"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
         </button>
       </div>
-      <pre className="bg-zinc-950 p-4 text-xs sm:text-sm font-mono leading-6 overflow-x-auto">
+      <pre className="bg-gradient-to-b from-zinc-950 to-black p-4 text-xs sm:text-sm font-mono leading-6 overflow-x-auto">
         {code.split("\n").map((line, i) => (
           <div key={i} className="whitespace-pre">
             {formatLine(line, i)}
@@ -87,6 +88,20 @@ const TerminalBlock = ({ code, title = "terminal", showOutput = false }: Termina
 };
 
 const Docs = () => {
+  const [showScroll, setShowScroll] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScroll(window.scrollY > 200);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -103,11 +118,10 @@ const Docs = () => {
         </div>
 
         <Tabs defaultValue="quickstart" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4 h-auto">
+          <TabsList className="grid w-full grid-cols-3 h-auto">
             <TabsTrigger value="quickstart" className="text-xs sm:text-sm py-2">Quick Start</TabsTrigger>
             <TabsTrigger value="cli" className="text-xs sm:text-sm py-2">CLI Reference</TabsTrigger>
             <TabsTrigger value="dashboard" className="text-xs sm:text-sm py-2">Dashboard</TabsTrigger>
-            <TabsTrigger value="api" className="text-xs sm:text-sm py-2">API Guide</TabsTrigger>
           </TabsList>
 
           <TabsContent value="quickstart" className="space-y-8">
@@ -373,13 +387,13 @@ $ devportal-tunnel replay req-abc123 --body '{"updated": true}'`}
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">API Playground</CardTitle>
+                    <CardTitle className="text-base">Device Management</CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Create mock endpoints for testing</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Define custom response payloads</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Test webhooks without third-party setup</p>
-                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Perfect for demos and prototypes</p>
+                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Unique device isolation for multi-user security</p>
+                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Copy device ID for CLI synchronization</p>
+                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Navigate seamlessly between web and terminal</p>
+                    <p><ArrowRight className="w-3 h-3 inline mr-2" />Persistent session management</p>
                   </CardContent>
                 </Card>
               </div>
@@ -408,91 +422,19 @@ Scope:     This browser only
               </Card>
             </section>
           </TabsContent>
-
-          <TabsContent value="api" className="space-y-8">
-            <section>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Code className="w-5 h-5 text-primary" />
-                Programmatic API
-              </h2>
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">JavaScript/Node.js SDK</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">Use DevPortal programmatically in your Node.js apps</p>
-                    <TerminalBlock
-                      title="app.js"
-                      code={`import { DevPortal } from 'devportal';
-
-const tunnel = await DevPortal.connect({
-  port: 3000,
-  subdomain: 'my-api'
-});
-
-console.log('Public URL:', tunnel.url);
-
-// Listen for incoming requests
-tunnel.on('request', (req) => {
-  console.log(req.method, req.path);
-});
-
-// Cleanup when done
-await tunnel.close();`}
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Webhook Forwarding</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">Forward webhooks from services like Stripe, GitHub, or Slack to your local server</p>
-                    <TerminalBlock
-                      title="webhooks"
-                      code={`# Start tunnel for webhook testing
-$ devportal-tunnel start 3000
-
-Tunnel active → https://cosmic-river-847.tunnel.stylnode.in
-Local server  → http://localhost:3000
-
-# Add your tunnel URL to Stripe/GitHub/Slack dashboard
-# All webhook events will forward to localhost:3000`}
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Environment Variables</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">Configure DevPortal using environment variables</p>
-                    <TerminalBlock
-                      title=".env"
-                      code={`# Default port
-DEVPORTAL_PORT=3000
-
-# Custom subdomain
-DEVPORTAL_SUBDOMAIN=my-project
-
-# Auth header for all requests
-DEVPORTAL_AUTH="Bearer your-token"
-
-# Then just run:
-$ devportal
-
-✓ Using config from environment`}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
-          </TabsContent>
         </Tabs>
       </main>
+      {/* Scroll to Top Button */}
+      {showScroll && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 p-3 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors"
+          aria-label="Scroll to top"
+        >
+          ↑
+        </button>
+      )}
+    <Footer />
     </div>
   );
 };

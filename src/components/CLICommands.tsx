@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import { Terminal } from "lucide-react";
+import { Terminal, Copy } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 const commands = [
   {
@@ -44,7 +46,38 @@ const commands = [
   },
 ];
 
-const CLICommands = () => (
+const CLICommands = () => {
+  const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
+
+  const copyCommand = async (command: string) => {
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopiedCommand(command);
+      toast.success("📋 Command copied to clipboard!", {
+        duration: 2000,
+        icon: "⚡",
+      });
+      setTimeout(() => setCopiedCommand(null), 2000);
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement("textarea");
+      textArea.value = command;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopiedCommand(command);
+      toast.success("📋 Command copied to clipboard!", {
+        duration: 2000,
+        icon: "⚡",
+      });
+      setTimeout(() => setCopiedCommand(null), 2000);
+    }
+  };
+
+  return (
   <section className="py-20 sm:py-24 px-4 sm:px-6 border-t border-border">
     <div className="max-w-4xl mx-auto">
       <motion.div
@@ -70,16 +103,29 @@ const CLICommands = () => (
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.03 }}
-            className="surface-card p-3 sm:p-4 hover:border-primary/20 transition-colors"
+            className="surface-card p-3 sm:p-4 hover:border-primary/20 transition-colors group"
           >
             <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
-              <code className="text-xs sm:text-sm font-mono text-primary shrink-0 sm:w-72">
-                $ {c.cmd}
-              </code>
+              <div className="flex items-center gap-2 sm:w-72 shrink-0">
+                <code className="text-xs sm:text-sm font-mono text-primary">
+                  $ {c.cmd}
+                </code>
+                <button
+                  onClick={() => copyCommand(c.example)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                  title="Copy example command"
+                >
+                  <Copy className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                </button>
+              </div>
               <span className="text-xs sm:text-sm text-muted-foreground flex-1">{c.desc}</span>
             </div>
             <div className="mt-2 pl-0 sm:pl-72 sm:ml-4">
-              <code className="text-[10px] sm:text-xs font-mono text-muted-foreground/60">
+              <code
+                className="text-[10px] sm:text-xs font-mono text-muted-foreground/60 cursor-pointer hover:text-muted-foreground transition-colors"
+                onClick={() => copyCommand(c.example)}
+                title="Click to copy example"
+              >
                 Example: {c.example}
               </code>
             </div>
@@ -89,5 +135,6 @@ const CLICommands = () => (
     </div>
   </section>
 );
+};
 
 export default CLICommands;

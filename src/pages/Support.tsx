@@ -300,29 +300,62 @@ const Support = () => {
                       {files.map((f, index) => (
                         <div
                           key={index}
-                          className="relative group w-24 h-24 rounded-lg overflow-hidden border border-border bg-muted"
+                          className="relative group w-32 h-32 rounded-lg overflow-hidden border border-border bg-muted hover:border-primary/50 transition-colors"
                         >
                           {f.type === "image" ? (
                             <img
                               src={f.preview}
                               alt={`Preview ${index + 1}`}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover cursor-pointer"
+                              onClick={() => {
+                                // Create download link
+                                const url = URL.createObjectURL(f.file);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = f.file.name;
+                                a.click();
+                                URL.revokeObjectURL(url);
+                              }}
+                              title={`Click to download ${f.file.name} (${(f.file.size / 1024 / 1024).toFixed(1)}MB)`}
                             />
                           ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900">
-                              <Video className="w-8 h-8 text-muted-foreground mb-1" />
-                              <span className="text-[10px] text-muted-foreground truncate max-w-[80px] px-1">
+                            <div
+                              className="w-full h-full flex flex-col items-center justify-center bg-zinc-900 cursor-pointer hover:bg-zinc-800 transition-colors"
+                              onClick={() => {
+                                // Create download link
+                                const url = URL.createObjectURL(f.file);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = f.file.name;
+                                a.click();
+                                URL.revokeObjectURL(url);
+                              }}
+                              title={`Click to download ${f.file.name} (${(f.file.size / 1024 / 1024).toFixed(1)}MB)`}
+                            >
+                              <Video className="w-8 h-8 text-muted-foreground mb-2" />
+                              <span className="text-[10px] text-muted-foreground text-center px-2 leading-tight">
                                 {f.file.name}
+                              </span>
+                              <span className="text-[8px] text-muted-foreground/60 mt-1">
+                                {(f.file.size / 1024 / 1024).toFixed(1)}MB
                               </span>
                             </div>
                           )}
                           <button
                             type="button"
                             onClick={() => removeFile(index)}
-                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-4 h-4" />
                           </button>
+                          <div className="absolute bottom-1 left-1 right-1 bg-black/80 backdrop-blur-sm rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-[10px] text-white truncate block">
+                              {f.file.name}
+                            </span>
+                            <span className="text-[8px] text-white/70">
+                              {(f.file.size / 1024 / 1024).toFixed(1)}MB • Click to download
+                            </span>
+                          </div>
                         </div>
                       ))}
 
@@ -330,12 +363,15 @@ const Support = () => {
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="w-24 h-24 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 transition-colors"
+                          className="w-32 h-32 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-2 transition-colors group"
                         >
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                            <Upload className="w-4 h-4 text-muted-foreground" />
+                          <div className="w-12 h-12 rounded-full bg-muted group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+                            <Upload className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
                           </div>
-                          <span className="text-[10px] text-muted-foreground">Add file</span>
+                          <div className="text-center">
+                            <span className="text-xs text-muted-foreground block">Add file</span>
+                            <span className="text-[10px] text-muted-foreground/60">Up to 50MB</span>
+                          </div>
                         </button>
                       )}
                     </div>

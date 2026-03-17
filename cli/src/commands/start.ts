@@ -163,7 +163,15 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
     if (options.qr) {
       console.log(chalk.gray('  Scan to open on mobile:'));
       console.log();
-      qrcode.generate(tunnelInfo.url, { small: true });
+      try {
+        // Force flush before QR generation
+        process.stdout.write('');
+        qrcode.generate(tunnelInfo.url, { small: true });
+        // Force flush after QR generation
+        process.stdout.write('');
+      } catch (error: any) {
+        console.log(chalk.red('  Failed to generate QR code:'), error.message);
+      }
       console.log();
     }
 
@@ -231,7 +239,17 @@ async function startSimulatedTunnel(localPort: number, remotePort: number, optio
   console.log();
 
   if (options.qr) {
-    qrcode.generate(url, { small: true });
+    console.log(chalk.gray('  Scan to open on mobile:'));
+    console.log();
+    try {
+      // Force flush before QR generation
+      process.stdout.write('');
+      qrcode.generate(url, { small: true });
+      // Force flush after QR generation
+      process.stdout.write('');
+    } catch (error: any) {
+      console.log(chalk.red('  Failed to generate QR code:'), error.message);
+    }
     console.log();
   }
 

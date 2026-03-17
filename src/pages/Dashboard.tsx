@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import DashboardSidebar from "@/components/DashboardSidebar";
 import TunnelList from "@/components/TunnelList";
 import QRCodeModal from "@/components/QRCodeModal";
 import { getTunnelsByDevice, getServerStatus, type TunnelData } from "@/lib/api";
 import { detectPlatform, getStartCommand, getPlatformName } from "@/utils/platform";
+import { Button } from "@/components/ui/button";
+import { Home, Copy, User } from "lucide-react";
 import toast from "react-hot-toast";
 
 type View = "tunnels";
@@ -142,9 +143,58 @@ const Dashboard = () => {
     });
   }, []);
 
+  const copyDeviceId = () => {
+    if (deviceId) {
+      navigator.clipboard.writeText(deviceId);
+      toast.success("Device ID copied to clipboard!");
+    }
+  };
+
+  const goToHomepage = () => {
+    navigate("/");
+  };
+
   return (
-    <div className="h-screen flex flex-col sm:flex-row bg-background overflow-hidden">
-      <DashboardSidebar deviceId={deviceId} />
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Dashboard Header */}
+      <div className="border-b border-border bg-surface/50 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
+                <span className="text-sm font-bold text-primary-foreground font-mono">D</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold">DevPortal Dashboard</h1>
+                <p className="text-sm text-muted-foreground">Manage your active tunnels</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {deviceId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyDeviceId}
+                className="flex items-center gap-2"
+              >
+                <User className="w-4 h-4" />
+                <span className="font-mono text-sm truncate max-w-32">{deviceId}</span>
+                <Copy className="w-3 h-3" />
+              </Button>
+            )}
+            <Button
+              onClick={goToHomepage}
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Home className="w-4 h-4" />
+              Homepage
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {qrTunnel && (
         <QRCodeModal
@@ -157,47 +207,49 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Server Status Banner */}
         {serverStatus && (
-          <div className="px-4 py-2 bg-surface border-b border-border flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${serverStatus.status === 'running' ? 'bg-success' : 'bg-destructive'}`} />
-              <span className="text-muted-foreground">
-                Server: <span className="text-foreground">{serverStatus.status}</span>
-              </span>
+          <div className="px-6 py-3 bg-surface border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className={`w-3 h-3 rounded-full ${serverStatus.status === 'running' ? 'bg-success' : 'bg-destructive'}`} />
+                <span className="text-sm font-medium">
+                  Server: <span className="text-foreground">{serverStatus.status}</span>
+                </span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Active tunnels globally: <span className="text-foreground font-semibold">{serverStatus.activeTunnels}</span>
+              </div>
             </div>
-            <span className="text-muted-foreground">
-              Active tunnels globally: <span className="text-foreground">{serverStatus.activeTunnels}</span>
-            </span>
           </div>
         )}
 
-        <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           {/* Left panel: Tunnels + Request Log Info */}
-          <div className="sm:w-[380px] lg:w-[420px] border-r border-border flex flex-col overflow-hidden shrink-0">
+          <div className="lg:w-[400px] xl:w-[450px] border-r border-border flex flex-col overflow-hidden">
             {isLoading ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center text-muted-foreground">
                   <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2" />
-                  <p className="text-xs">Loading tunnels...</p>
+                  <p className="text-sm">Loading tunnels...</p>
                 </div>
               </div>
             ) : tunnels.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center p-6">
+              <div className="flex-1 flex items-center justify-center p-8">
                 <div className="text-center">
-                  <div className="text-5xl mb-4">⚡</div>
-                  <h3 className="text-lg font-semibold mb-2">Ready for Instant Tunnels</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <div className="text-6xl mb-6">⚡</div>
+                  <h3 className="text-xl font-semibold mb-3">Ready for Instant Tunnels</h3>
+                  <p className="text-base text-muted-foreground mb-6 max-w-sm">
                     Run a command in your terminal to see your tunnel appear here instantly
                   </p>
-                  <div className="bg-surface rounded-lg p-4 text-left mb-4">
-                    <p className="text-xs text-muted-foreground mb-2">Quick start ({getPlatformName(platform)}):</p>
-                    <code className="text-sm font-mono text-primary block mb-2">
+                  <div className="bg-surface rounded-lg p-4 text-left mb-6">
+                    <p className="text-sm text-muted-foreground mb-3">Quick start ({getPlatformName(platform)}):</p>
+                    <code className="text-base font-mono text-primary block mb-3">
                       {getStartCommand(platform)}
                     </code>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       Your tunnel will appear here in ~2 seconds ⚡
                     </p>
                   </div>
-                  <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                     Watching for new tunnels...
                   </div>

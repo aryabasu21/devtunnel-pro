@@ -13,9 +13,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
-const InteractiveFooter = () => {
-  const currentYear = new Date().getFullYear();
-
+const HomeFooterContent = () => {
   // Dynamic stats that increase with real usage
   const [stats, setStats] = useState({
     activeTunnels: 0,
@@ -100,7 +98,7 @@ const InteractiveFooter = () => {
   ];
 
   return (
-    <footer className="relative border-t border-border bg-gradient-to-br from-background via-background to-surface">
+    <section className="relative border-t border-border bg-gradient-to-br from-background via-background to-surface">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-24 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl animate-pulse" />
@@ -242,40 +240,9 @@ const InteractiveFooter = () => {
             <span>Global CDN network</span>
           </div>
         </motion.div>
-
-        {/* Bottom Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border/50 text-sm text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <span>© {currentYear} DevPortal. All rights reserved.</span>
-            <span className="hidden sm:inline">•</span>
-            <span className="font-mono text-xs bg-muted/50 px-2 py-1 rounded">
-              v1.0.2-beta
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
-            <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="/status" className="hover:text-foreground transition-colors flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-              Status
-            </a>
-          </div>
-        </div>
-
-        {/* Easter Egg */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 1, duration: 2 }}
-          className="absolute bottom-4 right-4 text-xs text-muted-foreground/30 font-mono"
-        >
-          // localhost:everywhere 🌍
-        </motion.div>
       </div>
-    </footer>
+    </section>
   );
 };
 
-export default InteractiveFooter;
+export default HomeFooterContent;

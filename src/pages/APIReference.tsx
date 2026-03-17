@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
-import InteractiveFooter from "@/components/InteractiveFooter";
+import Footer from "@/components/Footer";
+import TerminalBlock from "@/components/TerminalBlock";
 import { motion } from "framer-motion";
 import { Code, Terminal, Zap, Globe, Shield, Copy } from "lucide-react";
 import { useState } from "react";
@@ -173,33 +174,15 @@ const APIReference = () => {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-semibold">Example Request</h4>
-                        <button
-                          onClick={() => copyToClipboard(endpoint.example, `${endpoint.method}-${index}-req`)}
-                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <Copy className="w-3 h-3" />
-                          {copiedEndpoint === `${endpoint.method}-${index}-req` ? "Copied!" : "Copy"}
-                        </button>
                       </div>
-                      <pre className="bg-background border border-border rounded p-3 overflow-x-auto">
-                        <code className="text-sm">{endpoint.example}</code>
-                      </pre>
+                      <TerminalBlock code={`$ ${endpoint.example}`} title={`${endpoint.method.toLowerCase()}-request`} />
                     </div>
 
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-semibold">Response</h4>
-                        <button
-                          onClick={() => copyToClipboard(endpoint.response, `${endpoint.method}-${index}-res`)}
-                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <Copy className="w-3 h-3" />
-                          {copiedEndpoint === `${endpoint.method}-${index}-res` ? "Copied!" : "Copy"}
-                        </button>
                       </div>
-                      <pre className="bg-background border border-border rounded p-3 overflow-x-auto">
-                        <code className="text-sm">{endpoint.response}</code>
-                      </pre>
+                      <TerminalBlock code={endpoint.response} title="json-response" />
                     </div>
                   </div>
                 </motion.div>
@@ -255,6 +238,103 @@ const APIReference = () => {
             </div>
           </section>
 
+          {/* SDK & Integration Section */}
+          <section className="mb-16">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-blue-500" />
+              </div>
+              <h2 className="text-2xl font-bold">SDK & Integration</h2>
+            </div>
+
+            <div className="space-y-8">
+              {/* JavaScript/Node.js SDK */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1, duration: 0.5 }}
+                className="bg-surface border border-border rounded-lg p-6"
+              >
+                <h3 className="text-xl font-semibold mb-4">JavaScript/Node.js SDK</h3>
+                <p className="text-base text-muted-foreground mb-4">
+                  Use DevPortal programmatically in your Node.js applications
+                </p>
+                <TerminalBlock
+                  title="app.js"
+                  code={`import { DevPortal } from 'devportal';
+
+const tunnel = await DevPortal.connect({
+  port: 3000,
+  subdomain: 'my-api'
+});
+
+console.log('Public URL:', tunnel.url);
+
+// Listen for incoming requests
+tunnel.on('request', (req) => {
+  console.log(req.method, req.path);
+});
+
+// Cleanup when done
+await tunnel.close();`}
+                />
+              </motion.div>
+
+              {/* Webhook Forwarding */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="bg-surface border border-border rounded-lg p-6"
+              >
+                <h3 className="text-xl font-semibold mb-4">Webhook Forwarding</h3>
+                <p className="text-base text-muted-foreground mb-4">
+                  Forward webhooks from services like Stripe, GitHub, or Slack to your local server
+                </p>
+                <TerminalBlock
+                  title="webhooks"
+                  code={`# Start tunnel for webhook testing
+$ devportal-tunnel start 3000
+
+Tunnel active → https://cosmic-river-847.tunnel.stylnode.in
+Local server  → http://localhost:3000
+
+# Add your tunnel URL to Stripe/GitHub/Slack dashboard
+# All webhook events will forward to localhost:3000`}
+                />
+              </motion.div>
+
+              {/* Environment Variables */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="bg-surface border border-border rounded-lg p-6"
+              >
+                <h3 className="text-xl font-semibold mb-4">Environment Variables</h3>
+                <p className="text-base text-muted-foreground mb-4">
+                  Configure DevPortal using environment variables
+                </p>
+                <TerminalBlock
+                  title=".env"
+                  code={`# Default port
+DEVPORTAL_PORT=3000
+
+# Custom subdomain
+DEVPORTAL_SUBDOMAIN=my-project
+
+# Auth header for all requests
+DEVPORTAL_AUTH="Bearer your-token"
+
+# Then just run:
+$ devportal
+
+✓ Using config from environment`}
+                />
+              </motion.div>
+            </div>
+          </section>
+
           {/* Base URL Section */}
           <section className="mb-16">
             <div className="flex items-center gap-3 mb-6">
@@ -296,7 +376,7 @@ const APIReference = () => {
         </motion.div>
       </div>
 
-      <InteractiveFooter />
+      <Footer />
     </div>
   );
 };
