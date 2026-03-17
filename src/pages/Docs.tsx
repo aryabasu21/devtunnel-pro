@@ -130,30 +130,39 @@ const Docs = () => {
                       <TabsContent value="mac" className="mt-0">
                         <TerminalBlock
                           title="terminal"
-                          code={`# Using npm (requires Node.js)
+                          code={`# Quick install (installs Node.js if needed)
+$ curl -fsSL https://devportal.stylnode.in/install.sh | bash
+
+# Or using npm (if Node.js is already installed)
 $ npm install -g devportal-tunnel
 
-# Or run directly with npx
+# Or run directly without installing
 $ npx devportal-tunnel start 3000`}
                         />
                       </TabsContent>
                       <TabsContent value="windows" className="mt-0">
                         <TerminalBlock
                           title="powershell"
-                          code={`# Using npm (requires Node.js)
+                          code={`# Quick install (installs Node.js if needed)
+> iwr https://devportal.stylnode.in/install.ps1 -useb | iex
+
+# Or using npm (if Node.js is already installed)
 > npm install -g devportal-tunnel
 
-# Or run directly with npx
+# Or run directly without installing
 > npx devportal-tunnel start 3000`}
                         />
                       </TabsContent>
                       <TabsContent value="linux" className="mt-0">
                         <TerminalBlock
                           title="terminal"
-                          code={`# Using npm (requires Node.js)
+                          code={`# Quick install (installs Node.js if needed)
+$ curl -fsSL https://devportal.stylnode.in/install.sh | bash
+
+# Or using npm (if Node.js is already installed)
 $ npm install -g devportal-tunnel
 
-# Or run directly with npx
+# Or run directly without installing
 $ npx devportal-tunnel start 3000`}
                         />
                       </TabsContent>
