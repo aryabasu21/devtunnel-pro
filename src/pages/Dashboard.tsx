@@ -5,20 +5,10 @@ import TunnelList from "@/components/TunnelList";
 import RequestInspector from "@/components/RequestInspector";
 import ApiPlayground from "@/components/ApiPlayground";
 import QRCodeModal from "@/components/QRCodeModal";
-import { mockTunnels as initialTunnels, mockRequests as initialRequests, type RequestLog, type TunnelData } from "@/lib/mock-data";
+import { getTunnelsByDevice, getServerStatus, type TunnelData, type RequestLog } from "@/lib/api";
 import { toast } from "sonner";
 
 type View = "tunnels" | "playground";
-
-const adjectives = ["purple", "cosmic", "hidden", "crystal", "silent", "golden", "frozen", "blazing", "lunar", "neon"];
-const nouns = ["horizon", "lake", "forest", "ocean", "canyon", "river", "meadow", "summit", "valley", "storm"];
-
-const generateTunnelName = () => {
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const num = Math.floor(Math.random() * 900) + 100;
-  return `${adj}-${noun}-${num}`;
-};
 
 const getDeviceId = (): string => {
   const storageKey = "devportal_device_id";
@@ -30,51 +20,87 @@ const getDeviceId = (): string => {
   return deviceId;
 };
 
+// Extended TunnelData for UI with requestCount
+interface TunnelDataUI extends TunnelData {
+  requestCount?: number;
+}
+
 const Dashboard = () => {
   const { deviceId: urlDeviceId } = useParams();
   const navigate = useNavigate();
   const [deviceId, setDeviceId] = useState<string>("");
   const [view, setView] = useState<View>("tunnels");
-  const [tunnels, setTunnels] = useState<TunnelData[]>(initialTunnels);
-  const [requests, setRequests] = useState<RequestLog[]>(initialRequests);
-  const [selectedRequest, setSelectedRequest] = useState<RequestLog | null>(initialRequests[0]);
-  const [selectedTunnelId, setSelectedTunnelId] = useState("t1");
-  const [qrTunnel, setQrTunnel] = useState<TunnelData | null>(null);
+  const [tunnels, setTunnels] = useState<TunnelDataUI[]>([]);
+  const [requests, setRequests] = useState<RequestLog[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<RequestLog | null>(null);
+  const [selectedTunnelId, setSelectedTunnelId] = useState<string | null>(null);
+  const [qrTunnel, setQrTunnel] = useState<TunnelDataUI | null>(null);
   const [mobilePanel, setMobilePanel] = useState<"list" | "inspector">("list");
+  const [isLoading, setIsLoading] = useState(true);
+  const [serverStatus, setServerStatus] = useState<{ status: string; activeTunnels: number } | null>(null);
 
+  // Initialize device ID and redirect if needed
   useEffect(() => {
     const localDeviceId = getDeviceId();
     setDeviceId(localDeviceId);
 
-    // If no deviceId in URL or mismatched, redirect to correct URL
     if (!urlDeviceId || urlDeviceId !== localDeviceId) {
       navigate(`/dashboard/${localDeviceId}`, { replace: true });
     }
   }, [urlDeviceId, navigate]);
 
+  // Fetch tunnels and server status
+  useEffect(() => {
+    if (!deviceId) return;
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [tunnelsData, statusData] = await Promise.all([
+          getTunnelsByDevice(deviceId),
+          getServerStatus(),
+        ]);
+
+        const tunnelsWithCount = tunnelsData.map((t) => ({
+          ...t,
+          requestCount: 0,
+        }));
+
+        setTunnels(tunnelsWithCount);
+        setServerStatus(statusData);
+
+        if (tunnelsWithCount.length > 0 && !selectedTunnelId) {
+          setSelectedTunnelId(tunnelsWithCount[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        // Server might be down or no tunnels yet - that's okay
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Poll for updates every 10 seconds
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
+  }, [deviceId, selectedTunnelId]);
+
   const filteredRequests = requests.filter((r) => r.tunnelId === selectedTunnelId);
 
   const handleCreateTunnel = useCallback(() => {
-    const name = generateTunnelName();
-    const newTunnel: TunnelData = {
-      id: `t${Date.now()}`,
-      name,
-      url: `https://${name}.devportal.live`,
-      localPort: 3000 + Math.floor(Math.random() * 5000),
-      status: "live",
-      createdAt: new Date().toISOString(),
-      requestCount: 0,
-    };
-    setTunnels((prev) => [newTunnel, ...prev]);
-    setSelectedTunnelId(newTunnel.id);
-    toast.success(`Tunnel ${name} created`);
+    toast.info(
+      "To create a tunnel, run the CLI:\nnpx devportal-tunnel start <port>",
+      { duration: 5000 }
+    );
   }, []);
 
   const handleStopTunnel = useCallback((id: string) => {
-    setTunnels((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status: "stopped" as const } : t))
+    toast.info(
+      "To stop a tunnel, use the CLI:\nnpx devportal-tunnel stop " + id,
+      { duration: 5000 }
     );
-    toast.info("Tunnel stopped");
   }, []);
 
   const handleSelectRequest = (req: RequestLog) => {
@@ -95,47 +121,89 @@ const Dashboard = () => {
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Server Status Banner */}
+        {serverStatus && (
+          <div className="px-4 py-2 bg-surface border-b border-border flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${serverStatus.status === 'running' ? 'bg-success' : 'bg-destructive'}`} />
+              <span className="text-muted-foreground">
+                Server: <span className="text-foreground">{serverStatus.status}</span>
+              </span>
+            </div>
+            <span className="text-muted-foreground">
+              Active tunnels globally: <span className="text-foreground">{serverStatus.activeTunnels}</span>
+            </span>
+          </div>
+        )}
+
         {view === "tunnels" ? (
           <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
             {/* Left panel: Tunnels + Requests */}
             <div className={`sm:w-[380px] lg:w-[420px] border-r border-border flex flex-col overflow-hidden shrink-0 ${mobilePanel === "inspector" ? "hidden sm:flex" : "flex"}`}>
-              <TunnelList
-                tunnels={tunnels}
-                selectedTunnelId={selectedTunnelId}
-                onSelectTunnel={setSelectedTunnelId}
-                onCreateTunnel={handleCreateTunnel}
-                onStopTunnel={handleStopTunnel}
-                onShowQR={(t) => setQrTunnel(t)}
-              />
-              <div className="flex-1 overflow-auto border-t border-border">
-                <div className="p-3 border-b border-border">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Request Log
-                  </h3>
+              {isLoading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center text-muted-foreground">
+                    <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2" />
+                    <p className="text-xs">Loading tunnels...</p>
+                  </div>
                 </div>
-                <div className="divide-y divide-border">
-                  {filteredRequests.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-muted-foreground">
-                      No requests yet for this tunnel
+              ) : tunnels.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center p-6">
+                  <div className="text-center">
+                    <div className="text-4xl mb-4">🚇</div>
+                    <h3 className="text-sm font-semibold mb-2">No Active Tunnels</h3>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Start a tunnel using the CLI to see it here
+                    </p>
+                    <div className="bg-surface rounded-lg p-3 text-left">
+                      <p className="text-xs text-muted-foreground mb-1">Run this command:</p>
+                      <code className="text-xs font-mono text-primary">
+                        npx devportal-tunnel start 3000
+                      </code>
                     </div>
-                  ) : (
-                    filteredRequests.map((req) => (
-                      <button
-                        key={req.id}
-                        onClick={() => handleSelectRequest(req)}
-                        className={`w-full text-left px-3 py-2.5 hover:bg-surface-hover transition-colors text-xs font-mono flex items-center gap-2 sm:gap-3 ${
-                          selectedRequest?.id === req.id ? "bg-surface-hover" : ""
-                        }`}
-                      >
-                        <MethodBadge method={req.method} />
-                        <span className="text-foreground truncate flex-1">{req.path}</span>
-                        <StatusBadge status={req.status} />
-                        <span className="text-muted-foreground shrink-0">{req.duration}ms</span>
-                      </button>
-                    ))
-                  )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <TunnelList
+                    tunnels={tunnels}
+                    selectedTunnelId={selectedTunnelId || ""}
+                    onSelectTunnel={setSelectedTunnelId}
+                    onCreateTunnel={handleCreateTunnel}
+                    onStopTunnel={handleStopTunnel}
+                    onShowQR={(t) => setQrTunnel(t)}
+                  />
+                  <div className="flex-1 overflow-auto border-t border-border">
+                    <div className="p-3 border-b border-border">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Request Log
+                      </h3>
+                    </div>
+                    <div className="divide-y divide-border">
+                      {filteredRequests.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-muted-foreground">
+                          No requests yet for this tunnel
+                        </div>
+                      ) : (
+                        filteredRequests.map((req) => (
+                          <button
+                            key={req.id}
+                            onClick={() => handleSelectRequest(req)}
+                            className={`w-full text-left px-3 py-2.5 hover:bg-surface-hover transition-colors text-xs font-mono flex items-center gap-2 sm:gap-3 ${
+                              selectedRequest?.id === req.id ? "bg-surface-hover" : ""
+                            }`}
+                          >
+                            <MethodBadge method={req.method} />
+                            <span className="text-foreground truncate flex-1">{req.path}</span>
+                            <StatusBadge status={req.status} />
+                            <span className="text-muted-foreground shrink-0">{req.duration}ms</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right panel: Inspector */}
@@ -147,7 +215,13 @@ const Dashboard = () => {
               >
                 ← Back to requests
               </button>
-              <RequestInspector request={selectedRequest} />
+              {selectedRequest ? (
+                <RequestInspector request={selectedRequest} />
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+                  Select a request to inspect
+                </div>
+              )}
             </div>
           </div>
         ) : (

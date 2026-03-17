@@ -16,7 +16,16 @@ const tunnelManager = new TunnelManager();
 const requestForwarder = new RequestForwarder(tunnelManager);
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'https://devportal.stylnode.in',
+    'https://stylnode.in',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.raw({ type: "*/*", limit: "10mb" }));
 

@@ -1,16 +1,21 @@
 import { Copy, Check, QrCode, StopCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { TunnelData } from "@/lib/mock-data";
+import type { TunnelData } from "@/lib/api";
 import { useState } from "react";
 import { toast } from "sonner";
 
+interface TunnelDataUI extends TunnelData {
+  requestCount?: number;
+  isDemo?: boolean;
+}
+
 interface Props {
-  tunnels: TunnelData[];
+  tunnels: TunnelDataUI[];
   selectedTunnelId: string;
   onSelectTunnel: (id: string) => void;
   onCreateTunnel: () => void;
   onStopTunnel: (id: string) => void;
-  onShowQR: (tunnel: TunnelData) => void;
+  onShowQR: (tunnel: TunnelDataUI) => void;
 }
 
 const TunnelList = ({ tunnels, selectedTunnelId, onSelectTunnel, onCreateTunnel, onStopTunnel, onShowQR }: Props) => {
@@ -58,7 +63,7 @@ const TunnelList = ({ tunnels, selectedTunnelId, onSelectTunnel, onCreateTunnel,
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-muted-foreground font-mono truncate flex-1">
-                :{t.localPort} → {t.url}
+                {t.localPort ? `:${t.localPort} → ` : ''}{t.url}
               </span>
               <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                 <button
@@ -87,7 +92,7 @@ const TunnelList = ({ tunnels, selectedTunnelId, onSelectTunnel, onCreateTunnel,
               </div>
             </div>
             <div className="mt-1.5 text-[10px] text-muted-foreground">
-              {t.requestCount} requests
+              {t.requestCount ?? 0} requests
             </div>
           </button>
         ))}

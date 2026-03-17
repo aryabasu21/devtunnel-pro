@@ -1,4 +1,4 @@
-import type { RequestLog } from "@/lib/mock-data";
+import type { RequestLog } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Play, Copy, RotateCcw } from "lucide-react";
 import { useState } from "react";
