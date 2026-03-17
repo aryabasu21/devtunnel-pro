@@ -119,11 +119,16 @@ export class RequestForwarder {
   private serializeBody(body: any): string | null {
     if (!body) return null;
     if (Buffer.isBuffer(body)) {
+      // Empty buffer = no body
+      if (body.length === 0) return null;
       return body.toString("base64");
     }
     if (typeof body === "object") {
+      // Empty object {} = no body (express.json sets this for GET requests)
+      if (Object.keys(body).length === 0) return null;
       return JSON.stringify(body);
     }
-    return String(body);
+    const str = String(body);
+    return str.length > 0 ? str : null;
   }
 }
