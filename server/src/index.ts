@@ -23,20 +23,23 @@ const allowedOrigins = [
   "http://localhost:3000",
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    // Allow exact matches
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Allow any *.tunnel.stylnode.in subdomain
-    if (/^https:\/\/[^.]+\.tunnel\.stylnode\.in$/.test(origin)) return callback(null, true);
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      // Allow exact matches
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Allow any *.tunnel.stylnode.in subdomain
+      if (/^https:\/\/[^.]+\.tunnel\.stylnode\.in$/.test(origin))
+        return callback(null, true);
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: "10mb" }));
-app.use(express.raw({ type: "*/*", limit: "10mb" }));
+// app.use(express.raw({ type: "*/*", limit: "10mb" }));
 
 // Health check
 app.get("/health", (req, res) => {
@@ -132,7 +135,12 @@ app.all("*", async (req: Request, res: Response) => {
       const lowerKey = key.toLowerCase();
       if (
         value &&
-        !["transfer-encoding", "content-length", "connection", "content-encoding"].includes(lowerKey)
+        ![
+          "transfer-encoding",
+          "content-length",
+          "connection",
+          "content-encoding",
+        ].includes(lowerKey)
       ) {
         res.setHeader(key, value);
       }
