@@ -142,12 +142,15 @@ export class TunnelClient extends EventEmitter {
     this.emit("request", { method, path, requestId });
 
     // Build URL with query params
-    let url = `http://localhost:${this.config.localPort}${path}`;
-    if (query && Object.keys(query).length > 0) {
-      const params = new URLSearchParams(query as Record<string, string>);
-      url += `?${params.toString()}`;
-    }
-
+    // 🔥 SAFE URL FIX (replace above line with this)
+    const safePath = path && path !== "undefined" ? path : "/";
+    const url = `http://localhost:${this.config.localPort}${safePath}`;
+    // if (query && Object.keys(query).length > 0) {
+    //   const params = new URLSearchParams(query as Record<string, string>);
+    //   url += `?${params.toString()}`;
+    // }
+    console.log("PATH RECEIVED:", path);
+    console.log("FINAL URL:", url);
     // Add auth header if configured
     const requestHeaders = {
       ...headers,
@@ -223,7 +226,7 @@ export class TunnelClient extends EventEmitter {
 
       const options: http.RequestOptions = {
         hostname: urlObj.hostname,
-        port: urlObj.port || 80,
+        port: Number(urlObj.port) || this.config.localPort,
         path: urlObj.pathname + urlObj.search,
         method,
         headers,
