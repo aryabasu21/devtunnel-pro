@@ -130,31 +130,31 @@ const Docs = () => {
                       <TabsContent value="mac" className="mt-0">
                         <TerminalBlock
                           title="terminal"
-                          code={`# Using Homebrew (recommended)
-$ brew install devportal
+                          code={`# Using npm (requires Node.js)
+$ npm install -g devportal-tunnel
 
-# Or using curl
-$ curl -fsSL https://devportal.live/install.sh | sh`}
+# Or run directly with npx
+$ npx devportal-tunnel start 3000`}
                         />
                       </TabsContent>
                       <TabsContent value="windows" className="mt-0">
                         <TerminalBlock
                           title="powershell"
-                          code={`# Using winget (recommended)
-> winget install devportal
+                          code={`# Using npm (requires Node.js)
+> npm install -g devportal-tunnel
 
-# Or using PowerShell
-> iwr https://devportal.live/install.ps1 -useb | iex`}
+# Or run directly with npx
+> npx devportal-tunnel start 3000`}
                         />
                       </TabsContent>
                       <TabsContent value="linux" className="mt-0">
                         <TerminalBlock
                           title="terminal"
-                          code={`# Using curl
-$ curl -fsSL https://devportal.live/install.sh | sh
+                          code={`# Using npm (requires Node.js)
+$ npm install -g devportal-tunnel
 
-# Or using apt (Debian/Ubuntu)
-$ sudo apt install devportal`}
+# Or run directly with npx
+$ npx devportal-tunnel start 3000`}
                         />
                       </TabsContent>
                     </Tabs>
@@ -165,9 +165,9 @@ $ sudo apt install devportal`}
                   <div className="flex-1">
                     <p className="font-medium mb-3">Start a tunnel for your local server</p>
                     <TerminalBlock
-                      code={`$ devportal 3000
+                      code={`$ devportal-tunnel start 3000
 
-Tunnel active → https://cosmic-river-847.devportal.live
+Tunnel active → https://cosmic-river-847.tunnel.stylnode.in
 Local server  → http://localhost:3000
 Dashboard     → Open browser to inspect traffic`}
                     />
@@ -239,28 +239,28 @@ POST /api/webhook        200   23ms`}
                   <CardContent className="space-y-3">
                     <p className="text-sm text-muted-foreground">Start a tunnel to expose your local port</p>
                     <TerminalBlock
-                      title="devportal"
+                      title="devportal-tunnel"
                       code={`# Expose port 3000
-$ devportal 3000
+$ devportal-tunnel start 3000
 
 # Expose port 8080 with custom subdomain
-$ devportal 8080 --subdomain my-api
+$ devportal-tunnel start 8080 --subdomain my-api
 
-# Expose with auth token for webhook testing
-$ devportal 3000 --auth-header "Authorization: Bearer token123"`}
+# Expose with password protection
+$ devportal-tunnel start 3000 --password secret123`}
                     />
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-mono">devportal ls</CardTitle>
+                    <CardTitle className="text-base font-mono">devportal-tunnel ls</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-sm text-muted-foreground">List all active tunnels</p>
                     <TerminalBlock
-                      title="devportal ls"
-                      code={`$ devportal ls
+                      title="devportal-tunnel ls"
+                      code={`$ devportal-tunnel ls
 
 ┌─────────────────────────────────────────────────────────────┐
 │ ID     │ Name              │ URL                           │
@@ -274,19 +274,19 @@ $ devportal 3000 --auth-header "Authorization: Bearer token123"`}
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-mono">devportal stop &lt;id&gt;</CardTitle>
+                    <CardTitle className="text-base font-mono">devportal-tunnel stop &lt;id&gt;</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-sm text-muted-foreground">Stop a specific tunnel or all tunnels</p>
                     <TerminalBlock
-                      title="devportal stop"
+                      title="devportal-tunnel stop"
                       code={`# Stop specific tunnel
-$ devportal stop t-847
+$ devportal-tunnel stop t-847
 
 ✓ Tunnel t-847 stopped
 
 # Stop all tunnels
-$ devportal stop --all
+$ devportal-tunnel stop --all
 
 ✓ All tunnels stopped (2 total)`}
                     />
@@ -295,23 +295,23 @@ $ devportal stop --all
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-mono">devportal replay &lt;request-id&gt;</CardTitle>
+                    <CardTitle className="text-base font-mono">devportal-tunnel replay &lt;request-id&gt;</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-sm text-muted-foreground">Replay a captured request from the log</p>
                     <TerminalBlock
-                      title="devportal replay"
+                      title="devportal-tunnel replay"
                       code={`# Replay request
-$ devportal replay req-abc123
+$ devportal-tunnel replay req-abc123
 
 → POST /api/webhook
 ← 200 OK (45ms)
 
 # Replay with modified headers
-$ devportal replay req-abc123 --header "X-Debug: true"
+$ devportal-tunnel replay req-abc123 --header "X-Debug: true"
 
 # Replay with modified body
-$ devportal replay req-abc123 --body '{"updated": true}'`}
+$ devportal-tunnel replay req-abc123 --body '{"updated": true}'`}
                     />
                   </CardContent>
                 </Card>
@@ -443,14 +443,14 @@ await tunnel.close();`}
                     <p className="text-sm text-muted-foreground">Forward webhooks from services like Stripe, GitHub, or Slack to your local server</p>
                     <TerminalBlock
                       title="webhooks"
-                      code={`# Start tunnel with webhook mode
-$ devportal 3000 --webhook
+                      code={`# Start tunnel for webhook testing
+$ devportal-tunnel start 3000
 
-Tunnel active → https://cosmic-river-847.devportal.live
-Webhook URL   → https://cosmic-river-847.devportal.live/webhook
+Tunnel active → https://cosmic-river-847.tunnel.stylnode.in
+Local server  → http://localhost:3000
 
-# Add this URL to your Stripe/GitHub/Slack dashboard
-# All webhook events will forward to localhost:3000/webhook`}
+# Add your tunnel URL to Stripe/GitHub/Slack dashboard
+# All webhook events will forward to localhost:3000`}
                     />
                   </CardContent>
                 </Card>
