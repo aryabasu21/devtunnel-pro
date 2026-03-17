@@ -26,10 +26,13 @@ export class TunnelClient extends EventEmitter {
   private ws: WebSocket | null = null;
   private config: TunnelConfig;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000;
+  private maxReconnectAttempts = 10;
+  private baseReconnectDelay = 1000;
   private isConnected = false;
   private tunnelInfo: TunnelInfo | null = null;
+  private pingInterval: NodeJS.Timeout | null = null;
+  private isReconnecting = false;
+  private shouldReconnect = true;
 
   constructor(config: TunnelConfig) {
     super();
@@ -38,82 +41,135 @@ export class TunnelClient extends EventEmitter {
 
   async connect(): Promise<TunnelInfo> {
     return new Promise((resolve, reject) => {
-      try {
-        this.ws = new WebSocket(this.config.wsUrl);
-
-        this.ws.on("open", () => {
-          this.isConnected = true;
-          this.reconnectAttempts = 0;
-
-          // Register tunnel
-          this.send({
-            type: "register",
-            deviceId: this.config.deviceId,
-            localPort: this.config.localPort,
-            subdomain: this.config.subdomain,
-            password: this.config.password,
-            demo: this.config.demo,
-          });
-        });
-
-        this.ws.on("message", async (data: Buffer) => {
-          try {
-            const message = JSON.parse(data.toString());
-            await this.handleMessage(message, resolve, reject);
-          } catch (error) {
-            console.error("Failed to parse message:", error);
-          }
-        });
-
-        this.ws.on("close", () => {
-          this.isConnected = false;
-          this.emit("disconnected");
-
-          if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts++;
-            console.log(
-              chalk.yellow(
-                `Reconnecting... (attempt ${this.reconnectAttempts})`,
-              ),
-            );
-            setTimeout(
-              () => this.connect(),
-              this.reconnectDelay * this.reconnectAttempts,
-            );
-          }
-        });
-
-        this.ws.on("error", (error) => {
-          if (!this.isConnected) {
-            reject(error);
-          }
-          this.emit("error", error);
-        });
-
-        // Ping to keep connection alive
-        const pingInterval = setInterval(() => {
-          if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
-            this.send({ type: "ping" });
-          }
-        }, 30000);
-
-        this.on("disconnected", () => clearInterval(pingInterval));
-      } catch (error) {
-        reject(error);
-      }
+      this.setupWebSocket(resolve, reject);
     });
+  }
+
+  private setupWebSocket(
+    resolve?: (info: TunnelInfo) => void,
+    reject?: (error: Error) => void
+  ): void {
+    try {
+      // Clean up existing connection
+      if (this.ws) {
+        this.ws.removeAllListeners();
+        if (this.ws.readyState === WebSocket.OPEN) {
+          this.ws.close();
+        }
+      }
+
+      this.ws = new WebSocket(this.config.wsUrl);
+
+      this.ws.on("open", () => {
+        this.isConnected = true;
+        this.isReconnecting = false;
+        this.reconnectAttempts = 0;
+
+        // Register tunnel
+        this.send({
+          type: "register",
+          deviceId: this.config.deviceId,
+          localPort: this.config.localPort,
+          subdomain: this.tunnelInfo?.name || this.config.subdomain, // Reuse same subdomain on reconnect
+          password: this.config.password,
+          demo: this.config.demo,
+        });
+
+        // Start ping interval (every 15 seconds to keep connection alive)
+        this.startPingInterval();
+      });
+
+      this.ws.on("message", async (data: Buffer) => {
+        try {
+          const message = JSON.parse(data.toString());
+          await this.handleMessage(message, resolve, reject);
+        } catch (error) {
+          console.error("Failed to parse message:", error);
+        }
+      });
+
+      this.ws.on("close", (code, reason) => {
+        this.isConnected = false;
+        this.stopPingInterval();
+
+        if (!this.shouldReconnect) {
+          this.emit("disconnected");
+          return;
+        }
+
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.scheduleReconnect();
+        } else {
+          console.log(chalk.red("\nMax reconnection attempts reached. Tunnel stopped."));
+          console.log(chalk.gray("Run the command again to start a new tunnel."));
+          this.emit("disconnected");
+          process.exit(1);
+        }
+      });
+
+      this.ws.on("error", (error) => {
+        if (!this.isConnected && !this.isReconnecting && reject) {
+          reject(error);
+        }
+        this.emit("error", error);
+      });
+
+    } catch (error) {
+      if (reject) reject(error as Error);
+    }
+  }
+
+  private scheduleReconnect(): void {
+    if (this.isReconnecting) return;
+    this.isReconnecting = true;
+    this.reconnectAttempts++;
+
+    // Exponential backoff with jitter: 1s, 2s, 4s, 8s... up to 30s max
+    const delay = Math.min(
+      this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1) + Math.random() * 1000,
+      30000
+    );
+
+    console.log(chalk.yellow(`\nConnection lost. Reconnecting in ${Math.round(delay / 1000)}s... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`));
+
+    setTimeout(() => {
+      this.emit("reconnecting", this.reconnectAttempts);
+      this.setupWebSocket();
+    }, delay);
+  }
+
+  private startPingInterval(): void {
+    this.stopPingInterval();
+    this.pingInterval = setInterval(() => {
+      if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
+        this.send({ type: "ping" });
+      }
+    }, 15000); // Ping every 15 seconds
+  }
+
+  private stopPingInterval(): void {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
   }
 
   private async handleMessage(
     message: any,
-    resolve: (info: TunnelInfo) => void,
-    reject: (error: Error) => void,
+    resolve?: (info: TunnelInfo) => void,
+    reject?: (error: Error) => void,
   ): Promise<void> {
     switch (message.type) {
       case "registered":
+        const wasReconnect = this.tunnelInfo !== null;
         this.tunnelInfo = message.tunnel;
         this.emit("registered", message.tunnel);
-        resolve(message.tunnel);
+        if (wasReconnect) {
+          console.log(chalk.green(`\nReconnected! Tunnel restored: ${message.tunnel.url}`));
+          this.emit("reconnected", message.tunnel);
+        } else if (resolve) {
+          resolve(message.tunnel);
+        }
         break;
 
       case "request":
@@ -122,7 +178,7 @@ export class TunnelClient extends EventEmitter {
 
       case "error":
         console.error(chalk.red("Server error:"), message.message);
-        reject(new Error(message.message));
+        if (reject) reject(new Error(message.message));
         break;
 
       case "pong":
@@ -300,6 +356,8 @@ export class TunnelClient extends EventEmitter {
   }
 
   stop(): void {
+    this.shouldReconnect = false;
+    this.stopPingInterval();
     if (this.tunnelInfo) {
       this.send({ type: "stop", tunnelId: this.tunnelInfo.id });
     }

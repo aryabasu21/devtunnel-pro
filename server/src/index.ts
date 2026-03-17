@@ -198,6 +198,13 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
 
   let tunnelId: string | null = null;
 
+  // Server-side ping to keep connection alive (every 20 seconds)
+  const pingInterval = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.ping();
+    }
+  }, 20000);
+
   ws.on("message", (data: Buffer) => {
     try {
       const message = JSON.parse(data.toString());
@@ -214,6 +221,7 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
 
   ws.on("close", () => {
     console.log("CLI disconnected");
+    clearInterval(pingInterval);
     if (tunnelId) {
       tunnelManager.removeTunnel(tunnelId);
     }
@@ -221,6 +229,7 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
 
   ws.on("error", (error) => {
     console.error("WebSocket error:", error);
+    clearInterval(pingInterval);
   });
 
   // Send welcome message
