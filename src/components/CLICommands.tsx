@@ -3,54 +3,44 @@ import { Terminal } from "lucide-react";
 
 const commands = [
   {
-    cmd: "devportal <port>",
+    cmd: "devportal-tunnel start <port>",
     desc: "Start a tunnel to expose localhost on the given port",
-    example: "devportal 3000",
+    example: "devportal-tunnel start 3000",
   },
   {
-    cmd: "devportal <port> --demo",
+    cmd: "devportal-tunnel start <port> --demo",
     desc: "Create a temporary demo link that auto-expires in 2 hours",
-    example: "devportal 3000 --demo",
+    example: "devportal-tunnel start 3000 --demo",
   },
   {
-    cmd: "devportal <port> --qr",
+    cmd: "devportal-tunnel start <port> --qr",
     desc: "Display a QR code in terminal for easy mobile sharing",
-    example: "devportal 5173 --qr",
+    example: "devportal-tunnel start 5173 --qr",
   },
   {
-    cmd: "devportal <port> --password <pass>",
+    cmd: "devportal-tunnel start <port> --password <pass>",
     desc: "Password-protect the tunnel so only authorized users can access",
-    example: 'devportal 3000 --password secret123',
+    example: 'devportal-tunnel start 3000 --password secret123',
   },
   {
-    cmd: "devportal <port> --subdomain <name>",
+    cmd: "devportal-tunnel start <port> --subdomain <name>",
     desc: "Request a custom subdomain for your public URL",
-    example: "devportal 3000 --subdomain my-app",
+    example: "devportal-tunnel start 3000 --subdomain my-app",
   },
   {
-    cmd: "devportal ls",
+    cmd: "devportal-tunnel ls",
     desc: "List all active tunnels and their public URLs",
-    example: "devportal ls",
+    example: "devportal-tunnel ls",
   },
   {
-    cmd: "devportal stop <tunnel-id>",
+    cmd: "devportal-tunnel stop <tunnel-id>",
     desc: "Stop a specific tunnel by ID",
-    example: "devportal stop purple-horizon-218",
+    example: "devportal-tunnel stop purple-horizon-218",
   },
   {
-    cmd: "devportal stop --all",
+    cmd: "devportal-tunnel stop --all",
     desc: "Stop all active tunnels at once",
-    example: "devportal stop --all",
-  },
-  {
-    cmd: "devportal logs <tunnel-id>",
-    desc: "Stream live request logs from a specific tunnel",
-    example: "devportal logs purple-horizon-218",
-  },
-  {
-    cmd: "devportal replay <request-id>",
-    desc: "Replay a captured request from the log",
-    example: "devportal replay req-abc123",
+    example: "devportal-tunnel stop --all",
   },
 ];
 

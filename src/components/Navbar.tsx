@@ -44,6 +44,9 @@ const Navbar = () => {
           <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/docs")}>
             Docs
           </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/support")}>
+            Support
+          </Button>
           <Button size="sm" onClick={goToDashboard}>
             Get Started
           </Button>
@@ -66,6 +69,9 @@ const Navbar = () => {
           </Button>
           <Button variant="ghost" size="sm" className="justify-start text-muted-foreground" onClick={() => { navigate("/docs"); setMenuOpen(false); }}>
             Docs
+          </Button>
+          <Button variant="ghost" size="sm" className="justify-start text-muted-foreground" onClick={() => { navigate("/support"); setMenuOpen(false); }}>
+            Support
           </Button>
           <Button size="sm" className="mt-2" onClick={() => { goToDashboard(); setMenuOpen(false); }}>
             Get Started

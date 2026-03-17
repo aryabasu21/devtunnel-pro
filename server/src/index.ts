@@ -2,14 +2,23 @@ import express, { Request, Response } from "express";
 import { createServer, IncomingMessage } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import cors from "cors";
+import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { TunnelManager } from "./tunnelManager";
 import { RequestForwarder } from "./requestForwarder";
+import supportRoutes from "./routes/support";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DOMAIN = process.env.DOMAIN || "localhost:3001";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://riju:riju21@cluster1.doybfcn.mongodb.net/devportal";
 const WS_PATH = "/ws";
+
+// Connect to MongoDB
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // Tunnel manager
 const tunnelManager = new TunnelManager();
@@ -21,6 +30,7 @@ const allowedOrigins = [
   "https://stylnode.in",
   "http://localhost:5173",
   "http://localhost:3000",
+  "http://localhost:8080",
 ];
 
 app.use(
@@ -39,7 +49,14 @@ app.use(
   }),
 );
 app.use(express.json({ limit: "10mb" }));
-app.use(express.raw({ type: "*/*", limit: "10mb" }));
+// Skip raw body parsing for multipart (file uploads) - multer handles those
+app.use(express.raw({
+  type: (req) => {
+    const contentType = req.headers["content-type"] || "";
+    return !contentType.includes("multipart/form-data");
+  },
+  limit: "10mb"
+}));
 
 // Health check
 app.get("/health", (req, res) => {
@@ -74,6 +91,9 @@ app.get("/api/devices/:deviceId/tunnels", (req, res) => {
     })),
   );
 });
+
+// Support ticket routes
+app.use("/api/support", supportRoutes);
 
 // Wildcard route - forward to tunnel
 app.all("*", async (req: Request, res: Response) => {

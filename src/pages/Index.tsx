@@ -4,9 +4,10 @@ import FeaturesGrid from "@/components/FeaturesGrid";
 import CLICommands from "@/components/CLICommands";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight, Github } from "lucide-react";
+import { Github, Copy, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const getDeviceId = (): string => {
   const storageKey = "devportal_device_id";
@@ -20,7 +21,11 @@ const getDeviceId = (): string => {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [deviceId, setDeviceId] = useState<string>("");
+  const [copied, setCopied] = useState(false);
+
+  const installCommand = "npm install -g devportal-tunnel";
 
   useEffect(() => {
     setDeviceId(getDeviceId());
@@ -28,6 +33,16 @@ const Index = () => {
 
   const goToDashboard = () => {
     navigate(`/dashboard/${deviceId}`);
+  };
+
+  const copyInstallCommand = async () => {
+    await navigator.clipboard.writeText(installCommand);
+    setCopied(true);
+    toast({
+      title: "Copied to clipboard!",
+      description: "Run the command in your terminal to get started.",
+    });
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -58,20 +73,21 @@ const Index = () => {
               Expose your local dev server with a single command. Inspect traffic, replay requests, and debug APIs — all from your terminal or dashboard.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
-              <Button variant="hero" size="xl" className="w-full sm:w-auto" onClick={goToDashboard}>
-                Open Dashboard <ArrowRight className="w-4 h-4" />
+              <Button variant="hero" size="xl" className="w-full sm:w-auto" onClick={copyInstallCommand}>
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? "Copied!" : "Get Started"}
               </Button>
               <Button
                 variant="outline"
                 size="xl"
                 className="w-full sm:w-auto"
-                onClick={() => window.open("https://github.com", "_blank", "noopener,noreferrer")}
+                onClick={() => window.open("https://github.com/aryabasu21/devtunnel-pro", "_blank", "noopener,noreferrer")}
               >
                 <Github className="w-4 h-4" /> Star on GitHub
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground font-mono">
-              curl -fsSL https://devportal.live/install.sh | sh
+            <p className="text-xs text-muted-foreground font-mono bg-muted/50 inline-block px-3 py-1.5 rounded-md">
+              {installCommand}
             </p>
           </motion.div>
         </div>
@@ -102,7 +118,7 @@ const Index = () => {
           </p>
           <div className="surface-card inline-block px-4 sm:px-6 py-3 font-mono text-xs sm:text-sm">
             <span className="text-muted-foreground">$ </span>
-            <span className="text-foreground">devportal 3000</span>
+            <span className="text-foreground">devportal-tunnel start 3000</span>
           </div>
         </div>
       </section>
@@ -113,8 +129,8 @@ const Index = () => {
           <span>© 2026 DevPortal. All rights reserved.</span>
           <div className="flex gap-4">
             <a href="/docs" className="hover:text-foreground transition-colors">Docs</a>
-            <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
-            <a href="https://x.com" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">Twitter</a>
+            <a href="/support" className="hover:text-foreground transition-colors">Support</a>
+            <a href="https://github.com/aryabasu21/devtunnel-pro" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
           </div>
         </div>
       </footer>

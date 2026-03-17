@@ -24,10 +24,15 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
   // Check if local server is running
   const isPortOpen = await checkPort(port);
   if (!isPortOpen) {
-    spinner.warn(chalk.yellow(`No server detected on port ${port}`));
-    console.log(chalk.gray(`  Make sure your local server is running first`));
-    console.log(chalk.gray(`  Example: npm run dev`));
+    spinner.fail(chalk.red(`No server running on port ${port}`));
     console.log();
+    console.log(chalk.gray('  Make sure your local server is running first:'));
+    console.log(chalk.gray('  Example: npm run dev'));
+    console.log();
+    console.log(chalk.gray('  Then run:'));
+    console.log(chalk.cyan(`  devportal-tunnel ${port}`));
+    console.log();
+    process.exit(1);
   }
 
   const config = getConfig();
