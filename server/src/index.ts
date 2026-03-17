@@ -18,10 +18,10 @@ const requestForwarder = new RequestForwarder(tunnelManager);
 // Middleware
 const corsOptions = {
   origin: [
-    'https://devportal.stylnode.in',
-    'https://stylnode.in',
-    'http://localhost:5173',
-    'http://localhost:3000',
+    "https://devportal.stylnode.in",
+    "https://stylnode.in",
+    "http://localhost:5173",
+    "http://localhost:3000",
   ],
   credentials: true,
 };
@@ -87,7 +87,8 @@ app.all("*", async (req: Request, res: Response) => {
       status: "running",
       activeTunnels: tunnelManager.getActiveTunnelCount(),
       docs: "https://devportal.stylnode.in/docs",
-      usage: "Install CLI: npm install -g devportal-tunnel && devportal start 3000",
+      usage:
+        "Install CLI: npm install -g devportal-tunnel && devportal start 3000",
     });
   }
 
@@ -116,17 +117,20 @@ app.all("*", async (req: Request, res: Response) => {
   try {
     const response = await requestForwarder.forward(tunnel, req);
     res.status(response.status);
+
+    // Filter headers that Express should set automatically
     Object.entries(response.headers).forEach(([key, value]) => {
       const lowerKey = key.toLowerCase();
-      // Skip headers that Express will set automatically or cause issues
-      if (value &&
-          lowerKey !== "transfer-encoding" &&
-          lowerKey !== "content-length" &&
-          lowerKey !== "connection") {
+      if (
+        value &&
+        !["transfer-encoding", "content-length", "connection", "content-encoding"].includes(lowerKey)
+      ) {
         res.setHeader(key, value);
       }
     });
-    res.send(response.body);
+
+    // Send response body
+    res.end(response.body);
   } catch (error: any) {
     console.error("Forward error:", error.message);
     res.status(502).json({
