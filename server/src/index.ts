@@ -46,6 +46,8 @@ app.use(
       callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Tunnel-Password"],
   }),
 );
 app.use(express.json({ limit: "10mb" }));
@@ -62,6 +64,9 @@ app.use(express.raw({
 app.get("/health", (req, res) => {
   res.json({ status: "ok", tunnels: tunnelManager.getActiveTunnelCount() });
 });
+
+// Handle preflight requests for API routes
+app.options("/api/*", cors());
 
 // API: Get tunnel info
 app.get("/api/tunnels/:tunnelId", (req, res) => {
