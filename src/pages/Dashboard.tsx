@@ -2,12 +2,12 @@ import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import TunnelList from "@/components/TunnelList";
-import ApiPlayground from "@/components/ApiPlayground";
+import SecurityDashboard from "@/components/SecurityDashboard";
 import QRCodeModal from "@/components/QRCodeModal";
 import { getTunnelsByDevice, getServerStatus, type TunnelData } from "@/lib/api";
 import toast from "react-hot-toast";
 
-type View = "tunnels" | "playground";
+type View = "tunnels" | "security";
 
 const getDeviceId = (): string => {
   const storageKey = "devportal_device_id";
@@ -223,7 +223,7 @@ const Dashboard = () => {
             </div>
           </div>
         ) : (
-          <ApiPlayground />
+          <SecurityDashboard />
         )}
       </div>
     </div>

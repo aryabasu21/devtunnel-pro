@@ -1,9 +1,9 @@
-import { Globe, Code2, Settings, Menu, User } from "lucide-react";
+import { Globe, Shield, Settings, Menu, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-type View = "tunnels" | "playground";
+type View = "tunnels" | "security";
 
 interface Props {
   view: View;
@@ -15,7 +15,7 @@ interface Props {
 
 const items = [
   { id: "tunnels" as View, icon: Globe, label: "Tunnels" },
-  { id: "playground" as View, icon: Code2, label: "API Playground" },
+  { id: "security" as View, icon: Shield, label: "Security" },
 ];
 
 const DashboardSidebar = ({ view, onViewChange, deviceId, mobileMenuOpen, onToggleMobileMenu }: Props) => {
