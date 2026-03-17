@@ -12,7 +12,8 @@ import { verifyEmailConfig } from "./services/emailService";
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DOMAIN = process.env.DOMAIN || "localhost:3001";
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://riju:riju21@cluster1.doybfcn.mongodb.net/devportal";
+const MONGODB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost:27017/devportal";
 const WS_PATH = "/ws";
 
 // Connect to MongoDB
@@ -56,13 +57,15 @@ app.use(
 );
 app.use(express.json({ limit: "10mb" }));
 // Skip raw body parsing for multipart (file uploads) - multer handles those
-app.use(express.raw({
-  type: (req) => {
-    const contentType = req.headers["content-type"] || "";
-    return !contentType.includes("multipart/form-data");
-  },
-  limit: "10mb"
-}));
+app.use(
+  express.raw({
+    type: (req) => {
+      const contentType = req.headers["content-type"] || "";
+      return !contentType.includes("multipart/form-data");
+    },
+    limit: "10mb",
+  }),
+);
 
 // Health check
 app.get("/health", (req, res) => {
