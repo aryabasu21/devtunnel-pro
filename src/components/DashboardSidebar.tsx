@@ -1,24 +1,15 @@
-import { Globe, Shield, Settings, Menu, User } from "lucide-react";
+import { Settings, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-type View = "tunnels" | "security";
-
 interface Props {
-  view: View;
-  onViewChange: (v: View) => void;
   deviceId?: string;
   mobileMenuOpen?: boolean;
   onToggleMobileMenu?: () => void;
 }
 
-const items = [
-  { id: "tunnels" as View, icon: Globe, label: "Tunnels" },
-  { id: "security" as View, icon: Shield, label: "Security" },
-];
-
-const DashboardSidebar = ({ view, onViewChange, deviceId, mobileMenuOpen, onToggleMobileMenu }: Props) => {
+const DashboardSidebar = ({ deviceId, mobileMenuOpen, onToggleMobileMenu }: Props) => {
   const navigate = useNavigate();
 
   const copyDeviceId = () => {
@@ -38,21 +29,6 @@ const DashboardSidebar = ({ view, onViewChange, deviceId, mobileMenuOpen, onTogg
         >
           <span className="text-xs font-bold text-primary-foreground font-mono">D</span>
         </button>
-
-        {items.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onViewChange(item.id)}
-            className={`w-10 h-10 rounded-md flex items-center justify-center transition-colors ${
-              view === item.id
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
-            }`}
-            title={item.label}
-          >
-            <item.icon className="w-4 h-4" />
-          </button>
-        ))}
 
         <div className="flex-1" />
 
@@ -75,7 +51,7 @@ const DashboardSidebar = ({ view, onViewChange, deviceId, mobileMenuOpen, onTogg
         )}
 
         <button
-          onClick={() => toast.info("Settings panel will be available in the next update")}
+          onClick={() => toast.success("Settings panel coming soon!")}
           className="w-10 h-10 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors"
           title="Settings"
         >
@@ -101,19 +77,6 @@ const DashboardSidebar = ({ view, onViewChange, deviceId, mobileMenuOpen, onTogg
             <User className="w-4 h-4" />
           </button>
         )}
-        {items.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onViewChange(item.id)}
-            className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
-              view === item.id
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <item.icon className="w-4 h-4" />
-          </button>
-        ))}
       </div>
     </>
   );
