@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import TerminalDemo from "@/components/TerminalDemo";
 import FeaturesGrid from "@/components/FeaturesGrid";
 import CLICommands from "@/components/CLICommands";
+import InteractiveFooter from "@/components/InteractiveFooter";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Github, Copy, Check } from "lucide-react";
@@ -145,17 +146,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-6 sm:py-8 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>© 2026 DevPortal. All rights reserved.</span>
-          <div className="flex gap-4">
-            <a href="/docs" className="hover:text-foreground transition-colors">Docs</a>
-            <a href="/support" className="hover:text-foreground transition-colors">Support</a>
-            <a href="https://github.com/aryabasu21/devtunnel-pro" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
-          </div>
-        </div>
-      </footer>
+      <InteractiveFooter />
     </div>
   );
 };

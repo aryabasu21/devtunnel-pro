@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import * as http from 'http';
 import { TunnelClient, TunnelInfo } from '../utils/tunnelClient';
-import { addTunnel, TunnelInfo as StoredTunnel } from '../utils/tunnels';
+import { addTunnel, getTunnels, TunnelInfo as StoredTunnel } from '../utils/tunnels';
 import { getDeviceId } from '../utils/device';
 import { getConfig } from '../utils/config';
 
@@ -16,21 +16,69 @@ interface StartOptions {
   qr?: boolean;
   authHeader?: string;
   local?: boolean; // Use local simulation mode
+  forward?: string; // Port forwarding format: "remote:local" e.g., "8080:3000"
 }
 
 export async function startTunnel(port: number, options: StartOptions): Promise<void> {
   const spinner = ora('Connecting to DevPortal...').start();
 
+  // Parse port forwarding if provided
+  let localPort = port;
+  let remotePort = port;
+
+  if (options.forward) {
+    const [remote, local] = options.forward.split(':');
+    if (!remote || !local) {
+      spinner.fail(chalk.red('Invalid port forwarding format. Use: --forward <remote>:<local>'));
+      console.log(chalk.gray('Example: --forward 8080:3000 (forwards remote port 8080 to local port 3000)'));
+      process.exit(1);
+    }
+    remotePort = parseInt(remote);
+    localPort = parseInt(local);
+
+    if (isNaN(remotePort) || isNaN(localPort)) {
+      spinner.fail(chalk.red('Invalid port numbers in forwarding'));
+      process.exit(1);
+    }
+
+    spinner.text = `Setting up port forwarding ${remotePort}:${localPort}...`;
+  }
+
+  // Check for existing tunnels on the same local port
+  const existingTunnels = getTunnels().filter(t => t.status === 'live' && t.localPort === localPort);
+
+  if (existingTunnels.length > 0) {
+    spinner.fail(chalk.red(`Port ${localPort} is already being tunneled`));
+    console.log();
+    console.log(chalk.yellow('Existing tunnel:'));
+    existingTunnels.forEach(tunnel => {
+      console.log(chalk.gray(`  ID: ${tunnel.id}`));
+      console.log(chalk.gray(`  Name: ${tunnel.name}`));
+      console.log(chalk.gray(`  URL: ${tunnel.url}`));
+      console.log(chalk.gray(`  Local Port: ${tunnel.localPort}`));
+    });
+    console.log();
+    console.log(chalk.gray('Options:'));
+    console.log(chalk.gray('  1. Stop the existing tunnel: ') + chalk.cyan(`devportal-tunnel stop ${existingTunnels[0].id}`));
+    console.log(chalk.gray('  2. Use a different local port'));
+    console.log(chalk.gray('  3. Use port forwarding: ') + chalk.cyan(`--forward ${remotePort}:<different-port>`));
+    process.exit(1);
+  }
+
   // Check if local server is running
-  const isPortOpen = await checkPort(port);
+  const isPortOpen = await checkPort(localPort);
   if (!isPortOpen) {
-    spinner.fail(chalk.red(`No server running on port ${port}`));
+    spinner.fail(chalk.red(`No server running on port ${localPort}`));
     console.log();
     console.log(chalk.gray('  Make sure your local server is running first:'));
     console.log(chalk.gray('  Example: npm run dev'));
     console.log();
     console.log(chalk.gray('  Then run:'));
-    console.log(chalk.cyan(`  devportal-tunnel ${port}`));
+    if (options.forward) {
+      console.log(chalk.cyan(`  devportal-tunnel start ${port} --forward ${options.forward}`));
+    } else {
+      console.log(chalk.cyan(`  devportal-tunnel start ${port}`));
+    }
     console.log();
     process.exit(1);
   }
@@ -41,7 +89,7 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
   // Use local simulation if no server configured or --local flag
   if (options.local || !config.serverUrl) {
     spinner.text = 'Starting local simulation mode...';
-    await startSimulatedTunnel(port, options, spinner);
+    await startSimulatedTunnel(localPort, remotePort, options, spinner);
     return;
   }
 
@@ -51,7 +99,8 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
       serverUrl: config.serverUrl,
       wsUrl: config.wsUrl,
       deviceId,
-      localPort: port,
+      localPort,
+      remotePort: options.forward ? remotePort : undefined,
       subdomain: options.subdomain,
       password: options.password,
       demo: options.demo,
@@ -88,7 +137,12 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
     console.log();
 
     // Display tunnel info
-    console.log(chalk.gray('  Local server: '), chalk.white(`http://localhost:${port}`));
+    console.log(chalk.gray('  Local server: '), chalk.white(`http://localhost:${localPort}`));
+
+    if (options.forward) {
+      console.log(chalk.gray('  Port forward: '), chalk.white(`Remote ${remotePort} → Local ${localPort}`));
+    }
+
     console.log(chalk.gray('  Public URL:   '), chalk.cyan.underline(tunnelInfo.url));
     console.log(chalk.gray('  Tunnel ID:    '), chalk.white(tunnelInfo.id));
 
@@ -118,7 +172,7 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
       id: tunnelInfo.id,
       name: tunnelInfo.name,
       url: tunnelInfo.url,
-      localPort: port,
+      localPort,
       status: 'live',
       createdAt: new Date().toISOString(),
       pid: process.pid,
@@ -152,7 +206,7 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
   }
 }
 
-async function startSimulatedTunnel(port: number, options: StartOptions, spinner: ora.Ora): Promise<void> {
+async function startSimulatedTunnel(localPort: number, remotePort: number, options: StartOptions, spinner: ora.Ora): Promise<void> {
   // Simulate connection delay
   await sleep(1000);
 
@@ -163,7 +217,12 @@ async function startSimulatedTunnel(port: number, options: StartOptions, spinner
   spinner.succeed(chalk.green('Tunnel established (simulation mode)'));
   console.log();
 
-  console.log(chalk.gray('  Local server: '), chalk.white(`http://localhost:${port}`));
+  console.log(chalk.gray('  Local server: '), chalk.white(`http://localhost:${localPort}`));
+
+  if (options.forward) {
+    console.log(chalk.gray('  Port forward: '), chalk.white(`Remote ${remotePort} → Local ${localPort}`));
+  }
+
   console.log(chalk.gray('  Public URL:   '), chalk.cyan.underline(url));
   console.log(chalk.gray('  Tunnel ID:    '), chalk.white(tunnelId));
   console.log();
@@ -179,7 +238,7 @@ async function startSimulatedTunnel(port: number, options: StartOptions, spinner
   console.log(chalk.gray('  Simulating requests... (Press Ctrl+C to stop)'));
   console.log();
 
-  simulateRequests(port);
+  simulateRequests(localPort);
 
   process.on('SIGINT', () => {
     console.log();

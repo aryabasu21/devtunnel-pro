@@ -17,18 +17,18 @@ export async function listTunnels(): Promise<void> {
   const header = [
     chalk.gray('ID'.padEnd(15)),
     chalk.gray('Name'.padEnd(22)),
-    chalk.gray('Port'.padEnd(6)),
+    chalk.gray('Local Port'.padEnd(12)),
     chalk.gray('URL'),
   ].join(' ');
   console.log(header);
-  console.log(chalk.gray('─'.repeat(80)));
+  console.log(chalk.gray('─'.repeat(85)));
 
   // Table rows
   for (const tunnel of tunnels) {
     const row = [
       chalk.white(tunnel.id.padEnd(15)),
       chalk.cyan(tunnel.name.padEnd(22)),
-      chalk.white(tunnel.localPort.toString().padEnd(6)),
+      chalk.white(tunnel.localPort.toString().padEnd(12)),
       chalk.underline(tunnel.url),
     ].join(' ');
     console.log(row);

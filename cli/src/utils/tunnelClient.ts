@@ -9,6 +9,7 @@ export interface TunnelConfig {
   wsUrl: string;
   deviceId: string;
   localPort: number;
+  remotePort?: number; // For port forwarding
   subdomain?: string;
   password?: string;
   demo?: boolean;
@@ -70,6 +71,7 @@ export class TunnelClient extends EventEmitter {
           type: "register",
           deviceId: this.config.deviceId,
           localPort: this.config.localPort,
+          remotePort: this.config.remotePort, // Include remote port for forwarding
           subdomain: this.tunnelInfo?.name || this.config.subdomain, // Reuse same subdomain on reconnect
           password: this.config.password,
           demo: this.config.demo,

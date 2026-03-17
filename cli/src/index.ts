@@ -8,6 +8,7 @@ import { stopTunnel } from './commands/stop';
 import { replayRequest } from './commands/replay';
 import { showLogs } from './commands/logs';
 import { configCommand } from './commands/config';
+import { portCommand } from './commands/port';
 import { getDeviceId } from './utils/device';
 import { getConfig } from './utils/config';
 
@@ -37,6 +38,7 @@ program
   .option('--qr', 'Display QR code in terminal')
   .option('--auth-header <header>', 'Add authorization header to requests')
   .option('--local', 'Run in local simulation mode (no server required)')
+  .option('--forward <ports>', 'Port forwarding (format: remote:local, e.g., 8080:3000)')
   .action(async (port, options) => {
     if (port && !isNaN(parseInt(port))) {
       await startTunnel(parseInt(port), options);
@@ -55,6 +57,7 @@ program
   .option('--qr', 'Display QR code in terminal')
   .option('--auth-header <header>', 'Add authorization header to requests')
   .option('--local', 'Run in local simulation mode (no server required)')
+  .option('--forward <ports>', 'Port forwarding (format: remote:local, e.g., 8080:3000)')
   .action(async (port = '3000', options) => {
     await startTunnel(parseInt(port), options);
   });
@@ -101,6 +104,14 @@ program
   .description('View or update configuration')
   .action(async (action, value) => {
     await configCommand(action, value);
+  });
+
+// Port management command
+program
+  .command('port [action] [port]')
+  .description('Manage ports (actions: check, scan, list)')
+  .action(async (action, port) => {
+    await portCommand(action, port ? parseInt(port) : undefined);
   });
 
 // Device info command
