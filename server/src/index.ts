@@ -117,7 +117,12 @@ app.all("*", async (req: Request, res: Response) => {
     const response = await requestForwarder.forward(tunnel, req);
     res.status(response.status);
     Object.entries(response.headers).forEach(([key, value]) => {
-      if (value && key.toLowerCase() !== "transfer-encoding") {
+      const lowerKey = key.toLowerCase();
+      // Skip headers that Express will set automatically or cause issues
+      if (value &&
+          lowerKey !== "transfer-encoding" &&
+          lowerKey !== "content-length" &&
+          lowerKey !== "connection") {
         res.setHeader(key, value);
       }
     });
