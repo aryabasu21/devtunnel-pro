@@ -45,6 +45,20 @@ program
     }
   });
 
+// Start command: devportal start <port> (alias for default)
+program
+  .command('start [port]')
+  .description('Start a tunnel to expose your local port')
+  .option('-s, --subdomain <name>', 'Custom subdomain for your URL')
+  .option('-p, --password <pass>', 'Password protect the tunnel')
+  .option('--demo', 'Create a temporary link that expires in 2 hours')
+  .option('--qr', 'Display QR code in terminal')
+  .option('--auth-header <header>', 'Add authorization header to requests')
+  .option('--local', 'Run in local simulation mode (no server required)')
+  .action(async (port = '3000', options) => {
+    await startTunnel(parseInt(port), options);
+  });
+
 // List tunnels: devportal ls
 program
   .command('ls')
