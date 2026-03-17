@@ -8,6 +8,7 @@ import { Github, Copy, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { detectPlatform, getInstallCommand, getStartCommand, getPlatformName } from "@/utils/platform";
 
 const getDeviceId = (): string => {
   const storageKey = "devportal_device_id";
@@ -23,12 +24,16 @@ const Index = () => {
   const navigate = useNavigate();
   const [deviceId, setDeviceId] = useState<string>("");
   const [copied, setCopied] = useState(false);
-
-  const installCommand = "npm install -g devportal-tunnel";
+  const [platform, setPlatform] = useState<'windows' | 'mac' | 'linux'>('linux');
 
   useEffect(() => {
     setDeviceId(getDeviceId());
+    setPlatform(detectPlatform());
   }, []);
+
+  const installCommand = getInstallCommand(platform);
+  const startCommand = getStartCommand(platform);
+  const platformName = getPlatformName(platform);
 
   const goToDashboard = () => {
     navigate(`/dashboard/${deviceId}`);
@@ -38,8 +43,9 @@ const Index = () => {
     try {
       await navigator.clipboard.writeText(installCommand);
       setCopied(true);
-      toast.success("Copied to clipboard! Run in your terminal to get started.", {
-        icon: "📋",
+      toast.success(`📋 Copied for ${platformName}!\nRun in terminal, then: ${startCommand}`, {
+        duration: 6000,
+        icon: "⚡",
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -53,8 +59,9 @@ const Index = () => {
       document.execCommand("copy");
       document.body.removeChild(textArea);
       setCopied(true);
-      toast.success("Copied to clipboard! Run in your terminal to get started.", {
-        icon: "📋",
+      toast.success(`📋 Copied for ${platformName}!\nRun in terminal, then: ${startCommand}`, {
+        duration: 6000,
+        icon: "⚡",
       });
       setTimeout(() => setCopied(false), 2000);
     }
@@ -102,7 +109,7 @@ const Index = () => {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground font-mono bg-muted/50 inline-block px-3 py-1.5 rounded-md">
-              {installCommand}
+              {installCommand} <span className="text-muted-foreground/70">({platformName})</span>
             </p>
           </motion.div>
         </div>
@@ -133,7 +140,7 @@ const Index = () => {
           </p>
           <div className="surface-card inline-block px-4 sm:px-6 py-3 font-mono text-xs sm:text-sm">
             <span className="text-muted-foreground">$ </span>
-            <span className="text-foreground">devportal-tunnel start 3000</span>
+            <span className="text-foreground">{startCommand}</span>
           </div>
         </div>
       </section>

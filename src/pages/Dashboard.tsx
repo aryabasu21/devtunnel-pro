@@ -4,6 +4,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import TunnelList from "@/components/TunnelList";
 import QRCodeModal from "@/components/QRCodeModal";
 import { getTunnelsByDevice, getServerStatus, type TunnelData } from "@/lib/api";
+import { detectPlatform, getStartCommand, getPlatformName } from "@/utils/platform";
 import toast from "react-hot-toast";
 
 type View = "tunnels";
@@ -37,6 +38,7 @@ const Dashboard = () => {
   const [qrTunnel, setQrTunnel] = useState<TunnelDataUI | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [serverStatus, setServerStatus] = useState<{ status: string; activeTunnels: number } | null>(null);
+  const [platform] = useState(() => detectPlatform());
 
   // Initialize device ID and redirect if needed
   useEffect(() => {
@@ -124,11 +126,14 @@ const Dashboard = () => {
   }, [deviceId, selectedTunnelId]);
 
   const handleCreateTunnel = useCallback(() => {
-    toast("To create a tunnel, run:\nnpx devportal-tunnel start <port>", {
+    const startCommand = getStartCommand(platform);
+    const platformName = getPlatformName(platform);
+
+    toast(`To create a tunnel, run:\n${startCommand}`, {
       icon: "🚇",
       duration: 5000,
     });
-  }, []);
+  }, [platform]);
 
   const handleStopTunnel = useCallback((id: string) => {
     toast("To stop a tunnel, run:\nnpx devportal-tunnel stop " + id, {
@@ -184,9 +189,9 @@ const Dashboard = () => {
                     Run a command in your terminal to see your tunnel appear here instantly
                   </p>
                   <div className="bg-surface rounded-lg p-4 text-left mb-4">
-                    <p className="text-xs text-muted-foreground mb-2">Quick start:</p>
+                    <p className="text-xs text-muted-foreground mb-2">Quick start ({getPlatformName(platform)}):</p>
                     <code className="text-sm font-mono text-primary block mb-2">
-                      npx devportal-tunnel start 3000
+                      {getStartCommand(platform)}
                     </code>
                     <p className="text-xs text-muted-foreground">
                       Your tunnel will appear here in ~2 seconds ⚡
@@ -251,9 +256,9 @@ const Dashboard = () => {
                   Live updates active
                 </div>
                 <div className="mt-4 bg-surface border border-border rounded-lg p-3 text-left">
-                  <p className="text-xs text-muted-foreground mb-2">Quick Commands:</p>
+                  <p className="text-xs text-muted-foreground mb-2">Quick Commands ({getPlatformName(platform)}):</p>
                   <div className="space-y-1 font-mono text-xs">
-                    <div><span className="text-primary">start:</span> <span className="text-muted-foreground">npx devportal-tunnel start 3000</span></div>
+                    <div><span className="text-primary">start:</span> <span className="text-muted-foreground">{getStartCommand(platform)}</span></div>
                     <div><span className="text-primary">list:</span> <span className="text-muted-foreground">npx devportal-tunnel ls</span></div>
                     <div><span className="text-primary">stop:</span> <span className="text-muted-foreground">npx devportal-tunnel stop &lt;id&gt;</span></div>
                   </div>
