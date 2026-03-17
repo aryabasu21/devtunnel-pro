@@ -136,35 +136,27 @@ export class TunnelClient extends EventEmitter {
   }
 
   private async handleIncomingRequest(message: any): Promise<void> {
-    const { requestId, method, path, headers, query, body } = message;
+    const { requestId, method, path, headers, body } = message;
 
-    // Log the request
     this.emit("request", { method, path, requestId });
 
-    // Build URL with query params
-    // 🔥 SAFE URL FIX (replace above line with this)
     const safePath = path && path !== "undefined" ? path : "/";
     const url = `http://localhost:${this.config.localPort}${safePath}`;
-    // if (query && Object.keys(query).length > 0) {
-    //   const params = new URLSearchParams(query as Record<string, string>);
-    //   url += `?${params.toString()}`;
-    // }
-    console.log("PATH RECEIVED:", path);
-    console.log("FINAL URL:", url);
-    // Add auth header if configured
-    const requestHeaders = {
-      ...headers,
 
-      // 🔥 CRITICAL FIX (THIS fixes your 400)
+    const requestHeaders: Record<string, string> = {
+      ...headers,
       host: `localhost:${this.config.localPort}`,
-      origin: `http://localhost:${this.config.localPort}`,
-      referer: `http://localhost:${this.config.localPort}`,
     };
 
-    // ❌ remove problematic headers
+    // Remove headers that cause issues
     delete requestHeaders["content-length"];
     delete requestHeaders["transfer-encoding"];
     delete requestHeaders["connection"];
+    delete requestHeaders["sec-fetch-site"];
+    delete requestHeaders["sec-fetch-mode"];
+    delete requestHeaders["sec-fetch-dest"];
+    delete requestHeaders["origin"];
+    delete requestHeaders["referer"];
     if (this.config.authHeader) {
       const [key, value] = this.config.authHeader.split(": ");
       if (key && value) {
@@ -281,8 +273,13 @@ export class TunnelClient extends EventEmitter {
 
       req.on("error", reject);
       req.on("timeout", () => reject(new Error("Request timeout")));
+
       if (body) {
-        const bodyBuffer = Buffer.from(body, "base64");
+        // Only decode as base64 if it was encoded that way (binary content)
+        const bodyEncoding = headers?.["x-body-encoding"];
+        const bodyBuffer = bodyEncoding === "base64"
+          ? Buffer.from(body, "base64")
+          : Buffer.from(body, "utf-8");
         req.write(bodyBuffer);
       }
 

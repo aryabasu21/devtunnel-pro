@@ -39,7 +39,7 @@ app.use(
   }),
 );
 app.use(express.json({ limit: "10mb" }));
-// app.use(express.raw({ type: "*/*", limit: "10mb" }));
+app.use(express.raw({ type: "*/*", limit: "10mb" }));
 
 // Health check
 app.get("/health", (req, res) => {
