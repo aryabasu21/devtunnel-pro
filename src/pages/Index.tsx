@@ -36,13 +36,31 @@ const Index = () => {
   };
 
   const copyInstallCommand = async () => {
-    await navigator.clipboard.writeText(installCommand);
-    setCopied(true);
-    toast({
-      title: "Copied to clipboard!",
-      description: "Run the command in your terminal to get started.",
-    });
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(installCommand);
+      setCopied(true);
+      toast({
+        title: "Copied to clipboard!",
+        description: "Run the command in your terminal to get started.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement("textarea");
+      textArea.value = installCommand;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopied(true);
+      toast({
+        title: "Copied to clipboard!",
+        description: "Run the command in your terminal to get started.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
