@@ -13,7 +13,12 @@ const getDeviceId = (): string => {
   const storageKey = "devportal_device_id";
   let deviceId = localStorage.getItem(storageKey);
   if (!deviceId) {
-    deviceId = `dev_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+    // Use same format as CLI: dev_{timestamp}_{8_hex_chars}
+    const timestamp = Date.now().toString(36);
+    const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(4)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    deviceId = `dev_${timestamp}_${randomHex}`;
     localStorage.setItem(storageKey, deviceId);
   }
   return deviceId;
@@ -37,6 +42,15 @@ const Dashboard = () => {
 
   // Initialize device ID and redirect if needed
   useEffect(() => {
+    // If URL has a device ID, use that (from CLI whoami command)
+    if (urlDeviceId && urlDeviceId.startsWith('dev_')) {
+      setDeviceId(urlDeviceId);
+      // Store the CLI device ID in localStorage for future visits
+      localStorage.setItem("devportal_device_id", urlDeviceId);
+      return;
+    }
+
+    // Otherwise get/generate local device ID
     const localDeviceId = getDeviceId();
     setDeviceId(localDeviceId);
 
