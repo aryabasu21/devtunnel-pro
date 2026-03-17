@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import toast from "react-hot-toast";
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
@@ -34,7 +34,6 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const API_URL = import.meta.env.VITE_API_URL || "https://tunnel.stylnode.in";
 
 const Support = () => {
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -62,30 +61,24 @@ const Support = () => {
       const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
 
       if (!isImage && !isVideo) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload images (JPEG, PNG, WebP) or videos (MP4, WAV, WebM)",
-          variant: "destructive",
+        toast.error("Please upload images (JPEG, PNG, WebP) or videos (MP4, WAV, WebM)", {
+          icon: "❌",
         });
         return;
       }
 
       // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        toast({
-          title: "File too large",
-          description: "Maximum file size is 50MB",
-          variant: "destructive",
+        toast.error("Maximum file size is 50MB", {
+          icon: "📁",
         });
         return;
       }
 
       // Check max files
       if (files.length >= 5) {
-        toast({
-          title: "Too many files",
-          description: "You can upload up to 5 files",
-          variant: "destructive",
+        toast.error("You can upload up to 5 files", {
+          icon: "📄",
         });
         return;
       }
@@ -121,10 +114,8 @@ const Support = () => {
     e.preventDefault();
 
     if (!formData.name || !formData.email || !formData.message) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields",
-        variant: "destructive",
+      toast.error("Please fill in all required fields", {
+        icon: "⚠️",
       });
       return;
     }
@@ -155,15 +146,12 @@ const Support = () => {
       }
 
       setIsSubmitted(true);
-      toast({
-        title: "Message sent!",
-        description: "We'll get back to you as soon as possible.",
+      toast.success("Message sent! We'll get back to you as soon as possible.", {
+        icon: "✉️",
       });
     } catch (error: any) {
-      toast({
-        title: "Failed to send",
-        description: error.message || "Please try again or email us directly.",
-        variant: "destructive",
+      toast.error(error.message || "Failed to send. Please try again or email us directly.", {
+        icon: "❌",
       });
     } finally {
       setIsSubmitting(false);

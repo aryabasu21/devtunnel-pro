@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Github, Copy, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import toast from "react-hot-toast";
 
 const getDeviceId = (): string => {
   const storageKey = "devportal_device_id";
@@ -21,7 +21,6 @@ const getDeviceId = (): string => {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [deviceId, setDeviceId] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
@@ -39,9 +38,8 @@ const Index = () => {
     try {
       await navigator.clipboard.writeText(installCommand);
       setCopied(true);
-      toast({
-        title: "Copied to clipboard!",
-        description: "Run the command in your terminal to get started.",
+      toast.success("Copied to clipboard! Run in your terminal to get started.", {
+        icon: "📋",
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -55,9 +53,8 @@ const Index = () => {
       document.execCommand("copy");
       document.body.removeChild(textArea);
       setCopied(true);
-      toast({
-        title: "Copied to clipboard!",
-        description: "Run the command in your terminal to get started.",
+      toast.success("Copied to clipboard! Run in your terminal to get started.", {
+        icon: "📋",
       });
       setTimeout(() => setCopied(false), 2000);
     }

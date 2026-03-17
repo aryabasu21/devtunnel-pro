@@ -5,7 +5,7 @@ import TunnelList from "@/components/TunnelList";
 import ApiPlayground from "@/components/ApiPlayground";
 import QRCodeModal from "@/components/QRCodeModal";
 import { getTunnelsByDevice, getServerStatus, type TunnelData } from "@/lib/api";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 type View = "tunnels" | "playground";
 
@@ -84,17 +84,17 @@ const Dashboard = () => {
   }, [deviceId, selectedTunnelId]);
 
   const handleCreateTunnel = useCallback(() => {
-    toast.info(
-      "To create a tunnel, run the CLI:\nnpx devportal-tunnel start <port>",
-      { duration: 5000 }
-    );
+    toast("To create a tunnel, run:\nnpx devportal-tunnel start <port>", {
+      icon: "🚇",
+      duration: 5000,
+    });
   }, []);
 
   const handleStopTunnel = useCallback((id: string) => {
-    toast.info(
-      "To stop a tunnel, use the CLI:\nnpx devportal-tunnel stop " + id,
-      { duration: 5000 }
-    );
+    toast("To stop a tunnel, run:\nnpx devportal-tunnel stop " + id, {
+      icon: "⏹️",
+      duration: 5000,
+    });
   }, []);
 
   return (

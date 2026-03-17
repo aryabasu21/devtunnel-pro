@@ -7,7 +7,10 @@ import { v4 as uuidv4 } from "uuid";
 import { TunnelManager } from "./tunnelManager";
 import { RequestForwarder } from "./requestForwarder";
 import supportRoutes from "./routes/support";
+import requestRoutes from "./routes/requests";
 import { verifyEmailConfig } from "./services/emailService";
+import { generateSubdomain, isValidSubdomain } from "./utils/subdomain";
+import { apiLimiter, strictLimiter, supportLimiter, tunnelTracker, checkTunnelLimit } from "./middleware/rateLimiting";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -67,6 +70,9 @@ app.use(
   }),
 );
 
+// Apply rate limiting
+app.use(strictLimiter); // Apply basic rate limiting to all routes
+
 // Health check
 app.get("/health", (req, res) => {
   res.json({ status: "ok", tunnels: tunnelManager.getActiveTunnelCount() });
@@ -105,7 +111,10 @@ app.get("/api/devices/:deviceId/tunnels", (req, res) => {
 });
 
 // Support ticket routes
-app.use("/api/support", supportRoutes);
+app.use("/api/support", supportLimiter, supportRoutes);
+
+// Request logging routes
+app.use("/api/requests", apiLimiter, requestRoutes);
 
 // Wildcard route - forward to tunnel
 app.all("*", async (req: Request, res: Response) => {
@@ -197,7 +206,8 @@ const httpServer = createServer(app);
 const wss = new WebSocketServer({ server: httpServer, path: WS_PATH });
 
 wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-  console.log("New CLI connection from:", req.socket.remoteAddress);
+  const clientIP = req.socket.remoteAddress || "unknown";
+  console.log("New CLI connection from:", clientIP);
 
   let tunnelId: string | null = null;
 
@@ -211,7 +221,7 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
   ws.on("message", (data: Buffer) => {
     try {
       const message = JSON.parse(data.toString());
-      handleClientMessage(ws, message, (id) => {
+      handleClientMessage(ws, message, clientIP, (id) => {
         tunnelId = id;
       });
     } catch (error) {
@@ -227,6 +237,8 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
     clearInterval(pingInterval);
     if (tunnelId) {
       tunnelManager.removeTunnel(tunnelId);
+      // Remove tunnel from IP tracking
+      tunnelTracker.removeTunnel(clientIP);
     }
   });
 
@@ -244,25 +256,57 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
 function handleClientMessage(
   ws: WebSocket,
   message: any,
+  clientIP: string,
   setTunnelId: (id: string) => void,
 ) {
   switch (message.type) {
     case "register": {
       const { deviceId, localPort, subdomain, password, demo } = message;
 
-      // Check if subdomain is already taken
-      if (subdomain && tunnelManager.getTunnelByName(subdomain)) {
+      // Check tunnel limits per IP
+      if (!tunnelTracker.canCreateTunnel(clientIP)) {
         ws.send(
           JSON.stringify({
             type: "error",
-            message: `Subdomain "${subdomain}" is already in use`,
+            message: `Tunnel limit exceeded. You can only have ${3} active tunnels per IP address. Please close some tunnels before creating new ones.`,
           }),
         );
         return;
       }
 
-      // Generate tunnel name
-      const name = subdomain || generateTunnelName();
+      // Validate and generate subdomain
+      let name: string;
+
+      if (subdomain) {
+        // Validate custom subdomain
+        if (!isValidSubdomain(subdomain)) {
+          ws.send(
+            JSON.stringify({
+              type: "error",
+              message: `Invalid subdomain "${subdomain}". Must be 1-63 characters, contain only letters, numbers, and hyphens, and not be reserved.`,
+            }),
+          );
+          return;
+        }
+
+        // Check if subdomain is already taken
+        if (tunnelManager.getTunnelByName(subdomain)) {
+          ws.send(
+            JSON.stringify({
+              type: "error",
+              message: `Subdomain "${subdomain}" is already in use. Try a different name.`,
+            }),
+          );
+          return;
+        }
+
+        name = subdomain;
+      } else {
+        // Generate memorable subdomain
+        do {
+          name = generateSubdomain();
+        } while (tunnelManager.getTunnelByName(name)); // Ensure uniqueness
+      }
       const id = `t-${uuidv4().slice(0, 8)}`;
       const url = DOMAIN.includes("localhost")
         ? `http://${name}.localhost:${PORT}`
@@ -288,6 +332,9 @@ function handleClientMessage(
       });
 
       setTunnelId(id);
+
+      // Add tunnel to IP tracking
+      tunnelTracker.addTunnel(clientIP);
 
       // Send success response
       ws.send(
@@ -324,43 +371,6 @@ function handleClientMessage(
     default:
       console.warn("Unknown message type:", message.type);
   }
-}
-
-// Tunnel name generator
-const adjectives = [
-  "purple",
-  "cosmic",
-  "hidden",
-  "crystal",
-  "silent",
-  "golden",
-  "frozen",
-  "blazing",
-  "lunar",
-  "neon",
-  "swift",
-  "bright",
-];
-const nouns = [
-  "horizon",
-  "lake",
-  "forest",
-  "ocean",
-  "canyon",
-  "river",
-  "meadow",
-  "summit",
-  "valley",
-  "storm",
-  "cloud",
-  "wave",
-];
-
-function generateTunnelName(): string {
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const num = Math.floor(Math.random() * 900) + 100;
-  return `${adj}-${noun}-${num}`;
 }
 
 // Start server
