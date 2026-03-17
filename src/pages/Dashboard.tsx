@@ -2,10 +2,9 @@ import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import TunnelList from "@/components/TunnelList";
-import RequestInspector from "@/components/RequestInspector";
 import ApiPlayground from "@/components/ApiPlayground";
 import QRCodeModal from "@/components/QRCodeModal";
-import { getTunnelsByDevice, getServerStatus, type TunnelData, type RequestLog } from "@/lib/api";
+import { getTunnelsByDevice, getServerStatus, type TunnelData } from "@/lib/api";
 import { toast } from "sonner";
 
 type View = "tunnels" | "playground";
@@ -31,11 +30,8 @@ const Dashboard = () => {
   const [deviceId, setDeviceId] = useState<string>("");
   const [view, setView] = useState<View>("tunnels");
   const [tunnels, setTunnels] = useState<TunnelDataUI[]>([]);
-  const [requests, setRequests] = useState<RequestLog[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState<RequestLog | null>(null);
   const [selectedTunnelId, setSelectedTunnelId] = useState<string | null>(null);
   const [qrTunnel, setQrTunnel] = useState<TunnelDataUI | null>(null);
-  const [mobilePanel, setMobilePanel] = useState<"list" | "inspector">("list");
   const [isLoading, setIsLoading] = useState(true);
   const [serverStatus, setServerStatus] = useState<{ status: string; activeTunnels: number } | null>(null);
 
@@ -87,8 +83,6 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, [deviceId, selectedTunnelId]);
 
-  const filteredRequests = requests.filter((r) => r.tunnelId === selectedTunnelId);
-
   const handleCreateTunnel = useCallback(() => {
     toast.info(
       "To create a tunnel, run the CLI:\nnpx devportal-tunnel start <port>",
@@ -102,11 +96,6 @@ const Dashboard = () => {
       { duration: 5000 }
     );
   }, []);
-
-  const handleSelectRequest = (req: RequestLog) => {
-    setSelectedRequest(req);
-    setMobilePanel("inspector");
-  };
 
   return (
     <div className="h-screen flex flex-col sm:flex-row bg-background overflow-hidden">
@@ -138,8 +127,8 @@ const Dashboard = () => {
 
         {view === "tunnels" ? (
           <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
-            {/* Left panel: Tunnels + Requests */}
-            <div className={`sm:w-[380px] lg:w-[420px] border-r border-border flex flex-col overflow-hidden shrink-0 ${mobilePanel === "inspector" ? "hidden sm:flex" : "flex"}`}>
+            {/* Left panel: Tunnels + Request Log Info */}
+            <div className="sm:w-[380px] lg:w-[420px] border-r border-border flex flex-col overflow-hidden shrink-0">{
               {isLoading ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
@@ -180,26 +169,21 @@ const Dashboard = () => {
                       </h3>
                     </div>
                     <div className="divide-y divide-border">
-                      {filteredRequests.length === 0 ? (
-                        <div className="p-6 text-center text-xs text-muted-foreground">
-                          No requests yet for this tunnel
+                      <div className="p-6 text-center">
+                        <div className="text-4xl mb-3">📊</div>
+                        <h3 className="text-xs font-semibold mb-2">Request Logs in Terminal</h3>
+                        <p className="text-xs text-muted-foreground mb-4 max-w-xs mx-auto">
+                          View real-time request logs directly in your CLI terminal where the tunnel is running
+                        </p>
+                        <div className="bg-surface rounded-lg p-3 text-left max-w-sm mx-auto">
+                          <p className="text-xs text-muted-foreground mb-1 font-mono">Example output:</p>
+                          <code className="text-[10px] font-mono block">
+                            <span className="text-success">GET</span>  /api/users        <span className="text-success">200</span>  12ms<br/>
+                            <span className="text-primary">POST</span> /api/login        <span className="text-destructive">401</span>  3ms<br/>
+                            <span className="text-success">GET</span>  /dashboard        <span className="text-success">200</span>  45ms
+                          </code>
                         </div>
-                      ) : (
-                        filteredRequests.map((req) => (
-                          <button
-                            key={req.id}
-                            onClick={() => handleSelectRequest(req)}
-                            className={`w-full text-left px-3 py-2.5 hover:bg-surface-hover transition-colors text-xs font-mono flex items-center gap-2 sm:gap-3 ${
-                              selectedRequest?.id === req.id ? "bg-surface-hover" : ""
-                            }`}
-                          >
-                            <MethodBadge method={req.method} />
-                            <span className="text-foreground truncate flex-1">{req.path}</span>
-                            <StatusBadge status={req.status} />
-                            <span className="text-muted-foreground shrink-0">{req.duration}ms</span>
-                          </button>
-                        ))
-                      )}
+                      </div>
                     </div>
                   </div>
                 </>
@@ -207,21 +191,22 @@ const Dashboard = () => {
             </div>
 
             {/* Right panel: Inspector */}
-            <div className={`flex-1 overflow-auto ${mobilePanel === "list" ? "hidden sm:flex sm:flex-col" : "flex flex-col"}`}>
-              {/* Mobile back button */}
-              <button
-                className="sm:hidden p-3 border-b border-border text-xs text-primary font-medium"
-                onClick={() => setMobilePanel("list")}
-              >
-                ← Back to requests
-              </button>
-              {selectedRequest ? (
-                <RequestInspector request={selectedRequest} />
-              ) : (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-                  Select a request to inspect
+            <div className="flex-1 overflow-auto flex flex-col">{
+              <div className="flex-1 flex items-center justify-center p-6">
+                <div className="text-center max-w-md">
+                  <div className="text-5xl mb-4">💻</div>
+                  <h3 className="text-lg font-semibold mb-2">Terminal-First Experience</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    DevPortal streams request logs directly to your terminal for real-time visibility.
+                    Keep an eye on your CLI to see incoming requests as they happen.
+                  </p>
+                  <div className="inline-flex items-center gap-2 text-xs text-muted-foreground bg-surface px-3 py-2 rounded-lg">
+                    <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                    Logs streaming to terminal
+                  </div>
                 </div>
-              )}
+              </div>
+            </div>
             </div>
           </div>
         ) : (
@@ -230,22 +215,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
-
-const MethodBadge = ({ method }: { method: string }) => {
-  const colors: Record<string, string> = {
-    GET: "text-success",
-    POST: "text-primary",
-    PUT: "text-warning",
-    DELETE: "text-destructive",
-    PATCH: "text-warning",
-  };
-  return <span className={`w-10 sm:w-12 font-semibold shrink-0 ${colors[method] || "text-foreground"}`}>{method}</span>;
-};
-
-const StatusBadge = ({ status }: { status: number }) => {
-  const color = status < 300 ? "text-success" : status < 400 ? "text-warning" : "text-destructive";
-  return <span className={`shrink-0 ${color}`}>{status}</span>;
 };
 
 export default Dashboard;
