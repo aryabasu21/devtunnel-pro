@@ -128,7 +128,7 @@ const Dashboard = () => {
         {view === "tunnels" ? (
           <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
             {/* Left panel: Tunnels + Request Log Info */}
-            <div className="sm:w-[380px] lg:w-[420px] border-r border-border flex flex-col overflow-hidden shrink-0">{
+            <div className="sm:w-[380px] lg:w-[420px] border-r border-border flex flex-col overflow-hidden shrink-0">
               {isLoading ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
@@ -191,7 +191,7 @@ const Dashboard = () => {
             </div>
 
             {/* Right panel: Inspector */}
-            <div className="flex-1 overflow-auto flex flex-col">{
+            <div className="flex-1 overflow-auto flex flex-col">
               <div className="flex-1 flex items-center justify-center p-6">
                 <div className="text-center max-w-md">
                   <div className="text-5xl mb-4">💻</div>
@@ -206,7 +206,6 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-            </div>
             </div>
           </div>
         ) : (
