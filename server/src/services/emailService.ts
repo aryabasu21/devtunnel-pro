@@ -1,0 +1,178 @@
+import nodemailer from "nodemailer";
+
+// Email configuration - using Gmail SMTP
+// To use Gmail:
+// 1. Enable 2-Factor Authentication on your Google account
+// 2. Generate an App Password: Google Account > Security > App Passwords
+// 3. Set GMAIL_USER and GMAIL_APP_PASSWORD environment variables
+
+const GMAIL_USER = process.env.GMAIL_USER || "";
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || "";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || GMAIL_USER;
+
+// Create transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: GMAIL_USER,
+    pass: GMAIL_APP_PASSWORD,
+  },
+});
+
+interface TicketEmailData {
+  ticketId: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  attachmentCount: number;
+  attachments?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+  }[];
+}
+
+export async function sendTicketNotification(data: TicketEmailData): Promise<boolean> {
+  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+    console.log("[Email] Skipping email notification - Gmail credentials not configured");
+    return false;
+  }
+
+  const apiBaseUrl = process.env.API_BASE_URL || "https://tunnel.stylnode.in";
+
+  // Format attachments list
+  const attachmentsList = data.attachments?.map((a, i) => {
+    const sizeKB = Math.round(a.size / 1024);
+    const viewUrl = `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
+    return `  ${i + 1}. ${a.originalName} (${sizeKB} KB) - ${a.mimetype}\n     View: ${viewUrl}`;
+  }).join("\n") || "  None";
+
+  const htmlAttachments = data.attachments?.map((a) => {
+    const sizeKB = Math.round(a.size / 1024);
+    const viewUrl = `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
+    const isImage = a.mimetype.startsWith("image/");
+    return `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">
+          ${isImage ? `<img src="${viewUrl}" alt="${a.originalName}" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : "📎"}
+        </td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">
+          <a href="${viewUrl}" style="color: #7c3aed;">${a.originalName}</a>
+          <br><small style="color: #888;">${sizeKB} KB • ${a.mimetype}</small>
+        </td>
+      </tr>
+    `;
+  }).join("") || "<tr><td colspan='2' style='padding: 8px; color: #888;'>No attachments</td></tr>";
+
+  const mailOptions = {
+    from: `"DevPortal Support" <${GMAIL_USER}>`,
+    to: ADMIN_EMAIL,
+    replyTo: data.email,
+    subject: `🎫 New Support Ticket: ${data.subject || "No Subject"} - from ${data.name}`,
+    text: `
+NEW SUPPORT TICKET
+==================
+
+Ticket ID: ${data.ticketId}
+From: ${data.name} <${data.email}>
+Subject: ${data.subject || "No Subject"}
+
+Message:
+${data.message}
+
+Attachments (${data.attachmentCount}):
+${attachmentsList}
+
+---
+View full ticket: ${apiBaseUrl}/api/support/${data.ticketId}
+Reply directly to this email to respond to ${data.name}.
+    `.trim(),
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+    .content { background: #fff; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
+    .field { margin-bottom: 16px; }
+    .label { font-weight: 600; color: #6b7280; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+    .value { color: #111; }
+    .message-box { background: #f9fafb; padding: 16px; border-radius: 8px; border-left: 4px solid #7c3aed; }
+    .attachments { margin-top: 20px; }
+    .btn { display: inline-block; background: #7c3aed; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; }
+    .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin: 0; font-size: 20px;">🎫 New Support Ticket</h1>
+      <p style="margin: 8px 0 0 0; opacity: 0.9;">Ticket ID: ${data.ticketId}</p>
+    </div>
+    <div class="content">
+      <div class="field">
+        <div class="label">From</div>
+        <div class="value"><strong>${data.name}</strong> &lt;${data.email}&gt;</div>
+      </div>
+      <div class="field">
+        <div class="label">Subject</div>
+        <div class="value">${data.subject || "<em>No Subject</em>"}</div>
+      </div>
+      <div class="field">
+        <div class="label">Message</div>
+        <div class="message-box">${data.message.replace(/\n/g, "<br>")}</div>
+      </div>
+
+      <div class="attachments">
+        <div class="label">Attachments (${data.attachmentCount})</div>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+          ${htmlAttachments}
+        </table>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <a href="${apiBaseUrl}/api/support/${data.ticketId}" class="btn">View Full Ticket</a>
+      </div>
+
+      <div class="footer">
+        <p>Reply directly to this email to respond to ${data.name}.</p>
+        <p>DevPortal Support System</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `.trim(),
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`[Email] Ticket notification sent to ${ADMIN_EMAIL}`);
+    return true;
+  } catch (error: any) {
+    console.error("[Email] Failed to send notification:", error.message);
+    return false;
+  }
+}
+
+// Verify email configuration
+export async function verifyEmailConfig(): Promise<boolean> {
+  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+    console.log("[Email] Gmail credentials not configured - email notifications disabled");
+    return false;
+  }
+
+  try {
+    await transporter.verify();
+    console.log("[Email] Gmail SMTP connection verified");
+    return true;
+  } catch (error: any) {
+    console.error("[Email] Gmail SMTP verification failed:", error.message);
+    return false;
+  }
+}

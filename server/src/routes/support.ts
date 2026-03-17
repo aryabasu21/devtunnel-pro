@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
 import { SupportTicket } from "../models/SupportTicket";
+import { sendTicketNotification } from "../services/emailService";
 
 const router = Router();
 
@@ -86,6 +87,22 @@ router.post(
       console.log(
         `[Support] New ticket created: ${ticket._id} from ${email} with ${attachments.length} attachments`
       );
+
+      // Send email notification (non-blocking)
+      sendTicketNotification({
+        ticketId: ticket._id.toString(),
+        name,
+        email,
+        subject: subject || "",
+        message,
+        attachmentCount: attachments.length,
+        attachments: attachments.map((a) => ({
+          filename: a.filename,
+          originalName: a.originalName,
+          mimetype: a.mimetype,
+          size: a.size,
+        })),
+      }).catch((err) => console.error("[Support] Email notification failed:", err));
 
       res.status(201).json({
         success: true,

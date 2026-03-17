@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { TunnelManager } from "./tunnelManager";
 import { RequestForwarder } from "./requestForwarder";
 import supportRoutes from "./routes/support";
+import { verifyEmailConfig } from "./services/emailService";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,6 +20,9 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
+
+// Verify email configuration
+verifyEmailConfig();
 
 // Tunnel manager
 const tunnelManager = new TunnelManager();
