@@ -148,15 +148,21 @@ export class TunnelClient extends EventEmitter {
       host: `localhost:${this.config.localPort}`,
     };
 
-    // Remove headers that cause issues
+    // Remove headers that cause issues with local dev servers
     delete requestHeaders["content-length"];
     delete requestHeaders["transfer-encoding"];
     delete requestHeaders["connection"];
     delete requestHeaders["sec-fetch-site"];
     delete requestHeaders["sec-fetch-mode"];
     delete requestHeaders["sec-fetch-dest"];
+    delete requestHeaders["sec-fetch-user"];
     delete requestHeaders["origin"];
     delete requestHeaders["referer"];
+    // Remove forwarding headers — Vite's DNS rebinding check rejects x-forwarded-host
+    // if it doesn't match an allowed host
+    delete requestHeaders["x-forwarded-host"];
+    delete requestHeaders["x-forwarded-proto"];
+    delete requestHeaders["x-forwarded-for"];
     if (this.config.authHeader) {
       const [key, value] = this.config.authHeader.split(": ");
       if (key && value) {
