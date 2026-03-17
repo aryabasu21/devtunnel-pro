@@ -16,16 +16,25 @@ const tunnelManager = new TunnelManager();
 const requestForwarder = new RequestForwarder(tunnelManager);
 
 // Middleware
-const corsOptions = {
-  origin: [
-    "https://devportal.stylnode.in",
-    "https://stylnode.in",
-    "http://localhost:5173",
-    "http://localhost:3000",
-  ],
+const allowedOrigins = [
+  "https://devportal.stylnode.in",
+  "https://stylnode.in",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    // Allow exact matches
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow any *.tunnel.stylnode.in subdomain
+    if (/^https:\/\/[^.]+\.tunnel\.stylnode\.in$/.test(origin)) return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
-};
-app.use(cors(corsOptions));
+}));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.raw({ type: "*/*", limit: "10mb" }));
 
