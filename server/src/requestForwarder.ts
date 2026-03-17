@@ -1,7 +1,7 @@
-import { Request } from 'express';
-import { WebSocket } from 'ws';
-import { v4 as uuidv4 } from 'uuid';
-import { TunnelManager, Tunnel } from './tunnelManager';
+import { Request } from "express";
+import { WebSocket } from "ws";
+import { v4 as uuidv4 } from "uuid";
+import { TunnelManager, Tunnel } from "./tunnelManager";
 
 interface PendingRequest {
   resolve: (response: ForwardedResponse) => void;
@@ -27,7 +27,7 @@ export class RequestForwarder {
   async forward(tunnel: Tunnel, req: Request): Promise<ForwardedResponse> {
     return new Promise((resolve, reject) => {
       if (tunnel.ws.readyState !== WebSocket.OPEN) {
-        reject(new Error('Tunnel connection not available'));
+        reject(new Error("Tunnel connection not available"));
         return;
       }
 
@@ -36,19 +36,33 @@ export class RequestForwarder {
       // Set timeout for request
       const timeout = setTimeout(() => {
         this.pendingRequests.delete(requestId);
-        reject(new Error('Request timeout'));
+        reject(new Error("Request timeout"));
       }, this.REQUEST_TIMEOUT);
 
       // Store pending request
       this.pendingRequests.set(requestId, { resolve, reject, timeout });
 
       // Prepare request data
+      // Prepare headers first
+      const headers = this.filterHeaders(req.headers);
+
+      // ✅ override important headers
+      headers["host"] = `localhost:${tunnel.localPort}`;
+      headers["origin"] = `http://localhost:${tunnel.localPort}`;
+      headers["referer"] = `http://localhost:${tunnel.localPort}`;
+      headers["x-forwarded-host"] = req.headers.host || "";
+      headers["x-forwarded-proto"] = "https";
+
+      // Prepare request data
       const requestData = {
-        type: 'request',
+        type: "request",
         requestId,
         method: req.method,
-        path: req.path,
-        headers: this.filterHeaders(req.headers),
+
+        // 🔥 IMPORTANT FIX
+        path: req.originalUrl,
+
+        headers: headers,
         query: req.query,
         body: this.serializeBody(req.body),
       };
@@ -78,9 +92,12 @@ export class RequestForwarder {
     this.pendingRequests.delete(requestId);
 
     // Decode body if it was base64 encoded
-    if (typeof response.body === 'string' && response.headers['x-body-encoding'] === 'base64') {
-      response.body = Buffer.from(response.body, 'base64');
-      delete response.headers['x-body-encoding'];
+    if (
+      typeof response.body === "string" &&
+      response.headers["x-body-encoding"] === "base64"
+    ) {
+      response.body = Buffer.from(response.body, "base64");
+      delete response.headers["x-body-encoding"];
     }
 
     pending.resolve(response);
@@ -88,11 +105,11 @@ export class RequestForwarder {
 
   private filterHeaders(headers: Record<string, any>): Record<string, string> {
     const filtered: Record<string, string> = {};
-    const skipHeaders = ['host', 'connection', 'upgrade', 'keep-alive'];
+    const skipHeaders = ["connection", "upgrade", "keep-alive"];
 
     for (const [key, value] of Object.entries(headers)) {
       if (!skipHeaders.includes(key.toLowerCase()) && value) {
-        filtered[key] = Array.isArray(value) ? value.join(', ') : String(value);
+        filtered[key] = Array.isArray(value) ? value.join(", ") : String(value);
       }
     }
 
@@ -102,9 +119,9 @@ export class RequestForwarder {
   private serializeBody(body: any): string | null {
     if (!body) return null;
     if (Buffer.isBuffer(body)) {
-      return body.toString('base64');
+      return body.toString("base64");
     }
-    if (typeof body === 'object') {
+    if (typeof body === "object") {
       return JSON.stringify(body);
     }
     return String(body);
