@@ -18,6 +18,18 @@ export default {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
+      fontSize: {
+        'xs': ['0.8rem', { lineHeight: '1.4' }],    // Increased from 0.75rem
+        'sm': ['0.9rem', { lineHeight: '1.5' }],    // Increased from 0.875rem
+        'base': ['1rem', { lineHeight: '1.6' }],    // Default but with better line height
+        'lg': ['1.15rem', { lineHeight: '1.6' }],   // Increased from 1.125rem
+        'xl': ['1.3rem', { lineHeight: '1.6' }],    // Increased from 1.25rem
+        '2xl': ['1.6rem', { lineHeight: '1.5' }],   // Increased from 1.5rem
+        '3xl': ['2rem', { lineHeight: '1.4' }],     // Increased from 1.875rem
+        '4xl': ['2.5rem', { lineHeight: '1.3' }],   // Increased from 2.25rem
+        '5xl': ['3.2rem', { lineHeight: '1.2' }],   // Increased from 3rem
+        '6xl': ['4rem', { lineHeight: '1.1' }],     // Increased from 3.75rem
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

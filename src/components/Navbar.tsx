@@ -44,6 +44,12 @@ const Navbar = () => {
           <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/docs")}>
             Docs
           </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/api")}>
+            API
+          </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/examples")}>
+            Examples
+          </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/support")}>
             Support
           </Button>
@@ -69,6 +75,12 @@ const Navbar = () => {
           </Button>
           <Button variant="ghost" size="sm" className="justify-start text-muted-foreground" onClick={() => { navigate("/docs"); setMenuOpen(false); }}>
             Docs
+          </Button>
+          <Button variant="ghost" size="sm" className="justify-start text-muted-foreground" onClick={() => { navigate("/api"); setMenuOpen(false); }}>
+            API Reference
+          </Button>
+          <Button variant="ghost" size="sm" className="justify-start text-muted-foreground" onClick={() => { navigate("/examples"); setMenuOpen(false); }}>
+            Examples
           </Button>
           <Button variant="ghost" size="sm" className="justify-start text-muted-foreground" onClick={() => { navigate("/support"); setMenuOpen(false); }}>
             Support

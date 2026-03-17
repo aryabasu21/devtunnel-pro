@@ -80,6 +80,14 @@ program
     await stopTunnel(tunnelId, options);
   });
 
+// Stop all tunnels: devportal stop-all (convenient alias)
+program
+  .command('stop-all')
+  .description('Stop all active tunnels')
+  .action(async () => {
+    await stopTunnel(undefined, { all: true });
+  });
+
 // Replay request: devportal replay <requestId>
 program
   .command('replay <requestId>')

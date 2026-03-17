@@ -104,9 +104,9 @@ const Index = () => {
                 variant="outline"
                 size="xl"
                 className="w-full sm:w-auto"
-                onClick={() => window.open("https://github.com/aryabasu21/devtunnel-pro", "_blank", "noopener,noreferrer")}
+                onClick={goToDashboard}
               >
-                <Github className="w-4 h-4" /> Star on GitHub
+                View Dashboard
               </Button>
             </div>
             <p className="text-xs text-muted-foreground font-mono bg-muted/50 inline-block px-3 py-1.5 rounded-md">
