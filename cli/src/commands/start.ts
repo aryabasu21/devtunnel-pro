@@ -97,7 +97,7 @@ export async function startTunnel(port: number, options: StartOptions): Promise<
     }
 
     console.log();
-    console.log(chalk.gray('  Dashboard:    '), chalk.underline(`${config.serverUrl}/dashboard/${deviceId}`));
+    console.log(chalk.gray('  Dashboard:    '), chalk.underline(`${config.frontendUrl}/dashboard/${deviceId}`));
     console.log();
 
     // Show QR code if requested

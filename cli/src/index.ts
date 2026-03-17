@@ -111,7 +111,7 @@ program
     const deviceId = getDeviceId();
     const config = getConfig();
     console.log(chalk.gray('Device ID:'), chalk.cyan(deviceId));
-    console.log(chalk.gray('Dashboard:'), chalk.underline(`${config.serverUrl}/dashboard/${deviceId}`));
+    console.log(chalk.gray('Dashboard:'), chalk.underline(`${config.frontendUrl}/dashboard/${deviceId}`));
   });
 
 program.parse();

@@ -5,6 +5,7 @@ import { getConfigDir } from './device';
 export interface Config {
   serverUrl: string;
   wsUrl: string;
+  frontendUrl: string;
 }
 
 const CONFIG_FILE = path.join(getConfigDir(), 'config.json');
@@ -12,6 +13,7 @@ const CONFIG_FILE = path.join(getConfigDir(), 'config.json');
 const DEFAULT_CONFIG: Config = {
   serverUrl: 'https://tunnel.stylnode.in',
   wsUrl: 'wss://tunnel.stylnode.in/ws',
+  frontendUrl: 'https://devportal.stylnode.in',
 };
 
 export function getConfig(): Config {
