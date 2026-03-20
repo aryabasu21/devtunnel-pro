@@ -1,20 +1,17 @@
 import mongoose, { Schema, Document } from "mongoose";
-
-export interface IAttachment {
-  filename: string;
-  originalName: string;
-  mimetype: string;
-  size: number;
-  data: Buffer;
-}
-
 export interface ISupportTicket extends Document {
   ticketId: string;
   name: string;
   email: string;
   subject: string;
   message: string;
-  attachments: IAttachment[];
+  attachments: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    data: Buffer;
+  }[];
   status: "pending" | "in_progress" | "resolved" | "closed";
   createdAt: Date;
   updatedAt: Date;

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
-import { SupportTicket, IAttachment } from "../models/SupportTicket";
+import { SupportTicket } from "../models/SupportTicket";
 import { sendTicketNotification } from "../services/emailService";
 
 const router = Router();
@@ -112,7 +112,7 @@ router.post(
         subject: subject || "",
         message,
         attachmentCount: attachments.length,
-        attachments: attachments.map((a: IAttachment) => ({
+        attachments: attachments.map((a) => ({
           filename: a.filename,
           originalName: a.originalName,
           mimetype: a.mimetype,
