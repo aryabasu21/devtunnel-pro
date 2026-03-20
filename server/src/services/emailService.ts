@@ -1,9 +1,8 @@
+import { Resend } from "resend";
 
-import { Resend } from 'resend';
-
-const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
-const GMAIL_USER = process.env.GMAIL_USER || '';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
+const GMAIL_USER = process.env.GMAIL_USER || "";
 
 const resend = new Resend(RESEND_API_KEY);
 
@@ -22,27 +21,35 @@ export interface TicketEmailData {
   }[];
 }
 
-
-export async function sendTicketNotification(data: TicketEmailData): Promise<boolean> {
+export async function sendTicketNotification(
+  data: TicketEmailData,
+): Promise<boolean> {
   if (!RESEND_API_KEY) {
-    console.log("[Email] Skipping email notification - Resend API key not configured");
+    console.log(
+      "[Email] Skipping email notification - Resend API key not configured",
+    );
     return false;
   }
 
   const apiBaseUrl = process.env.API_BASE_URL || "https://tunnel.stylnode.in";
 
   // Format attachments list
-  const attachmentsList = data.attachments?.map((a, i) => {
-    const sizeKB = Math.round(a.size / 1024);
-    const viewUrl = `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
-    return `  ${i + 1}. ${a.originalName} (${sizeKB} KB) - ${a.mimetype}\n     View: ${viewUrl}`;
-  }).join("\n") || "  None";
+  const attachmentsList =
+    data.attachments
+      ?.map((a, i) => {
+        const sizeKB = Math.round(a.size / 1024);
+        const viewUrl = `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
+        return `  ${i + 1}. ${a.originalName} (${sizeKB} KB) - ${a.mimetype}\n     View: ${viewUrl}`;
+      })
+      .join("\n") || "  None";
 
-  const htmlAttachments = data.attachments?.map((a) => {
-    const sizeKB = Math.round(a.size / 1024);
-    const viewUrl = `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
-    const isImage = a.mimetype.startsWith("image/");
-    return `
+  const htmlAttachments =
+    data.attachments
+      ?.map((a) => {
+        const sizeKB = Math.round(a.size / 1024);
+        const viewUrl = `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
+        const isImage = a.mimetype.startsWith("image/");
+        return `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #eee;">
           ${isImage ? `<img src="${viewUrl}" alt="${a.originalName}" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : "📎"}
@@ -53,11 +60,13 @@ export async function sendTicketNotification(data: TicketEmailData): Promise<boo
         </td>
       </tr>
     `;
-  }).join("") || "<tr><td colspan='2' style='padding: 8px; color: #888;'>No attachments</td></tr>";
+      })
+      .join("") ||
+    "<tr><td colspan='2' style='padding: 8px; color: #888;'>No attachments</td></tr>";
 
   try {
     await resend.emails.send({
-      from: `DevPortal Support <${GMAIL_USER || 'support@stylnode.in'}>`,
+      from: `DevPortal Support <${GMAIL_USER || "support@stylnode.in"}>`,
       to: ADMIN_EMAIL,
       reply_to: data.email,
       subject: `🎫 New Support Ticket: ${data.subject || "No Subject"} - from ${data.name}`,
@@ -139,10 +148,15 @@ Reply directly to this email to respond to ${data.name}.
 </html>
       `.trim(),
     });
-    console.log(`[Email] Ticket notification sent to ${ADMIN_EMAIL} via Resend`);
+    console.log(
+      `[Email] Ticket notification sent to ${ADMIN_EMAIL} via Resend`,
+    );
     return true;
   } catch (error: any) {
-    console.error("[Email] Failed to send notification via Resend:", error.message);
+    console.error(
+      "[Email] Failed to send notification via Resend:",
+      error.message,
+    );
     return false;
   }
 }
