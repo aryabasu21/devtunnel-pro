@@ -1,10 +1,10 @@
 import { Resend } from "resend";
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
-const GMAIL_USER = process.env.GMAIL_USER || "";
-
-const resend = new Resend(RESEND_API_KEY);
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const NOTIFICATION_EMAIL = process.env.PROPOSAL_NOTIFICATION_EMAIL;
+const FROM_EMAIL =
+  process.env.PROPOSAL_FROM_EMAIL || "DevPortal Support <support@stylnode.in>";
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export interface TicketEmailData {
   ticketId: string;
@@ -24,9 +24,15 @@ export interface TicketEmailData {
 export async function sendTicketNotification(
   data: TicketEmailData,
 ): Promise<boolean> {
-  if (!RESEND_API_KEY) {
-    console.log(
-      "[Email] Skipping email notification - Resend API key not configured",
+  if (!resend) {
+    console.warn(
+      "[resend] RESEND_API_KEY is not set. Email notifications will be disabled.",
+    );
+    return false;
+  }
+  if (!NOTIFICATION_EMAIL) {
+    console.warn(
+      "[resend] PROPOSAL_NOTIFICATION_EMAIL is not set. No destination email for notifications.",
     );
     return false;
   }
@@ -66,9 +72,9 @@ export async function sendTicketNotification(
 
   try {
     await resend.emails.send({
-      from: `DevPortal Support <${GMAIL_USER || "support@stylnode.in"}>`,
-      to: ADMIN_EMAIL,
-      reply_to: data.email,
+      from: FROM_EMAIL,
+      to: NOTIFICATION_EMAIL.split(",").map((item) => item.trim()),
+      //reply_to: data.email,
       subject: `🎫 New Support Ticket: ${data.subject || "No Subject"} - from ${data.name}`,
       text: `
 NEW SUPPORT TICKET
@@ -149,7 +155,7 @@ Reply directly to this email to respond to ${data.name}.
       `.trim(),
     });
     console.log(
-      `[Email] Ticket notification sent to ${ADMIN_EMAIL} via Resend`,
+      `[Email] Ticket notification sent to ${NOTIFICATION_EMAIL} via Resend`,
     );
     return true;
   } catch (error: any) {
