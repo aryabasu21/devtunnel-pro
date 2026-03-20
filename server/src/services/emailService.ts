@@ -108,7 +108,7 @@ Reply directly to this email to respond to ${data.name}.
 <tr>
 <td align="center">
 
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden;">
 
   <!-- TOP BAR -->
   <tr>
@@ -145,8 +145,9 @@ Reply directly to this email to respond to ${data.name}.
         FROM:
       </p>
       <p style="margin:0 0 16px 0; font-size:15px; color:#111;">
-        ${data.email}
+        ${data.name} &lt;${data.email}&gt;
       </p>
+
 
       <!-- SUBJECT -->
       <p style="margin:0 0 4px 0; font-size:11px; letter-spacing:1px; color:#6b7280;">
@@ -172,16 +173,16 @@ Reply directly to this email to respond to ${data.name}.
 
       <table width="100%" cellpadding="0" cellspacing="0">
         ${htmlAttachments
-          .replace(/<tr>/g, `<tr style="background:#f3f4f6;">`)
+          .replace(/<tr>/g, `<tr style="background:#f3f4f6; font-size:18px;">`)
           .replace(
-            /<td style="padding: 8px; border-bottom: 1px solid #eee;">/g,
-            `<td style="padding:12px;">`,
+            /<td style="padding: 8px; border-bottom: 1px solid #eee; font-size:16px;">/g,
+            `<td style="padding:12px; font-size:16px;">`,
           )}
       </table>
 
       <!-- CTA (UNCHANGED LOGIC) -->
       <div style="text-align:center; margin-top:24px;">
-        <a href="mailto:${data.email}?subject=Re:%20Support%20Ticket%20${data.ticketId}"
+        <a href="mailto:${data.email}?subject=Re:%20Support%20Ticket%20${data.ticketId}%20${data.subject ? "- " + encodeURIComponent(data.subject) : ""}"
            style="background:#0f5132; color:#ffffff; padding:14px 24px; border-radius:10px; text-decoration:none; font-weight:bold; display:inline-block;">
           Reply to Ticket ↗
         </a>

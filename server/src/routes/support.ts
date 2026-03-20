@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
-import { SupportTicket } from "../models/SupportTicket";
+import { SupportTicket, IAttachment } from "../models/SupportTicket";
 import { sendTicketNotification } from "../services/emailService";
 
 const router = Router();
@@ -73,8 +73,24 @@ router.post(
           }))
         : [];
 
+
+      // Generate unique 8-digit ticketId
+
+      async function generateUniqueTicketId(): Promise<string> {
+        let ticketId = "";
+        let exists = true;
+        while (exists) {
+          ticketId = Math.floor(10000000 + Math.random() * 90000000).toString();
+          exists = Boolean(await SupportTicket.exists({ ticketId }));
+        }
+        return ticketId;
+      }
+
+      const ticketId: string = await generateUniqueTicketId();
+
       // Create ticket
       const ticket = new SupportTicket({
+        ticketId,
         name,
         email,
         subject: subject || "",
@@ -89,14 +105,16 @@ router.post(
       );
 
       // Send email notification (non-blocking)
+
+
       sendTicketNotification({
-        ticketId: ticket._id.toString(),
+        ticketId,
         name,
         email,
         subject: subject || "",
         message,
         attachmentCount: attachments.length,
-        attachments: attachments.map((a) => ({
+        attachments: attachments.map((a: IAttachment) => ({
           filename: a.filename,
           originalName: a.originalName,
           mimetype: a.mimetype,
@@ -107,7 +125,7 @@ router.post(
       res.status(201).json({
         success: true,
         message: "Support ticket created successfully",
-        ticketId: ticket._id,
+        ticketId,
       });
     } catch (error: any) {
       console.error("[Support] Error creating ticket:", error.message);
