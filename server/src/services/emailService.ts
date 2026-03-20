@@ -1,25 +1,13 @@
-import nodemailer from "nodemailer";
 
-// Email configuration - using Gmail SMTP
-// To use Gmail:
-// 1. Enable 2-Factor Authentication on your Google account
-// 2. Generate an App Password: Google Account > Security > App Passwords
-// 3. Set GMAIL_USER and GMAIL_APP_PASSWORD environment variables
+import { Resend } from 'resend';
 
-const GMAIL_USER = process.env.GMAIL_USER || "";
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || "";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || GMAIL_USER;
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
+const GMAIL_USER = process.env.GMAIL_USER || '';
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: GMAIL_USER,
-    pass: GMAIL_APP_PASSWORD,
-  },
-});
+const resend = new Resend(RESEND_API_KEY);
 
-interface TicketEmailData {
+export interface TicketEmailData {
   ticketId: string;
   name: string;
   email: string;
@@ -34,9 +22,10 @@ interface TicketEmailData {
   }[];
 }
 
+
 export async function sendTicketNotification(data: TicketEmailData): Promise<boolean> {
-  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-    console.log("[Email] Skipping email notification - Gmail credentials not configured");
+  if (!RESEND_API_KEY) {
+    console.log("[Email] Skipping email notification - Resend API key not configured");
     return false;
   }
 
@@ -66,12 +55,13 @@ export async function sendTicketNotification(data: TicketEmailData): Promise<boo
     `;
   }).join("") || "<tr><td colspan='2' style='padding: 8px; color: #888;'>No attachments</td></tr>";
 
-  const mailOptions = {
-    from: `"DevPortal Support" <${GMAIL_USER}>`,
-    to: ADMIN_EMAIL,
-    replyTo: data.email,
-    subject: `🎫 New Support Ticket: ${data.subject || "No Subject"} - from ${data.name}`,
-    text: `
+  try {
+    await resend.emails.send({
+      from: `DevPortal Support <${GMAIL_USER || 'support@stylnode.in'}>`,
+      to: ADMIN_EMAIL,
+      reply_to: data.email,
+      subject: `🎫 New Support Ticket: ${data.subject || "No Subject"} - from ${data.name}`,
+      text: `
 NEW SUPPORT TICKET
 ==================
 
@@ -88,8 +78,8 @@ ${attachmentsList}
 ---
 View full ticket: ${apiBaseUrl}/api/support/${data.ticketId}
 Reply directly to this email to respond to ${data.name}.
-    `.trim(),
-    html: `
+      `.trim(),
+      html: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -147,32 +137,14 @@ Reply directly to this email to respond to ${data.name}.
   </div>
 </body>
 </html>
-    `.trim(),
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`[Email] Ticket notification sent to ${ADMIN_EMAIL}`);
+      `.trim(),
+    });
+    console.log(`[Email] Ticket notification sent to ${ADMIN_EMAIL} via Resend`);
     return true;
   } catch (error: any) {
-    console.error("[Email] Failed to send notification:", error.message);
+    console.error("[Email] Failed to send notification via Resend:", error.message);
     return false;
   }
 }
 
-// Verify email configuration
-export async function verifyEmailConfig(): Promise<boolean> {
-  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-    console.log("[Email] Gmail credentials not configured - email notifications disabled");
-    return false;
-  }
-
-  try {
-    await transporter.verify();
-    console.log("[Email] Gmail SMTP connection verified");
-    return true;
-  } catch (error: any) {
-    console.error("[Email] Gmail SMTP verification failed:", error.message);
-    return false;
-  }
-}
+// No verification needed for Resend
