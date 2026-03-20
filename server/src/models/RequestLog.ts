@@ -6,11 +6,11 @@ export interface IRequestLog extends Document {
   deviceId: string;
   method: string;
   path: string;
-  query: Record<string, any>;
-  headers: Record<string, any>;
+  query: Record<string, unknown>;
+  headers: Record<string, unknown>;
   requestBody?: string;
   responseStatus?: number;
-  responseHeaders?: Record<string, any>;
+  responseHeaders?: Record<string, unknown>;
   responseBody?: string;
   duration: number;
   timestamp: Date;
@@ -18,25 +18,28 @@ export interface IRequestLog extends Document {
   ip?: string;
 }
 
-const RequestLogSchema = new Schema<IRequestLog>({
-  tunnelId: { type: String, required: true, index: true },
-  tunnelName: { type: String, required: true },
-  deviceId: { type: String, required: true, index: true },
-  method: { type: String, required: true },
-  path: { type: String, required: true },
-  query: { type: Schema.Types.Mixed, default: {} },
-  headers: { type: Schema.Types.Mixed, default: {} },
-  requestBody: { type: String },
-  responseStatus: { type: Number },
-  responseHeaders: { type: Schema.Types.Mixed },
-  responseBody: { type: String },
-  duration: { type: Number, required: true },
-  timestamp: { type: Date, default: Date.now, index: true },
-  userAgent: { type: String },
-  ip: { type: String },
-}, {
-  timestamps: false, // We use our own timestamp field
-});
+const RequestLogSchema = new Schema<IRequestLog>(
+  {
+    tunnelId: { type: String, required: true },
+    tunnelName: { type: String, required: true },
+    deviceId: { type: String, required: true },
+    method: { type: String, required: true },
+    path: { type: String, required: true },
+    query: { type: Schema.Types.Mixed, default: {} },
+    headers: { type: Schema.Types.Mixed, default: {} },
+    requestBody: { type: String },
+    responseStatus: { type: Number },
+    responseHeaders: { type: Schema.Types.Mixed },
+    responseBody: { type: String },
+    duration: { type: Number, required: true },
+    timestamp: { type: Date, default: Date.now },
+    userAgent: { type: String },
+    ip: { type: String },
+  },
+  {
+    timestamps: false, // We use our own timestamp field
+  },
+);
 
 // Indexes for efficient queries
 RequestLogSchema.index({ deviceId: 1, timestamp: -1 });
@@ -44,6 +47,12 @@ RequestLogSchema.index({ tunnelId: 1, timestamp: -1 });
 RequestLogSchema.index({ timestamp: -1 });
 
 // TTL index - auto-delete logs older than 7 days
-RequestLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60 });
+RequestLogSchema.index(
+  { timestamp: 1 },
+  { expireAfterSeconds: 7 * 24 * 60 * 60 },
+);
 
-export const RequestLog = mongoose.model<IRequestLog>("RequestLog", RequestLogSchema);
+export const RequestLog = mongoose.model<IRequestLog>(
+  "RequestLog",
+  RequestLogSchema,
+);
