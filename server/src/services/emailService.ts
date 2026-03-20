@@ -173,10 +173,10 @@ Reply directly to this email to respond to ${data.name}.
 
       <table width="100%" cellpadding="0" cellspacing="0">
         ${htmlAttachments
-          .replace(/<tr>/g, `<tr style="background:#f3f4f6; font-size:18px;">`)
+          .replace(/<tr>/g, `<tr style="background:#f3f4f6;">`)
           .replace(
-            /<td style="padding: 8px; border-bottom: 1px solid #eee; font-size:16px;">/g,
-            `<td style="padding:12px; font-size:16px;">`,
+            /<td style="padding: 8px; border-bottom: 1px solid #eee; font-size:14px;">/g,
+            `<td style="padding:12px; font-size:14px;">`,
           )}
       </table>
 
@@ -194,7 +194,9 @@ Reply directly to this email to respond to ${data.name}.
   <!-- FOOTER -->
   <tr>
     <td style="text-align:center; padding:20px; font-size:11px; color:#9ca3af;">
-      PRIVACY POLICY &nbsp;&nbsp; SUPPORT CENTER<br><br>
+      <a href="https://tunnel.stylnode.in/privacy" style="color:#7c3aed; text-decoration:underline;">PRIVACY POLICY</a>
+      &nbsp;&nbsp;
+      <a href="https://tunnel.stylnode.in/support" style="color:#7c3aed; text-decoration:underline;">SUPPORT CENTER</a><br><br>
       © 2026 DEVTUNNEL SYSTEMS. ALL RIGHTS RESERVED.
     </td>
   </tr>
