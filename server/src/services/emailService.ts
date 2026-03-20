@@ -3,7 +3,7 @@ import { Resend } from "resend";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const NOTIFICATION_EMAIL = process.env.PROPOSAL_NOTIFICATION_EMAIL;
 const FROM_EMAIL =
-  process.env.PROPOSAL_FROM_EMAIL || "DevPortal Support <support@stylnode.in>";
+  process.env.PROPOSAL_FROM_EMAIL || "DevPortal Support <riju@stylnode.in>";
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export interface TicketEmailData {
@@ -74,7 +74,7 @@ export async function sendTicketNotification(
     await resend.emails.send({
       from: FROM_EMAIL,
       to: NOTIFICATION_EMAIL.split(",").map((item) => item.trim()),
-      //reply_to: data.email,
+      replyTo: data.email, // This sets the Reply-To header so replies go to the ticket sender
       subject: `🎫 New Support Ticket: ${data.subject || "No Subject"} - from ${data.name}`,
       text: `
 NEW SUPPORT TICKET
@@ -100,77 +100,124 @@ Reply directly to this email to respond to ${data.name}.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { background: #f4f6fb; font-family: 'Segoe UI', Roboto, Arial, sans-serif; color: #23272f; margin: 0; padding: 0; }
-    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(124,58,237,0.08); overflow: hidden; }
-    .brand-bar { background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%); padding: 24px 32px; color: #fff; display: flex; align-items: center; }
-    .brand-bar h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; }
-    .brand-bar .ticket-id { margin-left: auto; font-size: 1rem; opacity: 0.85; }
-    .content { padding: 32px; }
-    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-    .info-table th, .info-table td { text-align: left; padding: 8px 0; font-size: 1rem; }
-    .info-table th { color: #7c3aed; width: 120px; font-weight: 600; }
-    .message-box { background: #f3f0fa; border-left: 4px solid #7c3aed; padding: 18px 20px; border-radius: 8px; margin-bottom: 24px; font-size: 1.05rem; }
-    .attachments { margin-bottom: 24px; }
-    .attachments-title { color: #a855f7; font-weight: 600; margin-bottom: 8px; }
-    .attachments-table { width: 100%; border-collapse: collapse; }
-    .attachments-table td { padding: 8px 0; border-bottom: 1px solid #f0e9fc; font-size: 0.98rem; }
-    .attachments-table img { max-width: 80px; max-height: 80px; border-radius: 6px; box-shadow: 0 2px 8px rgba(124,58,237,0.10); }
-    .cta-btn { display: inline-block; background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%); color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1rem; margin-top: 18px; box-shadow: 0 2px 8px rgba(124,58,237,0.10); }
-    .footer { background: #f3f0fa; color: #7c3aed; text-align: center; padding: 18px 0 10px 0; font-size: 0.98rem; border-top: 1px solid #e5e7eb; }
-    @media (max-width: 650px) {
-      .container, .content { padding: 12px !important; }
-      .brand-bar { padding: 16px 12px; flex-direction: column; align-items: flex-start; }
-      .brand-bar .ticket-id { margin-left: 0; margin-top: 6px; }
-    }
-  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="brand-bar">
-      <h1>DevPortal Support Ticket</h1>
-      <span class="ticket-id">#${data.ticketId}</span>
-    </div>
-    <div class="content">
-      <table class="info-table">
-        <tr>
-          <th>From:</th>
-          <td><strong>${data.name}</strong> &lt;${data.email}&gt;</td>
-        </tr>
-        <tr>
-          <th>Subject:</th>
-          <td>${data.subject || "<em>No Subject</em>"}</td>
-        </tr>
-      </table>
-      <div class="message-box">
+
+<body style="margin:0; padding:0; background:#eef1f6; font-family:Arial, sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:20px 0;">
+<tr>
+<td align="center">
+
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden;">
+
+  <!-- TOP BAR -->
+  <tr>
+    <td style="padding:16px 20px; background:#f3f4f6; font-size:16px; font-weight:bold; color:#111;">
+      🎟️ Support Operations
+    </td>
+  </tr>
+
+  <!-- HERO -->
+  <tr>
+    <td style="background:#0f5132; padding:40px 20px; text-align:center; color:#ffffff;">
+      
+      <div style="background:#1f6f54; display:inline-block; padding:14px; border-radius:12px; margin-bottom:16px;">
+        📇
+      </div>
+
+      <div style="font-size:24px; font-weight:bold; margin-bottom:6px;">
+        New Support Ticket
+      </div>
+
+      <div style="font-size:14px; color:#c7e7d9;">
+        Ticket ID: ${data.ticketId}
+      </div>
+
+    </td>
+  </tr>
+
+  <!-- CONTENT -->
+  <tr>
+    <td style="padding:24px;">
+
+      <!-- FROM -->
+      <p style="margin:0 0 4px 0; font-size:11px; letter-spacing:1px; color:#6b7280;">
+        FROM:
+      </p>
+      <p style="margin:0 0 16px 0; font-size:15px; color:#111;">
+        ${data.email}
+      </p>
+
+      <!-- SUBJECT -->
+      <p style="margin:0 0 4px 0; font-size:11px; letter-spacing:1px; color:#6b7280;">
+        SUBJECT:
+      </p>
+      <p style="margin:0 0 20px 0; font-size:18px; font-weight:bold; color:#111;">
+        ${data.subject || "No Subject"}
+      </p>
+
+      <!-- MESSAGE -->
+      <p style="margin:0 0 6px 0; font-size:11px; letter-spacing:1px; color:#6b7280;">
+        MESSAGE:
+      </p>
+
+      <div style="background:#0f172a; color:#ffffff; padding:16px; border-radius:10px; font-size:14px; margin-bottom:24px;">
         ${data.message.replace(/\n/g, "<br>")}
       </div>
-      <div class="attachments">
-        <div class="attachments-title">Attachments (${data.attachmentCount})</div>
-        <table class="attachments-table">
-          ${htmlAttachments}
-        </table>
+
+      <!-- ATTACHMENTS -->
+      <p style="margin:0 0 10px 0; font-size:11px; letter-spacing:1px; color:#6b7280;">
+        ATTACHMENTS (${data.attachmentCount})
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${htmlAttachments
+          .replace(/<tr>/g, `<tr style="background:#f3f4f6;">`)
+          .replace(
+            /<td style="padding: 8px; border-bottom: 1px solid #eee;">/g,
+            `<td style="padding:12px;">`,
+          )}
+      </table>
+
+      <!-- CTA (UNCHANGED LOGIC) -->
+      <div style="text-align:center; margin-top:24px;">
+        <a href="mailto:${data.email}?subject=Re:%20Support%20Ticket%20${data.ticketId}"
+           style="background:#0f5132; color:#ffffff; padding:14px 24px; border-radius:10px; text-decoration:none; font-weight:bold; display:inline-block;">
+          Reply to Ticket ↗
+        </a>
       </div>
-      <a href="${apiBaseUrl}/api/support/${data.ticketId}" class="cta-btn">View Full Ticket</a>
-    </div>
-    <div class="footer">
-      Reply directly to this email to respond to <b>${data.name}</b>.<br>
-      DevPortal Support System
-    </div>
-  </div>
+
+    </td>
+  </tr>
+
+  <!-- FOOTER -->
+  <tr>
+    <td style="text-align:center; padding:20px; font-size:11px; color:#9ca3af;">
+      PRIVACY POLICY &nbsp;&nbsp; SUPPORT CENTER<br><br>
+      © 2026 DEVTUNNEL SYSTEMS. ALL RIGHTS RESERVED.
+    </td>
+  </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
 </body>
 </html>
-      `.trim(),
+`.trim(),
     });
     console.log(
       `[Email] Ticket notification sent to ${NOTIFICATION_EMAIL} via Resend`,
     );
     return true;
-  } catch (error: any) {
-    console.error(
-      "[Email] Failed to send notification via Resend:",
-      error.message,
-    );
+  } catch (error: unknown) {
+    const errMsg =
+      error && typeof error === "object" && "message" in error
+        ? (error as any).message
+        : String(error);
+    console.error("[Email] Failed to send notification via Resend:", errMsg);
     return false;
   }
 }
