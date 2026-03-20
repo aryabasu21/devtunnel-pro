@@ -3,7 +3,7 @@ import { Resend } from "resend";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const NOTIFICATION_EMAIL = process.env.PROPOSAL_NOTIFICATION_EMAIL;
 const FROM_EMAIL =
-  process.env.PROPOSAL_FROM_EMAIL || "DevPortal Support <riju@stylnode.in>";
+  process.env.PROPOSAL_FROM_EMAIL || "DevPortal Support <support@stylnode.in>";
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export interface TicketEmailData {
