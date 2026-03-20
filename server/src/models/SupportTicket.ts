@@ -44,7 +44,7 @@ const SupportTicketSchema = new Schema<ISupportTicket>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Index for faster queries
@@ -55,5 +55,5 @@ SupportTicketSchema.index({ createdAt: -1 });
 
 export const SupportTicket = mongoose.model<ISupportTicket>(
   "SupportTicket",
-  SupportTicketSchema
+  SupportTicketSchema,
 );

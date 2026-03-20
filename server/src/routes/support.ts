@@ -11,7 +11,7 @@ const storage = multer.memoryStorage();
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
-  cb: multer.FileFilterCallback
+  cb: multer.FileFilterCallback,
 ) => {
   const allowedMimes = [
     "image/jpeg",
@@ -73,7 +73,6 @@ router.post(
           }))
         : [];
 
-
       // Generate unique 8-digit ticketId
 
       async function generateUniqueTicketId(): Promise<string> {
@@ -101,11 +100,10 @@ router.post(
       await ticket.save();
 
       console.log(
-        `[Support] New ticket created: ${ticket._id} from ${email} with ${attachments.length} attachments`
+        `[Support] New ticket created: ${ticket._id} from ${email} with ${attachments.length} attachments`,
       );
 
       // Send email notification (non-blocking)
-
 
       sendTicketNotification({
         ticketId,
@@ -120,7 +118,9 @@ router.post(
           mimetype: a.mimetype,
           size: a.size,
         })),
-      }).catch((err) => console.error("[Support] Email notification failed:", err));
+      }).catch((err) =>
+        console.error("[Support] Email notification failed:", err),
+      );
 
       res.status(201).json({
         success: true,
@@ -139,7 +139,7 @@ router.post(
         details: error.message,
       });
     }
-  }
+  },
 );
 
 // GET /api/support - List all tickets (admin)
@@ -165,7 +165,8 @@ router.get("/", async (req: Request, res: Response) => {
         name: t.name,
         email: t.email,
         subject: t.subject,
-        message: t.message.substring(0, 200) + (t.message.length > 200 ? "..." : ""),
+        message:
+          t.message.substring(0, 200) + (t.message.length > 200 ? "..." : ""),
         attachmentCount: t.attachments.length,
         status: t.status,
         createdAt: t.createdAt,
@@ -221,7 +222,7 @@ router.get("/:id/attachment/:filename", async (req: Request, res: Response) => {
     }
 
     const attachment = ticket.attachments.find(
-      (a) => a.filename === req.params.filename
+      (a) => a.filename === req.params.filename,
     );
 
     if (!attachment) {
@@ -257,7 +258,7 @@ router.patch("/:id/status", async (req: Request, res: Response) => {
     const ticket = await SupportTicket.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true }
+      { new: true },
     ).select("-attachments.data");
 
     if (!ticket) {
