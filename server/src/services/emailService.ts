@@ -182,8 +182,9 @@ Reply directly to this email to respond to ${data.name}.
 
       <!-- CTA (UNCHANGED LOGIC) -->
       <div style="text-align:center; margin-top:24px;">
-        <a href="mailto:${data.email}?subject=Re:%20Support%20Ticket%20${data.ticketId}%20${data.subject ? "- " + encodeURIComponent(data.subject) : ""}"
-           style="background:#0f5132; color:#ffffff; padding:14px 24px; border-radius:10px; text-decoration:none; font-weight:bold; display:inline-block;">
+        <a
+          href="mailto:${data.email}?subject=Re:%20Support%20Ticket%20:%20${data.ticketId}${data.subject && data.subject.trim() ? "%20-%20" + encodeURIComponent(data.subject.trim()) : ""}"
+          style="background:#0f5132; color:#ffffff; padding:14px 24px; border-radius:10px; text-decoration:none; font-weight:bold; display:inline-block;">
           Reply to Ticket ↗
         </a>
       </div>
