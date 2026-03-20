@@ -99,55 +99,63 @@ Reply directly to this email to respond to ${data.name}.
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-    .content { background: #fff; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }
-    .field { margin-bottom: 16px; }
-    .label { font-weight: 600; color: #6b7280; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
-    .value { color: #111; }
-    .message-box { background: #f9fafb; padding: 16px; border-radius: 8px; border-left: 4px solid #7c3aed; }
-    .attachments { margin-top: 20px; }
-    .btn { display: inline-block; background: #7c3aed; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; }
-    .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; }
+    body { background: #f4f6fb; font-family: 'Segoe UI', Roboto, Arial, sans-serif; color: #23272f; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(124,58,237,0.08); overflow: hidden; }
+    .brand-bar { background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%); padding: 24px 32px; color: #fff; display: flex; align-items: center; }
+    .brand-bar h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: 1px; }
+    .brand-bar .ticket-id { margin-left: auto; font-size: 1rem; opacity: 0.85; }
+    .content { padding: 32px; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .info-table th, .info-table td { text-align: left; padding: 8px 0; font-size: 1rem; }
+    .info-table th { color: #7c3aed; width: 120px; font-weight: 600; }
+    .message-box { background: #f3f0fa; border-left: 4px solid #7c3aed; padding: 18px 20px; border-radius: 8px; margin-bottom: 24px; font-size: 1.05rem; }
+    .attachments { margin-bottom: 24px; }
+    .attachments-title { color: #a855f7; font-weight: 600; margin-bottom: 8px; }
+    .attachments-table { width: 100%; border-collapse: collapse; }
+    .attachments-table td { padding: 8px 0; border-bottom: 1px solid #f0e9fc; font-size: 0.98rem; }
+    .attachments-table img { max-width: 80px; max-height: 80px; border-radius: 6px; box-shadow: 0 2px 8px rgba(124,58,237,0.10); }
+    .cta-btn { display: inline-block; background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%); color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1rem; margin-top: 18px; box-shadow: 0 2px 8px rgba(124,58,237,0.10); }
+    .footer { background: #f3f0fa; color: #7c3aed; text-align: center; padding: 18px 0 10px 0; font-size: 0.98rem; border-top: 1px solid #e5e7eb; }
+    @media (max-width: 650px) {
+      .container, .content { padding: 12px !important; }
+      .brand-bar { padding: 16px 12px; flex-direction: column; align-items: flex-start; }
+      .brand-bar .ticket-id { margin-left: 0; margin-top: 6px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1 style="margin: 0; font-size: 20px;">🎫 New Support Ticket</h1>
-      <p style="margin: 8px 0 0 0; opacity: 0.9;">Ticket ID: ${data.ticketId}</p>
+    <div class="brand-bar">
+      <h1>DevPortal Support Ticket</h1>
+      <span class="ticket-id">#${data.ticketId}</span>
     </div>
     <div class="content">
-      <div class="field">
-        <div class="label">From</div>
-        <div class="value"><strong>${data.name}</strong> &lt;${data.email}&gt;</div>
+      <table class="info-table">
+        <tr>
+          <th>From:</th>
+          <td><strong>${data.name}</strong> &lt;${data.email}&gt;</td>
+        </tr>
+        <tr>
+          <th>Subject:</th>
+          <td>${data.subject || "<em>No Subject</em>"}</td>
+        </tr>
+      </table>
+      <div class="message-box">
+        ${data.message.replace(/\n/g, "<br>")}
       </div>
-      <div class="field">
-        <div class="label">Subject</div>
-        <div class="value">${data.subject || "<em>No Subject</em>"}</div>
-      </div>
-      <div class="field">
-        <div class="label">Message</div>
-        <div class="message-box">${data.message.replace(/\n/g, "<br>")}</div>
-      </div>
-
       <div class="attachments">
-        <div class="label">Attachments (${data.attachmentCount})</div>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+        <div class="attachments-title">Attachments (${data.attachmentCount})</div>
+        <table class="attachments-table">
           ${htmlAttachments}
         </table>
       </div>
-
-      <div style="margin-top: 24px;">
-        <a href="${apiBaseUrl}/api/support/${data.ticketId}" class="btn">View Full Ticket</a>
-      </div>
-
-      <div class="footer">
-        <p>Reply directly to this email to respond to ${data.name}.</p>
-        <p>DevPortal Support System</p>
-      </div>
+      <a href="${apiBaseUrl}/api/support/${data.ticketId}" class="cta-btn">View Full Ticket</a>
+    </div>
+    <div class="footer">
+      Reply directly to this email to respond to <b>${data.name}</b>.<br>
+      DevPortal Support System
     </div>
   </div>
 </body>
