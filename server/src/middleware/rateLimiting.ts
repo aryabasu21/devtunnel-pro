@@ -9,7 +9,8 @@ export const apiLimiter = rateLimit({
   max: 100, // Limit each IP to 100 requests per windowMs
   message: {
     error: "Too many API requests",
-    message: "Please slow down. You can make up to 100 requests per 15 minutes.",
+    message:
+      "Please slow down. You can make up to 100 requests per 15 minutes.",
     retryAfter: "15 minutes",
   },
   standardHeaders: true,
@@ -22,7 +23,8 @@ export const tunnelLimiter = rateLimit({
   max: 10, // Allow 10 tunnel creations per 10 minutes per IP
   message: {
     error: "Too many tunnel requests",
-    message: "You can create up to 10 tunnels per 10 minutes. Please wait before creating more.",
+    message:
+      "You can create up to 10 tunnels per 10 minutes. Please wait before creating more.",
     retryAfter: "10 minutes",
   },
   standardHeaders: true,
@@ -39,7 +41,8 @@ export const supportLimiter = rateLimit({
   max: 5, // 5 support tickets per hour per IP
   message: {
     error: "Too many support requests",
-    message: "You can submit up to 5 support tickets per hour. Please wait before submitting more.",
+    message:
+      "You can submit up to 5 support tickets per hour. Please wait before submitting more.",
     retryAfter: "1 hour",
   },
   standardHeaders: true,
@@ -61,7 +64,10 @@ export const strictLimiter = rateLimit({
 
 // In-memory store for tracking tunnel counts per IP
 class TunnelTracker {
-  private tunnelCounts = new Map<string, { count: number; lastUpdate: number }>();
+  private tunnelCounts = new Map<
+    string,
+    { count: number; lastUpdate: number }
+  >();
   private readonly maxTunnelsPerIP = 3;
   private readonly cleanupInterval = 5 * 60 * 1000; // 5 minutes
 
@@ -113,7 +119,7 @@ class TunnelTracker {
 
   private cleanup(): void {
     const now = Date.now();
-    const cutoff = now - (24 * 60 * 60 * 1000); // 24 hours
+    const cutoff = now - 24 * 60 * 60 * 1000; // 24 hours
 
     for (const [ip, entry] of this.tunnelCounts.entries()) {
       if (entry.lastUpdate < cutoff) {

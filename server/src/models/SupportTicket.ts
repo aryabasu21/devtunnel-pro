@@ -27,7 +27,7 @@ const AttachmentSchema = new Schema({
 
 const SupportTicketSchema = new Schema<ISupportTicket>(
   {
-    ticketId: { type: String, required: true, unique: true },
+    ticketId: { type: String, required: true },
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },
     subject: { type: String, trim: true, default: "" },
