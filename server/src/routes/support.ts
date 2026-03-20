@@ -215,7 +215,8 @@ router.get("/:id", async (req: Request, res: Response) => {
 // GET /api/support/:id/attachment/:filename - Download attachment
 router.get("/:id/attachment/:filename", async (req: Request, res: Response) => {
   try {
-    const ticket = await SupportTicket.findById(req.params.id);
+    // Find by custom ticketId, not _id
+    const ticket = await SupportTicket.findOne({ ticketId: req.params.id });
 
     if (!ticket) {
       return res.status(404).json({ error: "Ticket not found" });
