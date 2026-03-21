@@ -54,7 +54,11 @@ app.use(
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
       // Allow exact string matches
-      if (allowedOrigins.some(o => typeof o === 'string' ? o === origin : o.test(origin))) {
+      if (
+        allowedOrigins.some((o) =>
+          typeof o === "string" ? o === origin : o.test(origin),
+        )
+      ) {
         return callback(null, true);
       }
       callback(new Error("Not allowed by CORS"));
