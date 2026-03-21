@@ -51,8 +51,8 @@ export const supportLimiter = rateLimit({
 
 // Strict rate limit for abuse protection
 export const strictLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 30, // 30 requests per minute
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 30, // 30 requests per hour
   message: {
     error: "Rate limit exceeded",
     message: "Too many requests. Please slow down.",

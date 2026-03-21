@@ -76,7 +76,7 @@ app.use(
 );
 
 // Apply rate limiting
-// app.use(strictLimiter); // Apply basic rate limiting to all routes
+app.use(strictLimiter); // Apply basic rate limiting to all routes
 
 // Health check
 app.get("/health", (req, res) => {

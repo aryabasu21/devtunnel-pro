@@ -195,9 +195,9 @@ Reply directly to this email to respond to ${data.name}.
   <!-- FOOTER -->
   <tr>
     <td style="text-align:center; padding:20px; font-size:11px; color:#9ca3af;">
-      <a href="https://tunnel.stylnode.in/privacy" style="color:#7c3aed; text-decoration:underline;">PRIVACY POLICY</a>
+      <a href="https://devportal.stylnode.in/privacy" style="color:#7c3aed; text-decoration:underline;">PRIVACY POLICY</a>
       &nbsp;&nbsp;
-      <a href="https://tunnel.stylnode.in/support" style="color:#7c3aed; text-decoration:underline;">SUPPORT CENTER</a><br><br>
+      <a href="https://devportal.stylnode.in/support" style="color:#7c3aed; text-decoration:underline;">SUPPORT CENTER</a><br><br>
       © 2026 DEVTUNNEL SYSTEMS. ALL RIGHTS RESERVED.
     </td>
   </tr>

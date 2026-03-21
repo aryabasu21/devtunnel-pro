@@ -46,7 +46,7 @@ const Footer = () => {
           transition={{ delay: 1, duration: 2 }}
           className="absolute bottom-4 right-4 text-xs text-muted-foreground/30 font-mono"
         >
-          // localhost:everywhere 🌍
+          localhost:everywhere 🌍
         </motion.div>
       </div>
     </footer>

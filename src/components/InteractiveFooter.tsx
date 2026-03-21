@@ -93,7 +93,7 @@ const InteractiveFooter = () => {
   ];
 
   const social = [
-    { label: "Email", href: "mailto:support@devportal.dev", icon: Mail },
+    { label: "Email", href: "mailto:riju@stylnode.in", icon: Mail },
   ];
 
   const displayStats = [
@@ -265,7 +265,7 @@ const InteractiveFooter = () => {
           <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/30" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Activity className="w-4 h-4 text-primary animate-pulse" />
-            <span>99.9% uptime guaranteed</span>
+            <span>68.9% uptime guaranteed</span>
           </div>
           <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/30" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
