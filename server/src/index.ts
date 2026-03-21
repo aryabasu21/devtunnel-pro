@@ -379,7 +379,7 @@ function handleClientMessage(
 }
 
 // Start server
-httpServer.listen(PORT, () => {
+httpServer.listen({ port: PORT, host: '0.0.0.0' }, () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════╗
 ║           DevPortal Server v1.0.0                     ║
