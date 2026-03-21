@@ -76,7 +76,7 @@ app.use(
 );
 
 // Apply rate limiting
-app.use(strictLimiter); // Apply basic rate limiting to all routes
+// app.use(strictLimiter); // Apply basic rate limiting to all routes
 
 // Health check
 app.get("/health", (req, res) => {
@@ -379,7 +379,7 @@ function handleClientMessage(
 }
 
 // Start server
-httpServer.listen({ port: PORT, host: '0.0.0.0' }, () => {
+httpServer.listen({ port: PORT, host: "0.0.0.0" }, () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════╗
 ║           DevPortal Server v1.0.0                     ║
