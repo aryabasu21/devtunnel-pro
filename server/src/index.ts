@@ -44,6 +44,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:8080",
+  // Allow any tunnel subdomain
+  /^https:\/\/[a-z0-9-]+\.tunnel\.stylnode\.in$/,
 ];
 
 app.use(
@@ -51,11 +53,10 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
-      // Allow exact matches
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      // Allow any *.tunnel.stylnode.in subdomain
-      if (/^https:\/\/[^.]+\.tunnel\.stylnode\.in$/.test(origin))
+      // Allow exact string matches
+      if (allowedOrigins.some(o => typeof o === 'string' ? o === origin : o.test(origin))) {
         return callback(null, true);
+      }
       callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
