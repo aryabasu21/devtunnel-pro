@@ -95,7 +95,82 @@ const TerminalBlock = ({
       line.startsWith("┌")
     ) {
       return (
-        <span key={index} className="text-zinc-500">
+        <span key={index} className="text-zinc-500 italic">
+          {line}
+        </span>
+      );
+    }
+    // 🟣 JavaScript keywords
+    // 🌟 Highlight LOCALHOST rule (user must edit)
+    if (/localhost:\{?your-frontend-port\}?/.test(line)) {
+      return (
+        <span
+          key={index}
+          className="text-yellow-300 bg-yellow-500/10 px-1 rounded"
+        >
+          {line}
+        </span>
+      );
+    }
+
+    // 🌟 Highlight TUNNEL rule (regex-safe)
+    if (/tunnel\\\.stylnode\\\.in/.test(line)) {
+      return (
+        <span key={index} className="text-cyan-300 bg-cyan-500/10 px-1 rounded">
+          {line}
+        </span>
+      );
+    }
+
+    // 🟢 Success return (only specific case)
+    if (line.includes("callback(null, true)")) {
+      return (
+        <span key={index} className="text-green-300">
+          {line}
+        </span>
+      );
+    }
+
+    // 🔴 Error return
+    if (line.includes("Not allowed by CORS")) {
+      return (
+        <span key={index} className="text-red-400">
+          {line}
+        </span>
+      );
+    }
+
+    // ⚫ Comments
+    if (line.trim().startsWith("//") || line.trim().startsWith("#")) {
+      return (
+        <span key={index} className="text-zinc-500 italic">
+          {line}
+        </span>
+      );
+    }
+
+    // 🟣 JavaScript keywords
+    if (/\b(const|return|if|require|new)\b/.test(line)) {
+      return (
+        <span key={index} className="text-purple-400">
+          {line}
+        </span>
+      );
+    }
+
+    // 🟢 Strings
+    if (/["']/.test(line)) {
+      return (
+        <span key={index} className="text-green-400">
+          {line}
+        </span>
+      );
+    }
+
+    // 🔵 Function / logic lines
+    if (line.includes("(") && line.includes(")")) {
+      return (
+        <span key={index} className="text-blue-400">
           {line}
         </span>
       );
@@ -290,6 +365,117 @@ POST /api/login          401   43ms
 GET  /dashboard          200   62ms
 POST /api/webhook        200   23ms`}
                     />
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-primary/15 ring-1 ring-primary/30 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
+                    4
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="font-medium mb-3">
+                      CORS Setup for Dynamic Site & DevTunnel
+                    </p>
+
+                    <p className="mb-3 text-muted-foreground text-sm">
+                      Configure your backend to allow requests from your local
+                      frontend and DevTunnel URLs.
+                    </p>
+
+                    {/* 🔹 Rules (NEW – improves readability a LOT) */}
+                    <div className="mb-4 space-y-2 text-xs">
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <span className="text-green-400">✔</span>
+                        <span>
+                          Allow requests without origin{" "}
+                          <span className="text-zinc-500">
+                            (mobile apps, curl)
+                          </span>
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <span className="text-yellow-400">●</span>
+                        <span>
+                          Allow{" "}
+                          <code className="text-yellow-300">localhost</code>{" "}
+                          with your frontend port
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <span className="text-cyan-400">●</span>
+                        <span>
+                          Allow{" "}
+                          <code className="text-cyan-300">
+                            *.tunnel.stylnode.in
+                          </code>{" "}
+                          subdomains
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <span className="text-red-400">✖</span>
+                        <span>Block everything else</span>
+                      </div>
+                    </div>
+
+                    <TerminalBlock
+                      title="Backend (Express) – CORS configuration"
+                      code={`const cors = require('cors');
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin
+      if (!origin) return callback(null, true);
+
+      // Allow localhost (replace with your port)
+      if (origin === "http://localhost:{your-frontend-port}") {
+        return callback(null, true);
+      }
+
+      // Allow DevTunnel subdomains
+      if (/^https:\\/\\/[a-z0-9-]+\\.tunnel\\.stylnode\\.in$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      // Block all others
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);`}
+                    />
+
+                    {/* 🔸 Improved Callout */}
+                    <div className="mt-3 text-xs border border-primary/20 bg-primary/5 px-3 py-3 rounded space-y-2">
+                      <p className="text-[16px] uppercase tracking-widest text-green-400 font-normal">
+                        Configuration
+                      </p>
+                      <p>
+                        Replace{" "}
+                        <code className="text-yellow-300">{`{your-frontend-port}`}</code>{" "}
+                        with your frontend port:
+                      </p>
+
+                      <div className="flex flex-wrap gap-2 text-[11px]">
+                        <code className="bg-zinc-800 px-2 py-1 rounded">
+                          http://localhost:3000
+                        </code>
+                        <code className="bg-zinc-800 px-2 py-1 rounded">
+                          http://localhost:5173
+                        </code>
+                      </div>
+
+                      <p className="text-zinc-400">
+                        The tunnel rule already allows all{" "}
+                        <code className="text-cyan-300">
+                          *.tunnel.stylnode.in
+                        </code>{" "}
+                        subdomains — no changes needed.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
