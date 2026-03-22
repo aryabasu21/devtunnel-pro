@@ -68,14 +68,6 @@ const Navbar = () => {
           <Button
             variant="ghost"
             size="sm"
-            className={getNavButtonClasses("/dashboard")}
-            onClick={goToDashboard}
-          >
-            Dashboard
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
             className={getNavButtonClasses("/docs")}
             onClick={goToDocumentation}
           >
