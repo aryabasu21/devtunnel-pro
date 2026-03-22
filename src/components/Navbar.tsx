@@ -23,8 +23,8 @@ const Navbar = () => {
     setDeviceId(getDeviceId());
   }, []);
 
-  const goToDashboard = () => {
-    navigate(`/dashboard/${deviceId}`);
+  const goToDocumentation = () => {
+    navigate(`/docs`);
   };
 
   const goToHome = () => {
@@ -77,7 +77,7 @@ const Navbar = () => {
             variant="ghost"
             size="sm"
             className={getNavButtonClasses("/docs")}
-            onClick={() => navigate("/docs")}
+            onClick={goToDocumentation}
           >
             Docs
           </Button>
@@ -130,13 +130,13 @@ const Navbar = () => {
           <Button
             variant="ghost"
             size="sm"
-            className={`justify-start ${getNavButtonClasses("/dashboard")}`}
+            className={`justify-start ${getNavButtonClasses("/docs")}`}
             onClick={() => {
-              goToDashboard();
+              goToDocumentation();
               setMenuOpen(false);
             }}
           >
-            Dashboard
+            Documentation
           </Button>
           <Button
             variant="ghost"

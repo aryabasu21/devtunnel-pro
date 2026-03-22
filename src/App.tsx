@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
 import Docs from "./pages/Docs.tsx";
 import APIReference from "./pages/APIReference.tsx";
 import Examples from "./pages/Examples.tsx";
@@ -31,7 +30,6 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/dashboard/:deviceId?" element={<Dashboard />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="/api" element={<APIReference />} />
           <Route path="/examples" element={<Examples />} />

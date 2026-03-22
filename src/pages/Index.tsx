@@ -44,8 +44,8 @@ const Index = () => {
   const startCommand = getStartCommand(platform);
   const platformName = getPlatformName(platform);
 
-  const goToDashboard = () => {
-    navigate(`/dashboard/${deviceId}`);
+  const goToDocumentation = () => {
+    navigate(`/docs`);
   };
 
   const copyInstallCommand = async () => {
@@ -156,9 +156,9 @@ const Index = () => {
                 variant="outline"
                 size="xl"
                 className="w-full sm:w-auto"
-                onClick={goToDashboard}
+                onClick={goToDocumentation}
               >
-                View Dashboard
+                View Documentation
               </Button>
             </div>
             <p
