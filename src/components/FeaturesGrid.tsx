@@ -1,4 +1,13 @@
-import { Globe, Zap, Shield, Code2, Activity, Smartphone, Layers, Play } from "lucide-react";
+import {
+  Globe,
+  Zap,
+  Shield,
+  Code2,
+  Activity,
+  Smartphone,
+  Layers,
+  Play,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 const features = [
@@ -13,29 +22,9 @@ const features = [
     desc: "Monitor every HTTP request in real time with headers, body, and timing.",
   },
   {
-    icon: Play,
-    title: "Replay Requests",
-    desc: "Capture, edit, and replay any request to debug APIs effortlessly.",
-  },
-  {
-    icon: Code2,
-    title: "API Playground",
-    desc: "Auto-generate an interactive API playground for any tunneled backend.",
-  },
-  {
     icon: Shield,
     title: "Secure by Default",
     desc: "JWT auth, password-protected tunnels, rate limiting, and auto-expiry.",
-  },
-  {
-    icon: Smartphone,
-    title: "QR Code Sharing",
-    desc: "Instantly share tunnels to mobile devices with terminal QR codes.",
-  },
-  {
-    icon: Layers,
-    title: "Remote Preview",
-    desc: "Embedded browser preview with network inspection and console logs.",
   },
   {
     icon: Zap,
@@ -53,9 +42,12 @@ const FeaturesGrid = () => (
         viewport={{ once: true }}
         className="text-center mb-16"
       >
-        <h2 className="text-3xl font-bold mb-3">Everything you need to debug</h2>
+        <h2 className="text-3xl font-bold mb-3">
+          Everything you need to debug
+        </h2>
         <p className="text-muted-foreground max-w-lg mx-auto">
-          A complete toolkit for exposing, inspecting, and debugging your local development server.
+          A complete toolkit for exposing, inspecting, and debugging your local
+          development server.
         </p>
       </motion.div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -70,7 +62,9 @@ const FeaturesGrid = () => (
           >
             <f.icon className="w-5 h-5 text-primary mb-3 group-hover:text-primary transition-colors" />
             <h3 className="font-semibold text-sm mb-1">{f.title}</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {f.desc}
+            </p>
           </motion.div>
         ))}
       </div>

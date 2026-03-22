@@ -15,11 +15,6 @@ const commands = [
     example: "devportal-tunnel start 3000 --demo",
   },
   {
-    cmd: "devportal-tunnel start <port> --qr",
-    desc: "Display a QR code in terminal for easy mobile sharing",
-    example: "devportal-tunnel start 5173 --qr",
-  },
-  {
     cmd: "devportal-tunnel start <port> --password <pass>",
     desc: "Password-protect the tunnel so only authorized users can access",
     example: "devportal-tunnel start 3000 --password secret123",

@@ -84,7 +84,6 @@ const APIReference = () => {
         "--subdomain <name> - Custom subdomain",
         "--password <pass> - Password protection",
         "--forward <remote:local> - Port forwarding",
-        "--qr - Show QR code",
         "--demo - 2-hour expiry",
       ],
     },

@@ -38,13 +38,6 @@ const Examples = () => {
         "Perfect for sharing React, Vue, or Angular apps running locally",
     },
     {
-      icon: Smartphone,
-      title: "Mobile Testing",
-      description: "Test your web app on real mobile devices instantly",
-      command: "devportal-tunnel start 8080 --qr",
-      details: "QR code makes it easy to open on phones and tablets",
-    },
-    {
       icon: Globe,
       title: "Webhooks & APIs",
       description:
@@ -100,23 +93,6 @@ devportal-tunnel start 4000 --subdomain myapi
 # Test your endpoints:
 curl https://myapi.tunnel.stylnode.in/api/users
 curl -X POST https://myapi.tunnel.stylnode.in/api/login`,
-    },
-    {
-      title: "Next.js with Mobile Testing",
-      description: "Test your Next.js app on mobile devices using QR codes",
-      steps: [
-        "npm run dev",
-        "Start tunnel with QR code generation",
-        "Scan QR code on mobile devices",
-      ],
-      code: `# Start Next.js
-npm run dev
-
-# Start tunnel with QR code
-devportal-tunnel start 3000 --qr
-
-# QR code will be displayed in terminal
-# Scan with your phone to test mobile experience`,
     },
     {
       title: "Webhook Development",
@@ -428,12 +404,6 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                     🔧 Development Tips
                   </h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li className="text-base">
-                      • Use QR codes for mobile testing:{" "}
-                      <code className="bg-background px-2 py-1 rounded text-sm">
-                        --qr
-                      </code>
-                    </li>
                     <li className="text-base">
                       • Monitor request logs in terminal for debugging
                     </li>

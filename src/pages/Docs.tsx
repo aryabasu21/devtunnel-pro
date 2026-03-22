@@ -252,15 +252,12 @@ const Docs = () => {
         </div>
 
         <Tabs defaultValue="quickstart" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsList className="grid w-full grid-cols-2 h-auto">
             <TabsTrigger value="quickstart" className="text-xs sm:text-sm py-2">
               Quick Start
             </TabsTrigger>
             <TabsTrigger value="cli" className="text-xs sm:text-sm py-2">
               CLI Reference
-            </TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-xs sm:text-sm py-2">
-              Dashboard
             </TabsTrigger>
           </TabsList>
 
@@ -636,151 +633,13 @@ $ devportal-tunnel replay req-abc123 --body '{"updated": true}'`}
               </div>
             </section>
           </TabsContent>
-
-          <TabsContent value="dashboard" className="space-y-8">
-            <section>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-primary" />
-                Dashboard Features
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Tunnel Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      View all active tunnels at a glance
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Copy public URLs with one click
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Generate QR codes for mobile testing
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Stop tunnels when debugging is done
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Request Inspector
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      View headers, params, and body in real-time
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Inspect response payloads and status codes
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Filter requests by method or status
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Search through request history
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Request Replay</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Replay any captured request
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Edit headers and body before replay
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Compare original vs replayed responses
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Debug edge cases quickly
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Device Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Unique device isolation for multi-user security
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Copy device ID for CLI synchronization
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Navigate seamlessly between web and terminal
-                    </p>
-                    <p>
-                      <ArrowRight className="w-3 h-3 inline mr-2" />
-                      Persistent session management
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-primary" />
-                Device-Based Access
-              </h2>
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    DevPortal uses device-based identification instead of
-                    traditional login. Each device gets a unique ID stored
-                    locally, giving you instant access without account
-                    management.
-                  </p>
-                  <TerminalBlock
-                    title="device info"
-                    code={`Device ID: dev_m2abc123_4xy7z9k
-Storage:   localStorage
-Scope:     This browser only
-
-# Your tunnels and settings are tied to this device ID
-# Access from another browser? You'll get a new ID`}
-                  />
-                </CardContent>
-              </Card>
-            </section>
-          </TabsContent>
         </Tabs>
       </main>
       {/* Scroll to Top Button */}
       {showScroll && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 p-3 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors"
+          className="fixed bottom-20 right-8 z-50 p-3 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors"
           aria-label="Scroll to top"
         >
           ↑
