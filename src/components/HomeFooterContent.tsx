@@ -189,7 +189,7 @@ const HomeFooterContent = () => {
           ))}
         </motion.div>
 
-        {import.meta.env.PROD && (
+        {import.meta.env.DEV && (
           <div className="flex justify-end mb-8">
             <button
               type="button"
