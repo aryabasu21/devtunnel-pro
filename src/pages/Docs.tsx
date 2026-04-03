@@ -240,7 +240,7 @@ const Docs = () => {
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            v1.0.0
+            v1.0.2
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
             Documentation
@@ -386,7 +386,7 @@ POST /api/webhook        200   23ms`}
                         <span>
                           Allow requests without origin{" "}
                           <span className="text-zinc-500">
-                            (mobile apps, curl)
+                            (mobile apps, curl, Postman)
                           </span>
                         </span>
                       </div>
@@ -412,8 +412,18 @@ POST /api/webhook        200   23ms`}
                       </div>
 
                       <div className="flex items-center gap-2 text-zinc-300">
+                        <span className="text-purple-400">●</span>
+                        <span>
+                          Allow API testing tools{" "}
+                          <span className="text-zinc-500">
+                            (Postman, Insomnia, Thunder Client)
+                          </span>
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-zinc-300">
                         <span className="text-red-400">✖</span>
-                        <span>Block everything else</span>
+                        <span>Block everything else (optional for development)</span>
                       </div>
                     </div>
 
@@ -424,7 +434,7 @@ POST /api/webhook        200   23ms`}
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin
+      // Allow requests with no origin (mobile apps, curl, Postman)
       if (!origin) return callback(null, true);
 
       // Allow localhost (replace with your port)
@@ -434,6 +444,11 @@ app.use(
 
       // Allow DevTunnel subdomains
       if (/^https:\\/\\/[a-z0-9-]+\\.tunnel\\.stylnode\\.in$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      // Allow API testing tools (Postman, Insomnia, Thunder Client)
+      if (origin && /postman|insomnia|thunder|localhost/.test(origin)) {
         return callback(null, true);
       }
 
@@ -466,15 +481,126 @@ app.use(
                       </div>
 
                       <p className="text-zinc-400">
-                        The tunnel rule already allows all{" "}
+                        ✓ The tunnel rule already allows all{" "}
                         <code className="text-cyan-300">
                           *.tunnel.stylnode.in
                         </code>{" "}
                         subdomains — no changes needed.
                       </p>
+
+                      <p className="text-zinc-400">
+                        ✓ Postman, Insomnia, Thunder Client, and other API tools are automatically allowed via the origin check.
+                      </p>
                     </div>
                   </div>
                 </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Code className="w-5 h-5 text-primary" />
+                Test with API Tools
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Your tunnel URL works seamlessly with Postman, Insomnia, curl, and other API testing tools.
+              </p>
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Using Postman</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Step 1:</strong> Start your tunnel and copy the URL
+                    </p>
+                    <TerminalBlock
+                      title="terminal"
+                      code={`$ devportal start 3000
+
+Tunnel established
+  Local server:  http://localhost:3000
+  Public URL:    https://cosmic-river-847.tunnel.stylnode.in
+  Tunnel ID:     t-abc123`}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Step 2:</strong> Open Postman and create a new request
+                    </p>
+                    <TerminalBlock
+                      title="Postman - GET Request"
+                      code={`Method: GET
+URL: https://cosmic-river-847.tunnel.stylnode.in/api/users
+
+Headers:
+  Content-Type: application/json`}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Step 3:</strong> Create a POST request with body
+                    </p>
+                    <TerminalBlock
+                      title="Postman - POST Request"
+                      code={`Method: POST
+URL: https://cosmic-river-847.tunnel.stylnode.in/api/users
+
+Headers:
+  Content-Type: application/json
+
+Body (raw JSON):
+{
+  "name": "John Doe",
+  "email": "john@example.com"
+}`}
+                    />
+                    <div className="mt-3 text-xs border border-primary/20 bg-primary/5 px-3 py-3 rounded">
+                      <p className="text-green-400 font-semibold mb-2">✓ Password Protected Tunnels</p>
+                      <p className="text-muted-foreground mb-2">If your tunnel has password protection:</p>
+                      <code className="bg-zinc-800 px-2 py-1 rounded text-xs">
+                        Header: X-Tunnel-Password: your-password
+                      </code>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Using curl</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <TerminalBlock
+                      title="terminal"
+                      code={`# GET request
+$ curl https://cosmic-river-847.tunnel.stylnode.in/api/users
+
+# POST request
+$ curl -X POST https://cosmic-river-847.tunnel.stylnode.in/api/users \\
+  -H "Content-Type: application/json" \\
+  -d '{"name":"John","email":"john@example.com"}'
+
+# With password
+$ curl https://cosmic-river-847.tunnel.stylnode.in/api/users \\
+  -H "X-Tunnel-Password: secret123"`}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Supported Tools</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Your tunnel works with any HTTP client:
+                    </p>
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      <code className="bg-zinc-800 px-3 py-2 rounded">Postman</code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">Insomnia</code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">Thunder Client</code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">curl</code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">wget</code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">fetch</code>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </section>
 

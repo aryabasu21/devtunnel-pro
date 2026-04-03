@@ -44,6 +44,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:8080",
+  // Allow Postman
+  "postman://localhost",
   // Allow any tunnel subdomain
   /^https:\/\/[a-z0-9-]+\.tunnel\.stylnode\.in$/,
 ];
@@ -51,9 +53,10 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, curl, etc.)
+      // Allow requests with no origin (mobile apps, curl, Postman desktop, etc.)
       if (!origin) return callback(null, true);
-      // Allow exact string matches
+
+      // Allow whitelisted origins
       if (
         allowedOrigins.some((o) =>
           typeof o === "string" ? o === origin : o.test(origin),
@@ -61,7 +64,14 @@ app.use(
       ) {
         return callback(null, true);
       }
-      callback(new Error("Not allowed by CORS"));
+
+      // Allow common API testing tools (Postman, Insomnia, Thunder Client, etc.)
+      if (origin && /^(https?:\/\/)?(app\.)?postman\.com|insomnia|thunder|localhost/.test(origin)) {
+        return callback(null, true);
+      }
+
+      // For tunnel service, be permissive - users already control access via tunnel URL
+      return callback(null, true);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -146,7 +156,7 @@ app.all("*", async (req: Request, res: Response) => {
   if (isBaseDomain) {
     return res.json({
       service: "DevPortal Tunnel Server",
-      version: "1.0.0",
+      version: "1.0.2",
       status: "running",
       activeTunnels: tunnelManager.getActiveTunnelCount(),
       docs: "https://devportal.stylnode.in/docs",
@@ -259,7 +269,7 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
 
   // Send welcome message
   ws.send(
-    JSON.stringify({ type: "welcome", server: "DevPortal", version: "1.0.0" }),
+    JSON.stringify({ type: "welcome", server: "DevPortal", version: "1.0.2" }),
   );
 });
 
@@ -387,7 +397,7 @@ function handleClientMessage(
 httpServer.listen({ port: PORT, host: "0.0.0.0" }, () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════╗
-║           DevPortal Server v1.0.0                     ║
+║           DevPortal Server v1.0.2                     ║
 ╠═══════════════════════════════════════════════════════╣
 ║  HTTP:      http://localhost:${String(PORT).padEnd(25)}║
 ║  WebSocket: ws://localhost:${PORT}${WS_PATH.padEnd(21)}║

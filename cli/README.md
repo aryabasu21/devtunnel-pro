@@ -5,11 +5,13 @@ Expose your localhost to the internet with a single command.
 ## Installation
 
 ### From npm (after publishing)
+
 ```bash
 npm install -g devportal
 ```
 
 ### From source
+
 ```bash
 git clone <repo>
 cd cli
@@ -30,9 +32,6 @@ devportal 3000 --subdomain my-api
 # Password protected
 devportal 3000 --password secret123
 
-# Show QR code for mobile testing
-devportal 3000 --qr
-
 # Temporary demo link (expires in 2 hours)
 devportal 3000 --demo
 
@@ -43,6 +42,7 @@ devportal 3000 --local
 ## Commands
 
 ### Start a tunnel
+
 ```bash
 devportal <port> [options]
 
@@ -50,17 +50,18 @@ Options:
   -s, --subdomain <name>    Custom subdomain for your URL
   -p, --password <pass>     Password protect the tunnel
   --demo                    Create a temporary link (2 hours)
-  --qr                      Display QR code in terminal
   --auth-header <header>    Add authorization header to forwarded requests
   --local                   Run in simulation mode (no server required)
 ```
 
 ### List active tunnels
+
 ```bash
 devportal ls
 ```
 
 ### Stop a tunnel
+
 ```bash
 # Stop specific tunnel
 devportal stop <tunnel-id>
@@ -70,6 +71,7 @@ devportal stop --all
 ```
 
 ### Replay requests
+
 ```bash
 # Replay a captured request
 devportal replay <request-id>
@@ -82,11 +84,13 @@ devportal replay <request-id> --body '{"test": true}'
 ```
 
 ### Stream logs
+
 ```bash
 devportal logs <tunnel-id>
 ```
 
 ### Configuration
+
 ```bash
 # View current config
 devportal config
@@ -99,6 +103,7 @@ devportal config reset
 ```
 
 ### Device info
+
 ```bash
 devportal whoami
 ```
@@ -147,6 +152,7 @@ Internet Request
 ## Publishing to npm
 
 1. **Update package.json** with your details:
+
 ```json
 {
   "name": "devportal",
@@ -159,17 +165,20 @@ Internet Request
 ```
 
 2. **Login and publish**:
+
 ```bash
 npm login
 npm publish
 ```
 
 3. **For scoped package** (if name is taken):
+
 ```json
 {
   "name": "@yourusername/devportal"
 }
 ```
+
 ```bash
 npm publish --access public
 ```

@@ -10,14 +10,10 @@ import {
 import { getDeviceId } from "../utils/device";
 import { getConfig } from "../utils/config";
 
-// @ts-ignore - qrcode-terminal doesn't have types
-import * as qrcode from "qrcode-terminal";
-
 interface StartOptions {
   subdomain?: string;
   password?: string;
   demo?: boolean;
-  qr?: boolean;
   authHeader?: string;
   local?: boolean; // Use local simulation mode
   forward?: string; // Port forwarding format: "remote:local" e.g., "8080:3000"
@@ -204,22 +200,6 @@ export async function startTunnel(
     // );
     console.log();
 
-    // Show QR code if requested
-    if (options.qr) {
-      console.log(chalk.gray("  Scan to open on mobile:"));
-      console.log();
-      try {
-        // Force flush before QR generation
-        process.stdout.write("");
-        qrcode.generate(tunnelInfo.url, { small: true });
-        // Force flush after QR generation
-        process.stdout.write("");
-      } catch (error: any) {
-        console.log(chalk.red("  Failed to generate QR code:"), error.message);
-      }
-      console.log();
-    }
-
     // Save tunnel info locally
     const storedTunnel: StoredTunnel = {
       id: tunnelInfo.id,
@@ -296,21 +276,6 @@ async function startSimulatedTunnel(
   console.log(chalk.yellow("  ⚠ Running in simulation mode"));
   console.log(chalk.gray("  Configure server URL to enable real tunneling"));
   console.log();
-
-  if (options.qr) {
-    console.log(chalk.gray("  Scan to open on mobile:"));
-    console.log();
-    try {
-      // Force flush before QR generation
-      process.stdout.write("");
-      qrcode.generate(url, { small: true });
-      // Force flush after QR generation
-      process.stdout.write("");
-    } catch (error: any) {
-      console.log(chalk.red("  Failed to generate QR code:"), error.message);
-    }
-    console.log();
-  }
 
   console.log(chalk.gray("  Simulating requests... (Press Ctrl+C to stop)"));
   console.log();

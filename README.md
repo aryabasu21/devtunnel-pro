@@ -8,7 +8,7 @@ DevPortal is a frontend dashboard experience for exposing localhost services, in
 - Dashboard with tunnel list, request log, and request inspector
 - Replay workflow with editable request payload validation
 - API Playground with endpoint management (add/delete/select), headers, request body, and mock responses
-- QR code sharing modal for active tunnel URLs
+- API testing with Postman, Insomnia, curl, and other HTTP clients
 - Responsive desktop/mobile layouts
 
 ## Tech Stack
