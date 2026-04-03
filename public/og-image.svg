@@ -1,0 +1,32 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#05070F" />
+      <stop offset="0.55" stop-color="#0B1022" />
+      <stop offset="1" stop-color="#111827" />
+    </linearGradient>
+    <linearGradient id="bolt" x1="85" y1="62" x2="186" y2="193" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F59E0B" />
+      <stop offset="0.5" stop-color="#F97316" />
+      <stop offset="1" stop-color="#7C3AED" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <circle cx="60" cy="50" r="220" fill="#7C3AED" fill-opacity="0.12" />
+  <circle cx="1120" cy="580" r="260" fill="#F97316" fill-opacity="0.1" />
+
+  <g transform="translate(120 115)">
+    <rect x="0" y="0" width="200" height="200" rx="46" fill="#0B1022" stroke="#1F2937" />
+    <path d="M112 42L56 122H94L82 176L148 92H110L112 42Z" fill="url(#bolt)" />
+  </g>
+
+  <text x="360" y="220" fill="#E5E7EB" font-size="68" font-family="Segoe UI, Arial, sans-serif" font-weight="700">DevPortal Tunnel</text>
+  <text x="360" y="280" fill="#9CA3AF" font-size="30" font-family="Segoe UI, Arial, sans-serif">Share localhost instantly. Inspect traffic. Debug faster.</text>
+
+  <g transform="translate(360 345)">
+    <rect x="0" y="0" width="700" height="150" rx="22" fill="#0B1022" fill-opacity="0.72" stroke="#1F2937" />
+    <text x="30" y="56" fill="#C4B5FD" font-size="24" font-family="Consolas, Menlo, monospace">$ devportal-tunnel start 3000 --subdomain myapi</text>
+    <text x="30" y="102" fill="#34D399" font-size="24" font-family="Consolas, Menlo, monospace">✓ https://myapi.tunnel.stylnode.in</text>
+  </g>
+</svg>
