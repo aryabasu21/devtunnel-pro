@@ -162,7 +162,7 @@ export class TunnelClient extends EventEmitter {
     reject?: (error: Error) => void,
   ): Promise<void> {
     switch (message.type) {
-      case "registered":
+      case "registered": {
         const wasReconnect = this.tunnelInfo !== null;
         this.tunnelInfo = message.tunnel;
         this.emit("registered", message.tunnel);
@@ -173,6 +173,7 @@ export class TunnelClient extends EventEmitter {
           resolve(message.tunnel);
         }
         break;
+      }
 
       case "request":
         await this.handleIncomingRequest(message);

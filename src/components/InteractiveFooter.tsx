@@ -15,13 +15,13 @@ import { useState, useEffect } from "react";
 
 const InteractiveFooter = () => {
   const currentYear = new Date().getFullYear();
+  const UPTIME = 58.9;
 
   // Dynamic stats that increase with real usage
   const [stats, setStats] = useState({
     activeTunnels: 0,
     developers: 0,
     requests: 0,
-    uptime: 99.9,
   });
 
   // Initialize and update stats
@@ -34,7 +34,6 @@ const InteractiveFooter = () => {
           activeTunnels: 12,
           developers: 8,
           requests: 450,
-          uptime: 99.9,
           lastUpdate: Date.now(),
         };
 
@@ -47,7 +46,6 @@ const InteractiveFooter = () => {
       activeTunnels: initialStats.activeTunnels + Math.floor(hoursSince * 0.1),
       developers: initialStats.developers + Math.floor(hoursSince * 0.05),
       requests: initialStats.requests + Math.floor(hoursSince * 25),
-      uptime: initialStats.uptime,
     };
 
     setStats(updatedStats);
@@ -67,7 +65,6 @@ const InteractiveFooter = () => {
         activeTunnels: prev.activeTunnels + (Math.random() > 0.7 ? 1 : 0),
         developers: prev.developers + (Math.random() > 0.9 ? 1 : 0),
         requests: prev.requests + Math.floor(Math.random() * 5 + 2),
-        uptime: prev.uptime,
       }));
     }, 30000); // Update every 30 seconds
 
@@ -90,10 +87,25 @@ const InteractiveFooter = () => {
     { label: "API Reference", href: "/api", icon: Zap },
     { label: "Examples", href: "/examples", icon: Globe },
     { label: "Support", href: "/support", icon: Heart },
+        {
+      label: "NPM Package",
+      href: "https://www.npmjs.com/package/devportal-tunnel",
+      icon: Coffee,
+    },
   ];
 
   const social = [
     { label: "Email", href: "mailto:riju@stylnode.in", icon: Mail },
+    {
+      label: "LinkedIn",
+      href: "https://www.linkedin.com/in/aryabasu21",
+      icon: Users,
+    },
+    {
+      label: "Instagram",
+      href: "https://www.instagram.com/ridzpixel/",
+      icon: Heart,
+    },
   ];
 
   const displayStats = [
@@ -120,7 +132,7 @@ const InteractiveFooter = () => {
     },
     {
       label: "Uptime",
-      value: `${stats.uptime}%`,
+      value: `${UPTIME}%`,
       icon: Star,
       color: "text-yellow-500",
     },
@@ -265,7 +277,7 @@ const InteractiveFooter = () => {
           <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/30" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Activity className="w-4 h-4 text-primary animate-pulse" />
-            <span>68.9% uptime guaranteed</span>
+            <span>58.9% uptime guaranteed</span>
           </div>
           <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/30" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

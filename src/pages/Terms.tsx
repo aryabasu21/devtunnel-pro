@@ -44,7 +44,7 @@ const Terms = () => {
         },
         {
           subtitle: "Service Availability",
-          text: "We strive for 99.9% uptime but do not guarantee uninterrupted service. We may perform maintenance, updates, or experience occasional downtime.",
+          text: "We strive for 58.9% uptime but do not guarantee uninterrupted service. We may perform maintenance, updates, or experience occasional downtime.",
         },
         {
           subtitle: "Beta Service",
