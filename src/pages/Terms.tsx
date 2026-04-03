@@ -1,5 +1,11 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
@@ -13,12 +19,19 @@ import {
 
 const Terms = () => {
   const [showScroll, setShowScroll] = useState(false);
+  const [showAllTermDetails, setShowAllTermDetails] = useState(false);
   useEffect(() => {
     const handleScroll = () => setShowScroll(window.scrollY > 200);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const highlights = [
+    "Intended for development and testing workflows.",
+    "Operational limits may apply to protect platform stability.",
+    "Policy terms can change as product and legal requirements evolve.",
+  ];
+
   const sections = [
     {
       icon: CheckCircle,
@@ -40,15 +53,15 @@ const Terms = () => {
       content: [
         {
           subtitle: "What DevPortal Does",
-          text: "DevPortal provides a tunneling service that exposes your local development servers to the internet via secure HTTPS URLs. The service includes request logging, traffic inspection, and debugging tools.",
+          text: "DevPortal provides a localhost tunneling platform made of a web dashboard, a CLI, and a server that routes external requests to your local machine for development, debugging, webhook testing, and demos.",
         },
         {
-          subtitle: "Service Availability",
-          text: "We strive for 58.9% uptime but do not guarantee uninterrupted service. We may perform maintenance, updates, or experience occasional downtime.",
+          subtitle: "Core Features",
+          text: "Features may include public tunnel URLs, optional tunnel passwords, request logs and inspection tools, replay tools, support ticket submission, and temporary demo links.",
         },
         {
           subtitle: "Beta Service",
-          text: "DevPortal is currently in beta. Features may change, and the service may experience bugs or unexpected behavior. We are not liable for any issues during the beta period.",
+          text: "DevPortal is offered on a best-effort basis and may change at any time. Features can be added, modified, limited, or removed without prior notice.",
         },
       ],
     },
@@ -62,11 +75,11 @@ const Terms = () => {
         },
         {
           subtitle: "Prohibited Activities",
-          text: "You may NOT use DevPortal for: (1) Hosting production applications or services, (2) Distributing malware, viruses, or harmful code, (3) Phishing, spam, or fraudulent activities, (4) Illegal content or activities, (5) DDoS attacks or network abuse, (6) Mining cryptocurrency, (7) Proxy or VPN services, (8) Circumventing security measures, (9) Excessive bandwidth consumption (>100GB/month), (10) Automated scraping or data harvesting.",
+          text: "You may NOT use DevPortal for malware distribution, phishing, spam, fraud, illegal activity, denial-of-service behavior, credential abuse, unauthorized access attempts, or any activity that violates law or third-party rights.",
         },
         {
-          subtitle: "Rate Limits",
-          text: "We enforce rate limits to ensure fair usage: 3 active tunnels per IP address, 100 API requests per 15 minutes, and automatic 7-day log retention. Excessive usage may result in temporary throttling or account suspension.",
+          subtitle: "Operational Limits",
+          text: "To protect service stability, limits may apply. Current implementation includes limits such as up to 3 active tunnels per IP, API request limiting, and support ticket submission limiting. These limits can change without notice.",
         },
       ],
     },
@@ -76,15 +89,15 @@ const Terms = () => {
       content: [
         {
           subtitle: "Your Responsibilities",
-          text: "You are responsible for: (1) Securing your local server and applications, (2) Not exposing sensitive data through tunnels, (3) Using password protection for sensitive endpoints, (4) Complying with applicable data protection laws.",
+          text: "You are responsible for local application security, secret management, endpoint hardening, and lawful data handling. Do not expose sensitive systems or personal data unless you are authorized and properly protected.",
         },
         {
           subtitle: "Our Responsibilities",
-          text: "We provide: (1) HTTPS encryption for all tunnels, (2) Device-based authentication, (3) Secure data storage, (4) Regular security updates. However, we cannot guarantee absolute security and are not liable for security breaches on your local servers.",
+          text: "We implement reasonable technical safeguards and operational controls. However, no service is perfectly secure and we cannot guarantee that tunnels, systems, or transmitted data will be free from interception, compromise, or downtime.",
         },
         {
           subtitle: "Data Handling",
-          text: "Request logs are stored for 7 days and automatically deleted. We do not intentionally store request bodies or sensitive data, but you should assume all traffic through tunnels is visible to our systems.",
+          text: "The platform may process request metadata and payloads needed for routing, debugging, and support. Request logs are configured with a 7-day TTL in the current implementation. Support tickets and attachments are stored to provide support workflows.",
         },
       ],
     },
@@ -102,7 +115,7 @@ const Terms = () => {
         },
         {
           subtitle: "Effect of Termination",
-          text: "Upon termination, all active tunnels will be closed, and access to the dashboard will be revoked. Request logs may be retained for up to 30 days for security purposes.",
+          text: "Upon suspension or termination, active tunnels may be closed, and service access may be revoked. We may retain certain records for security, abuse prevention, operational, or legal compliance reasons.",
         },
       ],
     },
@@ -120,7 +133,7 @@ const Terms = () => {
         },
         {
           subtitle: "Maximum Liability",
-          text: "Our total liability for any claims arising from the use of DevPortal shall not exceed $100 USD or the amount paid by you (if any) in the past 12 months.",
+          text: "If liability cannot be excluded under applicable law, our aggregate liability will be limited to the greater of (a) the amount you paid us for the relevant service in the 12 months before the claim, or (b) USD 100.",
         },
         {
           subtitle: "Indemnification",
@@ -142,7 +155,7 @@ const Terms = () => {
         },
         {
           subtitle: "License",
-          text: "By using DevPortal, you grant us a limited license to transmit, store, and display your data as necessary to provide the service.",
+          text: "By using DevPortal, you grant us a limited, non-exclusive license to process and transmit your data solely as required to operate, maintain, improve, secure, and support the service.",
         },
       ],
     },
@@ -152,7 +165,7 @@ const Terms = () => {
       content: [
         {
           subtitle: "Governing Law",
-          text: "These terms are governed by the laws of [Your Jurisdiction]. Any disputes shall be resolved in the courts of [Your Jurisdiction].",
+          text: "These Terms are governed by the laws applicable in the operator's principal place of business, unless mandatory local consumer law requires otherwise.",
         },
         {
           subtitle: "Severability",
@@ -160,11 +173,15 @@ const Terms = () => {
         },
         {
           subtitle: "Entire Agreement",
-          text: "These terms, along with our Privacy Policy, constitute the entire agreement between you and DevPortal regarding the service.",
+          text: "These Terms, together with the Privacy Policy and any published service notices, form the entire agreement between you and DevPortal regarding use of the service.",
         },
         {
           subtitle: "No Waiver",
           text: "Our failure to enforce any provision does not constitute a waiver of that provision or any other provision.",
+        },
+        {
+          subtitle: "Updates",
+          text: "We may update these Terms when the product, legal requirements, or risk profile changes. The effective date at the top of this page indicates the latest revision.",
         },
       ],
     },
@@ -174,14 +191,14 @@ const Terms = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-3xl mx-auto px-6 pt-24 pb-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           {/* Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground mb-4">
               <Scale className="w-3 h-3" />
               Terms of Service
@@ -192,117 +209,133 @@ const Terms = () => {
               our service, you agree to these terms.
             </p>
             <p className="text-sm text-muted-foreground mt-4">
-              Last updated: March 18, 2026
+              Last updated: April 4, 2026
             </p>
           </div>
 
-          {/* Important Notice */}
-          <motion.div
+          <motion.section
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="mb-12 p-6 bg-warning/10 border border-warning/30 rounded-lg"
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="mb-8 p-4 rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
           >
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold mb-2">Important Notice</h3>
-                <p className="text-sm text-muted-foreground">
-                  DevPortal is intended for development and testing purposes
-                  only. Do not use it to host production applications or expose
-                  sensitive data. Always use password protection for sensitive
-                  endpoints.
-                </p>
-              </div>
+            <h2 className="text-sm font-semibold mb-3">Terms at a glance</h2>
+            <div className="space-y-2">
+              {highlights.map((highlight) => (
+                <div key={highlight} className="flex items-start gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {highlight}
+                  </p>
+                </div>
+              ))}
             </div>
-          </motion.div>
+          </motion.section>
 
-          {/* Sections */}
-          <div className="space-y-12">
-            {sections.map((section, index) => (
-              <motion.section
-                key={section.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                className="bg-surface border border-border rounded-lg p-8"
+          <div className="space-y-4">
+            <section className="px-4 py-4 bg-warning/10 border border-warning/30 rounded-lg">
+              <div className="flex items-center gap-3 text-left mb-2">
+                <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
+                <h3 className="font-semibold">Important Notice</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                DevPortal is intended for development and testing purposes only.
+                Do not use it as your sole production ingress layer, and do not
+                expose sensitive systems without appropriate controls such as
+                authentication, authorization, and transport security.
+              </p>
+            </section>
+
+            <Accordion type="single" collapsible defaultValue="terms-details">
+              <AccordionItem
+                value="terms-details"
+                className="px-4 bg-surface border border-border rounded-lg"
               >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <section.icon className="w-5 h-5 text-primary" />
+                <AccordionTrigger className="hover:no-underline">
+                  <div className="flex items-center gap-3 text-left">
+                    <FileText className="w-5 h-5 text-primary shrink-0" />
+                    <h2 className="text-lg font-semibold">Terms Details</h2>
                   </div>
-                  <h2 className="text-2xl font-bold">{section.title}</h2>
-                </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-4">
+                  <div className="space-y-4">
+                    {(showAllTermDetails ? sections : sections.slice(0, 1)).map(
+                      (section) => (
+                        <section key={section.title} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <section.icon className="w-4 h-4 text-primary" />
+                            <h3 className="text-base font-semibold">
+                              {section.title}
+                            </h3>
+                          </div>
+                          <div className="space-y-3 pl-6">
+                            {section.content.map((item) => (
+                              <p
+                                key={item.subtitle}
+                                className="text-sm text-muted-foreground leading-relaxed"
+                              >
+                                <span className="font-medium text-foreground">
+                                  {item.subtitle}:{" "}
+                                </span>
+                                {item.text}
+                              </p>
+                            ))}
+                          </div>
+                        </section>
+                      ),
+                    )}
 
-                <div className="space-y-6">
-                  {section.content.map((item, itemIndex) => (
-                    <div key={itemIndex}>
-                      <h3 className="text-lg font-semibold mb-2">
-                        {item.subtitle}
-                      </h3>
-                      <p className="text-base text-muted-foreground leading-relaxed">
-                        {item.text}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </motion.section>
-            ))}
-          </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAllTermDetails((prev) => !prev)}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      {showAllTermDetails ? "Show less" : "Read more"}
+                    </button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
-          {/* Contact Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="mt-12 p-8 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg"
-          >
-            <h2 className="text-xl font-bold mb-4">Questions About Terms?</h2>
-            <p className="text-base text-muted-foreground mb-4">
-              If you have questions about these terms or need clarification,
-              please contact us:
-            </p>
-            <div className="space-y-2 text-base">
-              <p>
-                <strong>Email:</strong>{" "}
-                <a
-                  href="mailto:legal@devportal.dev"
-                  className="text-primary hover:underline"
-                >
-                  legal@devportal.dev
-                </a>
+            <section className="px-4 py-4 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg">
+              <h2 className="text-xl font-bold text-left mb-2">
+                Questions About Terms?
+              </h2>
+              <p className="text-sm text-muted-foreground mb-3">
+                If you have questions about these terms or need clarification,
+                please contact us:
               </p>
-              <p>
-                <strong>Support:</strong>{" "}
-                <a href="/support" className="text-primary hover:underline">
-                  Submit a ticket
-                </a>
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Acknowledgment */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="mt-8 p-6 bg-success/10 border border-success/30 rounded-lg"
-          >
-            <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold mb-2">Acknowledgment</h3>
-                <p className="text-sm text-muted-foreground">
-                  By using DevPortal, you acknowledge that you have read,
-                  understood, and agree to be bound by these Terms of Service
-                  and our Privacy Policy.
+              <div className="space-y-2 text-sm">
+                <p>
+                  <strong>Email:</strong>{" "}
+                  <a
+                    href="mailto:riju@stylnode.in"
+                    className="text-primary hover:underline"
+                  >
+                    riju@stylnode.in
+                  </a>
+                </p>
+                <p>
+                  <strong>Support:</strong>{" "}
+                  <a href="/support" className="text-primary hover:underline">
+                    Submit a ticket
+                  </a>
                 </p>
               </div>
-            </div>
-          </motion.div>
+            </section>
+
+            <section className="px-4 py-4 bg-success/10 border border-success/30 rounded-lg">
+              <div className="flex items-center gap-3 text-left mb-2">
+                <CheckCircle className="w-5 h-5 text-success shrink-0" />
+                <h3 className="font-semibold">Acknowledgment</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                By using DevPortal, you acknowledge that you have read,
+                understood, and agree to be bound by these Terms of Service and
+                our Privacy Policy.
+              </p>
+            </section>
+          </div>
         </motion.div>
       </div>
 

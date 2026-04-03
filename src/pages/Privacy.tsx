@@ -1,37 +1,50 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Shield, Eye, Lock, Database, Users, FileText } from "lucide-react";
 
 const Privacy = () => {
   const [showScroll, setShowScroll] = useState(false);
+  const [showAllPrivacyDetails, setShowAllPrivacyDetails] = useState(false);
   useEffect(() => {
     const handleScroll = () => setShowScroll(window.scrollY > 200);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const highlights = [
+    "Request logs are currently configured to auto-expire after 7 days.",
+    "We do not sell your personal data.",
+    "Support inquiries can be submitted anytime via /support.",
+  ];
+
   const sections = [
     {
       icon: Database,
       title: "Information We Collect",
       content: [
         {
-          subtitle: "Device Identification",
-          text: "We generate a unique device ID stored in your browser's localStorage. This ID is used to associate tunnels and settings with your device. No personal information is required or collected during this process.",
+          subtitle: "Client Identifiers",
+          text: "For CLI usage, DevPortal generates a device ID and stores it in your local CLI config directory (for example, ~/.devportal/device.json). In the web app, local browser storage may be used for non-sensitive preferences and UI state.",
         },
         {
           subtitle: "Tunnel Data",
-          text: "When you create tunnels, we store: tunnel names, local ports, creation timestamps, and connection status. This data is necessary to provide the tunneling service.",
+          text: "When tunnels are created, the service processes tunnel identifiers, subdomain names, local port metadata, device identifiers, creation timestamps, optional expiry metadata (for demo links), and runtime status so requests can be routed correctly.",
         },
         {
           subtitle: "Request Logs",
-          text: "We temporarily log HTTP requests that pass through your tunnels (method, path, headers, status codes, response times) for debugging and traffic inspection features. Logs are automatically deleted after 7 days.",
+          text: "The platform logs request/response data used for debugging features, including method, path, query, headers, status, duration, user-agent, IP, and request/response payload fields when available. Request logs are currently configured with a 7-day TTL.",
         },
         {
           subtitle: "Support Tickets",
-          text: "When you contact support, we collect your name, email, message content, and any attachments you provide. This information is used solely to respond to your inquiries.",
+          text: "When you contact support, we collect your name, email, subject, message, and any attachments you submit. This information is used to investigate issues and respond to your request.",
         },
       ],
     },
@@ -45,11 +58,11 @@ const Privacy = () => {
         },
         {
           subtitle: "Support & Communication",
-          text: "Your contact information is used to respond to support requests, send service notifications, and communicate important updates about DevPortal.",
+          text: "Your contact details are used to respond to support requests and operational communications related to your request or account activity.",
         },
         {
           subtitle: "Service Improvement",
-          text: "Aggregated, anonymized usage statistics help us improve performance, reliability, and user experience. We never sell or share individual user data.",
+          text: "We may analyze operational signals, error patterns, and aggregate usage trends to improve reliability, performance, and product quality. We do not sell your personal data.",
         },
       ],
     },
@@ -59,15 +72,15 @@ const Privacy = () => {
       content: [
         {
           subtitle: "Encryption",
-          text: "All tunnels use HTTPS with TLS encryption. Data transmitted between your local server and our edge network is encrypted in transit.",
+          text: "Public tunnel traffic is intended to be served over HTTPS in deployed environments. Transport behavior can vary by environment (for example, local development), so you should apply appropriate safeguards for sensitive workloads.",
         },
         {
           subtitle: "Access Controls",
-          text: "Device-based authentication ensures only your browser can access your tunnels and logs. Optional password protection adds an extra security layer.",
+          text: "We use service-side controls such as tunnel registration checks, rate limiting, and optional tunnel password protection. You remain responsible for securing your local application and any exposed endpoints.",
         },
         {
           subtitle: "Data Retention",
-          text: "Request logs are automatically deleted after 7 days. Tunnel metadata is removed when tunnels are stopped. Support tickets are retained for 1 year.",
+          text: "Request logs are currently configured for automatic deletion after 7 days. Tunnel runtime metadata is removed when tunnels end. Support ticket data may be retained while needed for support, operations, security, or legal obligations.",
         },
       ],
     },
@@ -81,7 +94,7 @@ const Privacy = () => {
         },
         {
           subtitle: "Service Providers",
-          text: "We use trusted service providers (MongoDB for data storage, Gmail for email notifications) who are bound by confidentiality agreements.",
+          text: "We use infrastructure and service providers to operate DevPortal, including hosted data and email delivery providers (for example, MongoDB-backed storage and Resend-based notification delivery).",
         },
         {
           subtitle: "Legal Requirements",
@@ -99,11 +112,11 @@ const Privacy = () => {
         },
         {
           subtitle: "Data Deletion",
-          text: "You can delete individual tunnels and their associated logs at any time. Contact support to request complete data deletion.",
+          text: "You can close tunnels at any time and contact support for data-related requests. Some records may be retained where required for security, abuse prevention, or legal compliance.",
         },
         {
-          subtitle: "Opt-Out",
-          text: "You can disable request logging for specific tunnels using CLI flags. Note that this limits debugging capabilities.",
+          subtitle: "Requests and Controls",
+          text: "For privacy requests, corrections, or deletion inquiries, contact support. We will review and respond based on applicable law and technical feasibility.",
         },
       ],
     },
@@ -113,11 +126,11 @@ const Privacy = () => {
       content: [
         {
           subtitle: "localStorage Only",
-          text: "We use browser localStorage to store your device ID and preferences. We do not use cookies or third-party tracking scripts.",
+          text: "The web app uses browser storage for selected client-side state and preferences. The CLI stores configuration and device metadata in your local filesystem.",
         },
         {
-          subtitle: "No Analytics",
-          text: "We do not use Google Analytics, Facebook Pixel, or any third-party analytics services that track individual users.",
+          subtitle: "Analytics and Tracking",
+          text: "We do not use this page to make guarantees about all current or future analytics tooling. If tracking or analytics practices materially change, this policy will be updated.",
         },
       ],
     },
@@ -127,14 +140,14 @@ const Privacy = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-3xl mx-auto px-6 pt-24 pb-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           {/* Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground mb-4">
               <Shield className="w-3 h-3" />
               Privacy Policy
@@ -145,43 +158,81 @@ const Privacy = () => {
               explains what data we collect, how we use it, and your rights.
             </p>
             <p className="text-sm text-muted-foreground mt-4">
-              Last updated: March 18, 2026
+              Last updated: April 4, 2026
             </p>
           </div>
 
-          {/* Sections */}
-          <div className="space-y-12">
-            {sections.map((section, index) => (
-              <motion.section
-                key={section.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                className="bg-surface border border-border rounded-lg p-8"
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <section.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <h2 className="text-2xl font-bold">{section.title}</h2>
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="mb-8 p-4 rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
+          >
+            <h2 className="text-sm font-semibold mb-3">Privacy at a glance</h2>
+            <div className="space-y-2">
+              {highlights.map((highlight) => (
+                <div key={highlight} className="flex items-start gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {highlight}
+                  </p>
                 </div>
+              ))}
+            </div>
+          </motion.section>
 
-                <div className="space-y-6">
-                  {section.content.map((item, itemIndex) => (
-                    <div key={itemIndex}>
-                      <h3 className="text-lg font-semibold mb-2">
-                        {item.subtitle}
-                      </h3>
-                      <p className="text-base text-muted-foreground leading-relaxed">
-                        {item.text}
-                      </p>
-                    </div>
-                  ))}
+          <Accordion type="single" collapsible defaultValue="privacy-details">
+            <AccordionItem
+              value="privacy-details"
+              className="px-4 bg-surface border border-border rounded-lg"
+            >
+              <AccordionTrigger className="hover:no-underline">
+                <div className="flex items-center gap-3 text-left">
+                  <FileText className="w-5 h-5 text-primary shrink-0" />
+                  <h2 className="text-lg font-semibold">Privacy Details</h2>
                 </div>
-              </motion.section>
-            ))}
-          </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4">
+                <div className="space-y-5">
+                  {(showAllPrivacyDetails
+                    ? sections
+                    : sections.slice(0, 1)
+                  ).map((section) => (
+                    <section key={section.title} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <section.icon className="w-4 h-4 text-primary" />
+                        <h3 className="text-base font-semibold">
+                          {section.title}
+                        </h3>
+                      </div>
+
+                      <div className="space-y-3 pl-6">
+                        {section.content.map((item) => (
+                          <p
+                            key={item.subtitle}
+                            className="text-sm text-muted-foreground leading-relaxed"
+                          >
+                            <span className="font-medium text-foreground">
+                              {item.subtitle}:
+                            </span>
+                            {item.text}
+                          </p>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => setShowAllPrivacyDetails((prev) => !prev)}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    {showAllPrivacyDetails ? "Show less" : "Read more"}
+                  </button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           {/* Contact Section */}
           <motion.div
@@ -189,21 +240,21 @@ const Privacy = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="mt-12 p-8 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg"
+            className="mt-8 p-5 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg"
           >
-            <h2 className="text-xl font-bold mb-4">Questions About Privacy?</h2>
-            <p className="text-base text-muted-foreground mb-4">
+            <h2 className="text-lg font-bold mb-3">Questions About Privacy?</h2>
+            <p className="text-sm text-muted-foreground mb-3">
               If you have questions about this privacy policy or how we handle
               your data, please contact us:
             </p>
-            <div className="space-y-2 text-base">
+            <div className="space-y-2 text-sm">
               <p>
                 <strong>Email:</strong>{" "}
                 <a
-                  href="mailto:privacy@devportal.dev"
+                  href="mailto:riju@stylnode.in"
                   className="text-primary hover:underline"
                 >
-                  privacy@devportal.dev
+                  riju@stylnode.in
                 </a>
               </p>
               <p>
@@ -221,7 +272,7 @@ const Privacy = () => {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.8, duration: 0.6 }}
-            className="mt-8 p-6 bg-warning/10 border border-warning/30 rounded-lg"
+            className="mt-6 p-4 bg-warning/10 border border-warning/30 rounded-lg"
           >
             <h3 className="font-semibold mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4" />

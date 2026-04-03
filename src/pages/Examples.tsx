@@ -195,7 +195,7 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-6xl mx-auto px-6 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -212,7 +212,7 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
           {/* Use Cases Overview */}
           <section className="mb-16">
             <h2 className="text-2xl font-bold mb-8">Popular Use Cases</h2>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               {useCases.map((useCase, index) => (
                 <motion.div
                   key={index}
@@ -221,34 +221,33 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                   className="bg-surface border border-border rounded-lg p-6"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <useCase.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold mb-2">
-                        {useCase.title}
-                      </h3>
-                      <p className="text-muted-foreground text-base mb-3">
-                        {useCase.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <code className="text-sm bg-background border border-border rounded px-2 py-1">
-                          {useCase.command}
-                        </code>
-                        <button
-                          onClick={() =>
-                            copyToClipboard(useCase.command, `usecase-${index}`)
-                          }
-                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <useCase.icon className="w-6 h-6 text-primary" />
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {useCase.details}
-                      </p>
+                      <h3 className="text-lg font-semibold">{useCase.title}</h3>
                     </div>
+                    <p className="text-muted-foreground text-base">
+                      {useCase.description}
+                    </p>
+                    <div className="flex items-start gap-2">
+                      <code className="flex-1 min-w-0 text-sm bg-background border border-border rounded px-2 py-1 overflow-x-auto whitespace-nowrap">
+                        {useCase.command}
+                      </code>
+                      <button
+                        onClick={() =>
+                          copyToClipboard(useCase.command, `usecase-${index}`)
+                        }
+                        className="h-8 w-8 flex items-center justify-center rounded border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors flex-shrink-0"
+                        aria-label={`Copy command for ${useCase.title}`}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {useCase.details}
+                    </p>
                   </div>
                 </motion.div>
               ))}

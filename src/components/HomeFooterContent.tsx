@@ -13,67 +13,81 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
+const STATS_STORAGE_KEY = "devportal_stats";
+const GROWTH_INTERVAL_MS = 20 * 24 * 60 * 60 * 1000;
+const BASE_STATS = {
+  activeTunnels: 12,
+  developers: 8,
+  requests: 45,
+};
+
 const HomeFooterContent = () => {
   const UPTIME = 58.9;
 
   // Dynamic stats that increase with real usage
-  const [stats, setStats] = useState({
-    activeTunnels: 0,
-    developers: 0,
-    requests: 0,
-  });
+  const [stats, setStats] = useState(BASE_STATS);
+
+  const resetStatsToDefault = () => {
+    const resetPayload = {
+      ...BASE_STATS,
+      lastUpdate: Date.now(),
+    };
+
+    setStats(BASE_STATS);
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(resetPayload));
+  };
 
   // Initialize and update stats
   useEffect(() => {
-    // Get stored stats from localStorage or initialize
-    const storedStats = localStorage.getItem("devportal_stats");
-    const initialStats = storedStats
-      ? JSON.parse(storedStats)
-      : {
-          activeTunnels: 12,
-          developers: 8,
-          requests: 450,
-          lastUpdate: Date.now(),
-        };
+    const now = Date.now();
+    const fallbackStats = {
+      ...BASE_STATS,
+      lastUpdate: now,
+    };
 
-    // Simulate organic growth since last visit
-    const timeSinceLastUpdate =
-      Date.now() - (initialStats.lastUpdate || Date.now());
-    const hoursSince = Math.floor(timeSinceLastUpdate / (1000 * 60 * 60));
+    let initialStats = fallbackStats;
+    const storedStats = localStorage.getItem(STATS_STORAGE_KEY);
+    if (storedStats) {
+      try {
+        const parsedStats = JSON.parse(storedStats);
+        if (
+          typeof parsedStats.activeTunnels === "number" &&
+          typeof parsedStats.developers === "number" &&
+          typeof parsedStats.requests === "number" &&
+          typeof parsedStats.lastUpdate === "number"
+        ) {
+          initialStats = parsedStats;
+        }
+      } catch {
+        initialStats = fallbackStats;
+      }
+    }
+
+    const elapsedMs = Math.max(0, now - initialStats.lastUpdate);
+    const growthWindows = Math.floor(elapsedMs / GROWTH_INTERVAL_MS);
 
     const updatedStats = {
-      activeTunnels: initialStats.activeTunnels + Math.floor(hoursSince * 0.1),
-      developers: initialStats.developers + Math.floor(hoursSince * 0.05),
-      requests: initialStats.requests + Math.floor(hoursSince * 25),
+      activeTunnels: initialStats.activeTunnels + growthWindows * 8,
+      developers: initialStats.developers + growthWindows * 2,
+      requests: initialStats.requests,
     };
 
     setStats(updatedStats);
 
     // Save updated stats
     localStorage.setItem(
-      "devportal_stats",
+      STATS_STORAGE_KEY,
       JSON.stringify({
         ...updatedStats,
-        lastUpdate: Date.now(),
+        lastUpdate: now,
       }),
     );
-
-    // Update stats periodically (simulate real-time growth)
-    const interval = setInterval(() => {
-      setStats((prev) => ({
-        activeTunnels: prev.activeTunnels + (Math.random() > 0.7 ? 1 : 0),
-        developers: prev.developers + (Math.random() > 0.9 ? 1 : 0),
-        requests: prev.requests + Math.floor(Math.random() * 5 + 2),
-      }));
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
   }, []);
 
   // Update localStorage when stats change
   useEffect(() => {
     localStorage.setItem(
-      "devportal_stats",
+      STATS_STORAGE_KEY,
       JSON.stringify({
         ...stats,
         lastUpdate: Date.now(),
@@ -174,6 +188,18 @@ const HomeFooterContent = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {import.meta.env.DEV && (
+          <div className="flex justify-end mb-8">
+            <button
+              type="button"
+              onClick={resetStatsToDefault}
+              className="text-xs px-3 py-1.5 rounded border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            >
+              Reset Stats (Dev)
+            </button>
+          </div>
+        )}
 
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
@@ -276,7 +302,7 @@ const HomeFooterContent = () => {
           <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/30" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Activity className="w-4 h-4 text-primary animate-pulse" />
-            <span>99.9% uptime guaranteed</span>
+            <span>58.9% uptime guaranteed</span>
           </div>
           <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/30" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
