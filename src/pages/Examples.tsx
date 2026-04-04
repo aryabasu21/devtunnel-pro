@@ -200,7 +200,10 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
           name="description"
           content="Real-world examples of using DevPortal for local development, webhook testing, API debugging, and more."
         />
-        <meta name="keywords" content="DevPortal examples, use cases, webhook testing, local development" />
+        <meta
+          name="keywords"
+          content="DevPortal examples, use cases, webhook testing, local development"
+        />
         <link rel="canonical" href="https://devportal.stylnode.in/examples" />
       </Helmet>
       <Navbar />

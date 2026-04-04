@@ -197,7 +197,10 @@ const Support = () => {
           name="description"
           content="Get help with DevPortal. Submit support tickets, access documentation, and connect with our community."
         />
-        <meta name="keywords" content="DevPortal support, help, contact, support tickets" />
+        <meta
+          name="keywords"
+          content="DevPortal support, help, contact, support tickets"
+        />
         <link rel="canonical" href="https://devportal.stylnode.in/support" />
       </Helmet>
       <Navbar />

@@ -196,7 +196,10 @@ const Terms = () => {
           name="description"
           content="DevPortal Terms of Service. Please read these terms carefully before using our service."
         />
-        <meta name="keywords" content="DevPortal terms, terms of service, legal" />
+        <meta
+          name="keywords"
+          content="DevPortal terms, terms of service, legal"
+        />
         <link rel="canonical" href="https://devportal.stylnode.in/terms" />
       </Helmet>
       <Navbar />

@@ -127,7 +127,10 @@ const APIReference = () => {
           name="description"
           content="Complete API reference for DevPortal. Learn about all available endpoints for creating, managing, and monitoring tunnels."
         />
-        <meta name="keywords" content="DevPortal API, REST API, tunnel endpoints, API documentation" />
+        <meta
+          name="keywords"
+          content="DevPortal API, REST API, tunnel endpoints, API documentation"
+        />
         <link rel="canonical" href="https://devportal.stylnode.in/api" />
       </Helmet>
       <Navbar />

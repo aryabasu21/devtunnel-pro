@@ -145,7 +145,10 @@ const Privacy = () => {
           name="description"
           content="DevPortal Privacy Policy. Learn how we collect, use, and protect your data."
         />
-        <meta name="keywords" content="DevPortal privacy, privacy policy, data protection" />
+        <meta
+          name="keywords"
+          content="DevPortal privacy, privacy policy, data protection"
+        />
         <link rel="canonical" href="https://devportal.stylnode.in/privacy" />
       </Helmet>
       <Navbar />
