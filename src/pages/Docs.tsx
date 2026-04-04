@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Helmet } from "react-helmet-async";
 import {
   Terminal,
   Zap,
@@ -235,6 +236,15 @@ const Docs = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Documentation - DevPortal Tunnel</title>
+        <meta
+          name="description"
+          content="Learn how to use DevPortal to share your localhost, inspect traffic, replay requests, and debug APIs with comprehensive guides and examples."
+        />
+        <meta name="keywords" content="DevPortal documentation, tunnel setup, API testing, request inspection" />
+        <link rel="canonical" href="https://devportal.stylnode.in/docs" />
+      </Helmet>
       <Navbar />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-16">
         <div className="mb-12">

@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TerminalBlock from "@/components/TerminalBlock";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import {
   Code,
   Terminal,
@@ -193,6 +194,15 @@ artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Examples - DevPortal Tunnel</title>
+        <meta
+          name="description"
+          content="Real-world examples of using DevPortal for local development, webhook testing, API debugging, and more."
+        />
+        <meta name="keywords" content="DevPortal examples, use cases, webhook testing, local development" />
+        <link rel="canonical" href="https://devportal.stylnode.in/examples" />
+      </Helmet>
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-6 py-16">

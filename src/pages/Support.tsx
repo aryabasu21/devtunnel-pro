@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import { Helmet } from "react-helmet-async";
 import {
   Card,
   CardContent,
@@ -190,6 +191,15 @@ const Support = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Support - DevPortal</title>
+        <meta
+          name="description"
+          content="Get help with DevPortal. Submit support tickets, access documentation, and connect with our community."
+        />
+        <meta name="keywords" content="DevPortal support, help, contact, support tickets" />
+        <link rel="canonical" href="https://devportal.stylnode.in/support" />
+      </Helmet>
       <Navbar />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-24 pb-16">
         <motion.div

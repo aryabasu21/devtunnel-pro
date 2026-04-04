@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TerminalBlock from "@/components/TerminalBlock";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import { Code, Terminal, Zap, Globe, Shield, Copy } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -120,6 +121,15 @@ const APIReference = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>API Reference - DevPortal</title>
+        <meta
+          name="description"
+          content="Complete API reference for DevPortal. Learn about all available endpoints for creating, managing, and monitoring tunnels."
+        />
+        <meta name="keywords" content="DevPortal API, REST API, tunnel endpoints, API documentation" />
+        <link rel="canonical" href="https://devportal.stylnode.in/api" />
+      </Helmet>
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-6 py-16">

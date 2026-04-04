@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import {
   FileText,
   Scale,
@@ -189,6 +190,15 @@ const Terms = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Terms of Service - DevPortal</title>
+        <meta
+          name="description"
+          content="DevPortal Terms of Service. Please read these terms carefully before using our service."
+        />
+        <meta name="keywords" content="DevPortal terms, terms of service, legal" />
+        <link rel="canonical" href="https://devportal.stylnode.in/terms" />
+      </Helmet>
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-6 pt-24 pb-12">

@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import { Shield, Eye, Lock, Database, Users, FileText } from "lucide-react";
 
 const Privacy = () => {
@@ -138,6 +139,15 @@ const Privacy = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Privacy Policy - DevPortal</title>
+        <meta
+          name="description"
+          content="DevPortal Privacy Policy. Learn how we collect, use, and protect your data."
+        />
+        <meta name="keywords" content="DevPortal privacy, privacy policy, data protection" />
+        <link rel="canonical" href="https://devportal.stylnode.in/privacy" />
+      </Helmet>
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-6 pt-24 pb-12">

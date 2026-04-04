@@ -10,6 +10,7 @@ import { Github, Copy, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { Helmet } from "react-helmet-async";
 import {
   detectPlatform,
   getInstallCommand,
