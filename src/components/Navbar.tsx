@@ -124,17 +124,6 @@ const Navbar = () => {
             size="sm"
             className={`justify-start ${getNavButtonClasses("/docs")}`}
             onClick={() => {
-              goToDocumentation();
-              setMenuOpen(false);
-            }}
-          >
-            Documentation
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`justify-start ${getNavButtonClasses("/docs")}`}
-            onClick={() => {
               navigate("/docs");
               setMenuOpen(false);
             }}
