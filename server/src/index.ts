@@ -41,11 +41,10 @@ const requestForwarder = new RequestForwarder(tunnelManager);
 const allowedOrigins = [
   "https://devportal.stylnode.in",
   "https://stylnode.in",
+  "https://web.postman.com",
   "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:8080",
-  // Allow Postman
-  "postman://localhost",
   // Allow any tunnel subdomain
   /^https:\/\/[a-z0-9-]+\.tunnel\.stylnode\.in$/,
 ];
@@ -57,25 +56,38 @@ app.use(
       if (!origin) return callback(null, true);
 
       // Allow whitelisted origins
-      if (
-        allowedOrigins.some((o) =>
-          typeof o === "string" ? o === origin : o.test(origin),
-        )
-      ) {
+      const isAllowed = allowedOrigins.some((o) =>
+        typeof o === "string" ? o === origin : o.test(origin),
+      );
+
+      if (isAllowed) {
         return callback(null, true);
       }
 
-      // Allow common API testing tools (Postman, Insomnia, Thunder Client, etc.)
-      if (origin && /^(https?:\/\/)?(app\.)?postman\.com|insomnia|thunder|localhost/.test(origin)) {
-        return callback(null, true);
-      }
-
-      // For tunnel service, be permissive - users already control access via tunnel URL
-      return callback(null, true);
+      // Reject everything else
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Tunnel-Password"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Tunnel-Password",
+      "X-API-Key",
+      "X-Request-ID",
+      "Accept",
+      "Accept-Encoding",
+      "Accept-Language",
+      "User-Agent",
+      "Referer",
+      "Cache-Control",
+      "If-Modified-Since",
+      "If-None-Match",
+      "X-CSRF-Token",
+      "X-Forwarded-For",
+      "X-Forwarded-Proto",
+      "X-Custom-Header",
+    ],
   }),
 );
 app.use(express.json({ limit: "10mb" }));
