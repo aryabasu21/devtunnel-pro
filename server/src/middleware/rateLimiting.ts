@@ -60,6 +60,14 @@ export const strictLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req: Request) => {
+    const host = req.headers.host || "";
+    const isTunnelSubdomain =
+      host.endsWith(".tunnel.stylnode.in") && host !== "tunnel.stylnode.in";
+    const isLocalTunnel = /\.localhost:\d+$/.test(host);
+
+    return isTunnelSubdomain || isLocalTunnel;
+  },
 });
 
 // In-memory store for tracking tunnel counts per IP

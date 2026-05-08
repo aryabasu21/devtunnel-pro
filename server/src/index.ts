@@ -13,9 +13,7 @@ import {
   apiLimiter,
   strictLimiter,
   supportLimiter,
-  tunnelLimiter,
   tunnelTracker,
-  checkTunnelLimit,
 } from "./middleware/rateLimiting";
 
 const app = express();
@@ -115,24 +113,19 @@ app.get("/health", (req, res) => {
 app.options("/api/*", cors());
 
 // API: Get tunnel info
-app.get(
-  "/api/tunnels/:tunnelId",
-  tunnelLimiter,
-  checkTunnelLimit,
-  (req, res) => {
-    const tunnel = tunnelManager.getTunnel(req.params.tunnelId);
-    if (!tunnel) {
-      return res.status(404).json({ error: "Tunnel not found" });
-    }
-    res.json({
-      id: tunnel.id,
-      name: tunnel.name,
-      url: tunnel.url,
-      status: tunnel.status,
-      createdAt: tunnel.createdAt,
-    });
-  },
-);
+app.get("/api/tunnels/:tunnelId", (req, res) => {
+  const tunnel = tunnelManager.getTunnel(req.params.tunnelId);
+  if (!tunnel) {
+    return res.status(404).json({ error: "Tunnel not found" });
+  }
+  res.json({
+    id: tunnel.id,
+    name: tunnel.name,
+    url: tunnel.url,
+    status: tunnel.status,
+    createdAt: tunnel.createdAt,
+  });
+});
 
 // API: List tunnels for device
 app.get("/api/devices/:deviceId/tunnels", (req, res) => {
