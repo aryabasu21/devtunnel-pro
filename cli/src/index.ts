@@ -129,15 +129,10 @@ program
 // Device info command
 program
   .command("whoami")
-  .description("Show current device ID and dashboard URL")
+  .description("Show current device ID")
   .action(() => {
     const deviceId = getDeviceId();
-    const config = getConfig();
     console.log(chalk.gray("Device ID:"), chalk.cyan(deviceId));
-    console.log(
-      chalk.gray("Dashboard:"),
-      chalk.underline(`${config.frontendUrl}/dashboard/${deviceId}`),
-    );
   });
 
 program.parse();

@@ -194,10 +194,6 @@ export async function startTunnel(
     }
 
     console.log();
-    // console.log(
-    //   chalk.gray("  Dashboard:    "),
-    //   chalk.underline(`${config.frontendUrl}/dashboard/${deviceId}`),
-    // );
     console.log();
 
     // Save tunnel info locally
