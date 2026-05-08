@@ -1,5 +1,5 @@
 import rateLimit from "express-rate-limit";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 // Rate limiting inspired by tunnl.gg's approach
 
@@ -56,7 +56,7 @@ export const strictLimiter = rateLimit({
   message: {
     error: "Rate limit exceeded",
     message: "Too many requests. Please slow down.",
-    retryAfter: "1 minute",
+    retryAfter: "1 hour",
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -140,7 +140,11 @@ class TunnelTracker {
 export const tunnelTracker = new TunnelTracker();
 
 // Middleware to check tunnel limits
-export const checkTunnelLimit = (req: Request, res: Response, next: any) => {
+export const checkTunnelLimit = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const ip = req.ip || req.socket.remoteAddress || "unknown";
 
   if (!tunnelTracker.canCreateTunnel(ip)) {

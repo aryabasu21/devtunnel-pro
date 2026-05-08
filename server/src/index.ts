@@ -13,6 +13,7 @@ import {
   apiLimiter,
   strictLimiter,
   supportLimiter,
+  tunnelLimiter,
   tunnelTracker,
   checkTunnelLimit,
 } from "./middleware/rateLimiting";
@@ -103,7 +104,7 @@ app.use(
 );
 
 // Apply rate limiting
-// app.use(strictLimiter); // Apply basic rate limiting to all routes
+app.use(strictLimiter); // Apply basic rate limiting to all routes
 
 // Health check
 app.get("/health", (req, res) => {
@@ -114,7 +115,7 @@ app.get("/health", (req, res) => {
 app.options("/api/*", cors());
 
 // API: Get tunnel info
-app.get("/api/tunnels/:tunnelId", (req, res) => {
+app.get("/api/tunnels/:tunnelId", tunnelLimiter, checkTunnelLimit, (req, res) => {
   const tunnel = tunnelManager.getTunnel(req.params.tunnelId);
   if (!tunnel) {
     return res.status(404).json({ error: "Tunnel not found" });
