@@ -48,7 +48,7 @@ export class TunnelClient extends EventEmitter {
 
   private setupWebSocket(
     resolve?: (info: TunnelInfo) => void,
-    reject?: (error: Error) => void
+    reject?: (error: Error) => void,
   ): void {
     try {
       // Clean up existing connection
@@ -102,8 +102,12 @@ export class TunnelClient extends EventEmitter {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           this.scheduleReconnect();
         } else {
-          console.log(chalk.red("\nMax reconnection attempts reached. Tunnel stopped."));
-          console.log(chalk.gray("Run the command again to start a new tunnel."));
+          console.log(
+            chalk.red("\nMax reconnection attempts reached. Tunnel stopped."),
+          );
+          console.log(
+            chalk.gray("Run the command again to start a new tunnel."),
+          );
           this.emit("disconnected");
           process.exit(1);
         }
@@ -115,7 +119,6 @@ export class TunnelClient extends EventEmitter {
         }
         this.emit("error", error);
       });
-
     } catch (error) {
       if (reject) reject(error as Error);
     }
@@ -128,11 +131,16 @@ export class TunnelClient extends EventEmitter {
 
     // Exponential backoff with jitter: 1s, 2s, 4s, 8s... up to 30s max
     const delay = Math.min(
-      this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1) + Math.random() * 1000,
-      30000
+      this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1) +
+        Math.random() * 1000,
+      30000,
     );
 
-    console.log(chalk.yellow(`\nConnection lost. Reconnecting in ${Math.round(delay / 1000)}s... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`));
+    console.log(
+      chalk.yellow(
+        `\nConnection lost. Reconnecting in ${Math.round(delay / 1000)}s... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`,
+      ),
+    );
 
     setTimeout(() => {
       this.emit("reconnecting", this.reconnectAttempts);
@@ -167,7 +175,11 @@ export class TunnelClient extends EventEmitter {
         this.tunnelInfo = message.tunnel;
         this.emit("registered", message.tunnel);
         if (wasReconnect) {
-          console.log(chalk.green(`\nReconnected! Tunnel restored: ${message.tunnel.url}`));
+          console.log(
+            chalk.green(
+              `\nReconnected! Tunnel restored: ${message.tunnel.url}`,
+            ),
+          );
           this.emit("reconnected", message.tunnel);
         } else if (resolve) {
           resolve(message.tunnel);
@@ -342,9 +354,10 @@ export class TunnelClient extends EventEmitter {
       if (body) {
         // Only decode as base64 if it was encoded that way (binary content)
         const bodyEncoding = headers?.["x-body-encoding"];
-        const bodyBuffer = bodyEncoding === "base64"
-          ? Buffer.from(body, "base64")
-          : Buffer.from(body, "utf-8");
+        const bodyBuffer =
+          bodyEncoding === "base64"
+            ? Buffer.from(body, "base64")
+            : Buffer.from(body, "utf-8");
         req.write(bodyBuffer);
       }
 
