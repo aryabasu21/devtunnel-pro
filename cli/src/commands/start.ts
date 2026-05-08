@@ -212,10 +212,11 @@ export async function startTunnel(
     console.log();
 
     // Handle shutdown
-    process.on("SIGINT", () => {
+    process.on("SIGINT", async () => {
       console.log();
       console.log(chalk.yellow("Stopping tunnel..."));
-      client.stop();
+      await client.stop();
+      console.log(chalk.green("Tunnel stopped"));
       process.exit(0);
     });
 

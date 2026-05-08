@@ -358,13 +358,24 @@ export class TunnelClient extends EventEmitter {
     }
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     this.shouldReconnect = false;
     this.stopPingInterval();
     if (this.tunnelInfo) {
       this.send({ type: "stop", tunnelId: this.tunnelInfo.id });
     }
-    this.ws?.close();
+    return new Promise((resolve) => {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        const timeout = setTimeout(() => resolve(), 500); // Max 500ms wait
+        this.ws.once("close", () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+        this.ws.close();
+      } else {
+        resolve();
+      }
+    });
   }
 
   getTunnelInfo(): TunnelInfo | null {
