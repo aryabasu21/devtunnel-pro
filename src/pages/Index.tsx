@@ -109,6 +109,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        <title>DevPortal - Share localhost instantly</title>
+        <meta
+          name="description"
+          content="Expose your local dev server with a single command. Inspect traffic, replay requests, and debug APIs from your terminal."
+        />
+        <meta
+          name="keywords"
+          content="localhost tunnel, request replay, API debugging, webhook testing, DevPortal"
+        />
+        <link rel="canonical" href="https://devportal.stylnode.in/" />
+      </Helmet>
       <Navbar />
 
       {/* Glow effect */}
@@ -136,8 +148,7 @@ const Index = () => {
             </h1>
             <p className="text-sm sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2">
               Expose your local dev server with a single command. Inspect
-              traffic, replay requests, and debug APIs — all from your terminal
-              or dashboard.
+              traffic, replay requests, and debug APIs — all from your terminal.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
               <Button
