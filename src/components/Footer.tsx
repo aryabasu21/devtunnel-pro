@@ -13,7 +13,7 @@ const Footer = () => {
             <span className="font-mono text-xs bg-muted/50 px-2 py-1 rounded">
               v1.0.2-beta
             </span>
-            <span className="hidden sm-inline">|</span>
+            <span className="hidden sm:inline">|</span>
           <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
