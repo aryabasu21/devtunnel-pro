@@ -14,6 +14,15 @@ const Footer = () => {
               v1.0.2-beta
             </span>
           </div>
+          <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 1, duration: 2 }}
+          className="absolute bottom-4 right-4 text-xs text-muted-foreground/30 font-mono"
+        >
+          localhost:everywhere 🌍
+        </motion.div>
 
           <div className="flex items-center gap-4">
             <a
@@ -39,7 +48,7 @@ const Footer = () => {
         </div>
 
         {/* Easter Egg */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -47,7 +56,7 @@ const Footer = () => {
           className="absolute bottom-4 right-4 text-xs text-muted-foreground/30 font-mono"
         >
           localhost:everywhere 🌍
-        </motion.div>
+        </motion.div> */}
       </div>
     </footer>
   );
