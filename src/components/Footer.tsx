@@ -13,16 +13,16 @@ const Footer = () => {
             <span className="font-mono text-xs bg-muted/50 px-2 py-1 rounded">
               v1.0.2-beta
             </span>
-          </div>
           <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 1, duration: 2 }}
-          className="absolute bottom-4 right-4 text-xs text-muted-foreground/30 font-mono"
+          className="absolute bottom-5 text-xs text-muted-foreground/50 font-mono"
         >
           localhost:everywhere 🌍
         </motion.div>
+          </div>
 
           <div className="flex items-center gap-4">
             <a
