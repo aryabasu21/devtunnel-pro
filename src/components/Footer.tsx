@@ -18,7 +18,7 @@ const Footer = () => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 1, duration: 2 }}
-          className="text-xs text-muted-foreground/50 font-mono"
+          className="text-xs text-muted-foreground/80 font-mono"
         >
           localhost:everywhere 🌍
         </motion.div>
