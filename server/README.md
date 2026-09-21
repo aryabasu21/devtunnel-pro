@@ -1,25 +1,15 @@
 # DevPortal Server
 
-## Render Deployment
+## Railway Deployment
 
-### Quick Deploy
+### Service Setup
+The production server is deployed from the `server` directory on Railway. Configure
+the service with `npm install && npm run build` as the build command and `npm start`
+as the start command. Keep WebSocket support enabled and use `/health` for the
+service health check.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
-
-### Manual Setup
-
-1. Go to [render.com](https://render.com) and sign up/login
-2. Click **New** → **Web Service**
-3. Connect your GitHub repository
-4. Configure:
-   - **Name**: `devportal-server`
-   - **Root Directory**: `server`
-   - **Runtime**: `Node`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-5. Add Environment Variable:
-   - `DOMAIN` = `tunnel.stylnode.in`
-6. Click **Create Web Service**
+Copy `.env.example` when setting up a local environment. Production secrets must be
+provided through Railway environment variables or a secret manager.
 
 ### Custom Domain Setup
 
@@ -28,7 +18,7 @@ After deployment:
 1. Go to your service → **Settings** → **Custom Domains**
 2. Add `tunnel.stylnode.in`
 3. Add `*.tunnel.stylnode.in` (for wildcard subdomains)
-4. Render will show you the DNS records to add
+4. Railway will show you the DNS records to add
 
 ### DNS Records
 
@@ -36,14 +26,28 @@ Add these to your domain registrar:
 
 | Type  | Name      | Value                         |
 | ----- | --------- | ----------------------------- |
-| CNAME | tunnel    | `<your-service>.onrender.com` |
-| CNAME | \*.tunnel | `<your-service>.onrender.com` |
+| CNAME | tunnel    | `<your-service>.up.railway.app` |
+| CNAME | \*.tunnel | `<your-service>.up.railway.app` |
 
 ## Local Development
 
 ```bash
 npm install
 npm run dev
+```
+
+## Authentication configuration
+
+The server uses OIDC bearer tokens. Set all three OIDC variables before mounting
+authenticated routes:
+
+- `OIDC_ISSUER` - the issuer URL from the identity provider
+- `OIDC_AUDIENCE` - the API audience configured for this server
+- `OIDC_JWKS_URL` - optional JWKS URL; defaults to the issuer's standard JWKS path
+
+The authentication middleware is in `src/middleware/auth.ts`. It validates the
+signature, issuer, audience, expiry, and subject before attaching an identity to the
+Express request.
 ```
 
 ## API Endpoints
