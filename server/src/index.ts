@@ -110,6 +110,18 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", tunnels: tunnelManager.getActiveTunnelCount() });
 });
 
+app.get("/ready", (req, res) => {
+  const databaseReady = mongoose.connection.readyState === 1;
+  const ready = databaseReady;
+
+  res.status(ready ? 200 : 503).json({
+    status: ready ? "ready" : "not_ready",
+    checks: {
+      database: databaseReady ? "ready" : "unavailable",
+    },
+  });
+});
+
 // Handle preflight requests for API routes
 app.options("/api/*", cors());
 

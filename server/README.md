@@ -5,8 +5,9 @@
 ### Service Setup
 The production server is deployed from the `server` directory on Railway. Configure
 the service with `npm install && npm run build` as the build command and `npm start`
-as the start command. Keep WebSocket support enabled and use `/health` for the
-service health check.
+as the start command. Keep WebSocket support enabled and use `/ready` for the
+service health check. `/health` is a liveness endpoint and does not claim that the
+database is available.
 
 Copy `.env.example` when setting up a local environment. Production secrets must be
 provided through Railway environment variables or a secret manager.
@@ -48,11 +49,11 @@ authenticated routes:
 The authentication middleware is in `src/middleware/auth.ts`. It validates the
 signature, issuer, audience, expiry, and subject before attaching an identity to the
 Express request.
-```
 
 ## API Endpoints
 
-- `GET /health` - Health check
+- `GET /health` - Liveness check
+- `GET /ready` - Readiness check (includes MongoDB connectivity)
 - `GET /api/tunnels/:id` - Get tunnel info
 - `GET /api/devices/:deviceId/tunnels` - List device tunnels
 - `WS /ws` - WebSocket endpoint for CLI connections
