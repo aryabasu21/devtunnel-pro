@@ -9,6 +9,7 @@ import { RequestForwarder } from "./requestForwarder";
 import supportRoutes from "./routes/support";
 import requestRoutes from "./routes/requests";
 import { generateSubdomain, isValidSubdomain } from "./utils/subdomain";
+import { clientMessageSchema, type ClientMessage } from "./protocol";
 import {
   apiLimiter,
   strictLimiter,
@@ -234,7 +235,11 @@ app.all("*", async (req: Request, res: Response) => {
 const httpServer = createServer(app);
 
 // WebSocket server on the same port, different path
-const wss = new WebSocketServer({ server: httpServer, path: WS_PATH });
+const wss = new WebSocketServer({
+  server: httpServer,
+  path: WS_PATH,
+  maxPayload: 20 * 1024 * 1024,
+});
 
 wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
   const clientIP = req.socket.remoteAddress || "unknown";
@@ -249,10 +254,20 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
 
   ws.on("message", (data: Buffer) => {
     try {
-      const message = JSON.parse(data.toString());
+      const parsedMessage = clientMessageSchema.safeParse(JSON.parse(data.toString()));
+      if (!parsedMessage.success) {
+        ws.send(
+          JSON.stringify({
+            type: "error",
+            message: "Invalid tunnel message",
+          }),
+        );
+        return;
+      }
+
+      const message = parsedMessage.data;
       handleClientMessage(ws, message, clientIP);
     } catch (error) {
-      console.error("Invalid message:", error);
       ws.send(
         JSON.stringify({ type: "error", message: "Invalid message format" }),
       );
@@ -282,7 +297,7 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
 
 function handleClientMessage(
   ws: WebSocket,
-  message: any,
+  message: ClientMessage,
   clientIP: string,
 ) {
   switch (message.type) {
@@ -409,7 +424,7 @@ function handleClientMessage(
     }
 
     default:
-      console.warn("Unknown message type:", message.type);
+      return;
   }
 }
 
