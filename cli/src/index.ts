@@ -36,6 +36,7 @@ program
   .option("-p, --password <pass>", "Password protect the tunnel")
   .option("--demo", "Create a temporary link that expires in 2 hours")
   .option("--auth-header <header>", "Add authorization header to requests")
+  .option("--server-token <token>", "Bearer token for the DevPortal server")
   .option("--local", "Run in local simulation mode (no server required)")
   .option(
     "--forward <ports>",
@@ -57,6 +58,7 @@ program
   .option("-p, --password <pass>", "Password protect the tunnel")
   .option("--demo", "Create a temporary link that expires in 2 hours")
   .option("--auth-header <header>", "Add authorization header to requests")
+  .option("--server-token <token>", "Bearer token for the DevPortal server")
   .option("--local", "Run in local simulation mode (no server required)")
   .option(
     "--forward <ports>",

@@ -15,6 +15,7 @@ interface StartOptions {
   password?: string;
   demo?: boolean;
   authHeader?: string;
+  serverToken?: string;
   local?: boolean; // Use local simulation mode
   forward?: string; // Port forwarding format: "remote:local" e.g., "8080:3000"
 }
@@ -128,6 +129,7 @@ export async function startTunnel(
       password: options.password,
       demo: options.demo,
       authHeader: options.authHeader,
+      serverToken: options.serverToken || config.serverToken,
     });
 
     // Handle events

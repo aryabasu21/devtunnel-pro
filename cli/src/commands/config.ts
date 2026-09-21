@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { getConfig, setServerUrl } from "../utils/config";
+import { getConfig, saveConfig, setServerUrl } from "../utils/config";
 
 export async function configCommand(
   action?: string,
@@ -12,6 +12,7 @@ export async function configCommand(
     console.log();
     console.log(chalk.gray("Server URL:    "), chalk.white(config.serverUrl));
     console.log(chalk.gray("WebSocket URL: "), chalk.white(config.wsUrl));
+    console.log(chalk.gray("Server token:  "), chalk.white(config.serverToken ? "configured" : "not configured"));
     console.log();
     console.log(chalk.gray("Config file: ~/.devportal/config.json"));
     return;
@@ -29,6 +30,16 @@ export async function configCommand(
       console.log(chalk.gray("Server:    "), chalk.white(value));
       break;
 
+    case "token":
+      if (!value) {
+        console.log(chalk.red("Please provide a server bearer token"));
+        console.log(chalk.gray("Usage: devportal config token <token>"));
+        return;
+      }
+      saveServerToken(value);
+      console.log(chalk.green("Server token updated"));
+      break;
+
     case "reset":
       setServerUrl("https://devportal.live");
       console.log(chalk.green("Config reset to defaults"));
@@ -36,6 +47,11 @@ export async function configCommand(
 
     default:
       console.log(chalk.red(`Unknown config action: ${action}`));
-      console.log(chalk.gray("Available actions: server, reset"));
+      console.log(chalk.gray("Available actions: server, token, reset"));
   }
+}
+
+function saveServerToken(token: string): void {
+  const config = getConfig();
+  saveConfig({ ...config, serverToken: token });
 }

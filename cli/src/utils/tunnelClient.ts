@@ -14,6 +14,7 @@ export interface TunnelConfig {
   password?: string;
   demo?: boolean;
   authHeader?: string;
+  serverToken?: string;
 }
 
 export interface TunnelInfo {
@@ -59,7 +60,11 @@ export class TunnelClient extends EventEmitter {
         }
       }
 
-      this.ws = new WebSocket(this.config.wsUrl);
+      this.ws = new WebSocket(this.config.wsUrl, {
+        headers: this.config.serverToken
+          ? { Authorization: `Bearer ${this.config.serverToken}` }
+          : undefined,
+      });
 
       this.ws.on("open", () => {
         this.isConnected = true;

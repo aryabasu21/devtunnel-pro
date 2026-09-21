@@ -6,6 +6,7 @@ export interface Config {
   serverUrl: string;
   wsUrl: string;
   frontendUrl: string;
+  serverToken?: string;
 }
 
 const CONFIG_FILE = path.join(getConfigDir(), 'config.json');
@@ -36,7 +37,7 @@ export function saveConfig(config: Partial<Config>): void {
     : {};
 
   const newConfig = { ...currentConfig, ...config };
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(newConfig, null, 2));
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(newConfig, null, 2), { mode: 0o600 });
 }
 
 export function setServerUrl(url: string): void {
