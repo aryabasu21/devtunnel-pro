@@ -1,14 +1,35 @@
 import { Router, Request, Response } from "express";
 import { RequestLog } from "../models/RequestLog";
+import { z } from "zod";
 
 const router = Router();
+
+const paginationSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).max(100_000).default(0),
+});
+
+const requestFilterSchema = z.object({
+  deviceId: z.string().trim().min(1).max(128).optional(),
+  tunnelId: z.string().trim().min(1).max(128).optional(),
+});
 
 // GET /api/requests?deviceId=xxx&tunnelId=xxx&limit=50&offset=0
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { deviceId, tunnelId, limit = 50, offset = 0 } = req.query;
+    const pagination = paginationSchema.safeParse(req.query);
+    const filters = requestFilterSchema.safeParse(req.query);
+    if (!pagination.success || !filters.success) {
+      return res.status(400).json({
+        error: "invalid_request_parameters",
+        message: "Invalid request log filters or pagination values.",
+      });
+    }
 
-    const filter: any = {};
+    const { limit, offset } = pagination.data;
+    const { deviceId, tunnelId } = filters.data;
+
+    const filter: Record<string, string> = {};
     if (deviceId) filter.deviceId = deviceId;
     if (tunnelId) filter.tunnelId = tunnelId;
 
@@ -107,8 +128,15 @@ router.post("/:id/replay", async (req: Request, res: Response) => {
 // DELETE /api/requests - Delete old logs (cleanup endpoint)
 router.delete("/", async (req: Request, res: Response) => {
   try {
-    const { olderThan = 7 } = req.query; // Days
-    const cutoff = new Date(Date.now() - Number(olderThan) * 24 * 60 * 60 * 1000);
+    const olderThan = z.coerce.number().int().min(1).max(365).safeParse(req.query.olderThan ?? 7);
+    if (!olderThan.success) {
+      return res.status(400).json({
+        error: "invalid_retention_period",
+        message: "olderThan must be an integer between 1 and 365 days.",
+      });
+    }
+
+    const cutoff = new Date(Date.now() - olderThan.data * 24 * 60 * 60 * 1000);
 
     const result = await RequestLog.deleteMany({ timestamp: { $lt: cutoff } });
 
