@@ -461,6 +461,10 @@ setInterval(() => {
 // Graceful shutdown
 process.on("SIGTERM", () => {
   console.log("Shutting down...");
+  requestForwarder.rejectAllPending();
+  tunnelManager.getAllTunnels().forEach((tunnel) => {
+    tunnelManager.removeTunnel(tunnel.id, false);
+  });
   wss.close();
   httpServer.close(() => {
     console.log("Server closed");

@@ -184,6 +184,21 @@ export class RequestForwarder {
     }
   }
 
+  rejectAllPending(): void {
+    for (const [requestId, pending] of this.pendingRequests.entries()) {
+      clearTimeout(pending.timeout);
+      this.pendingRequests.delete(requestId);
+      this.saveRequestLog(
+        pending.logData,
+        503,
+        {},
+        "Server is shutting down",
+        Date.now() - pending.startTime,
+      );
+      pending.reject(new Error("Server is shutting down"));
+    }
+  }
+
   private filterHeaders(headers: Record<string, any>): Record<string, string> {
     const filtered: Record<string, string> = {};
     const skipHeaders = ["connection", "upgrade", "keep-alive"];
