@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { TunnelManager } from "./tunnelManager";
 import { RequestForwarder } from "./requestForwarder";
+import { Device } from "./models/Device";
 import supportRoutes from "./routes/support";
 import requestRoutes from "./routes/requests";
 import { generateSubdomain, isValidSubdomain } from "./utils/subdomain";
@@ -131,11 +132,14 @@ app.get("/ready", (req, res) => {
 app.options("/api/*", cors());
 
 // API: Get tunnel info
-app.get("/api/tunnels/:tunnelId", authenticate, (req, res) => {
+app.get("/api/tunnels/:tunnelId", authenticate, async (req, res) => {
   const tunnel = tunnelManager.getTunnel(req.params.tunnelId);
   if (!tunnel) {
     return res.status(404).json({ error: "Tunnel not found" });
   }
+
+  if (!(await assertDeviceOwnership(req, res, tunnel.deviceId))) return;
+
   res.json({
     id: tunnel.id,
     name: tunnel.name,
@@ -146,7 +150,9 @@ app.get("/api/tunnels/:tunnelId", authenticate, (req, res) => {
 });
 
 // API: List tunnels for device
-app.get("/api/devices/:deviceId/tunnels", authenticate, (req, res) => {
+app.get("/api/devices/:deviceId/tunnels", authenticate, async (req, res) => {
+  if (!(await assertDeviceOwnership(req, res, req.params.deviceId))) return;
+
   const tunnels = tunnelManager.getTunnelsByDevice(req.params.deviceId);
   res.json(
     tunnels.map((t) => ({
@@ -158,6 +164,34 @@ app.get("/api/devices/:deviceId/tunnels", authenticate, (req, res) => {
     })),
   );
 });
+
+async function assertDeviceOwnership(
+  req: Request,
+  res: Response,
+  deviceId: string,
+): Promise<boolean> {
+  if (!req.identity) {
+    res.status(401).json({
+      error: "authentication_required",
+      message: "A bearer access token is required.",
+    });
+    return false;
+  }
+
+  const device = await Device.findOne({
+    deviceId,
+    ownerSubject: req.identity.subject,
+  }).lean();
+  if (!device) {
+    res.status(403).json({
+      error: "device_access_denied",
+      message: "You do not have access to this device.",
+    });
+    return false;
+  }
+
+  return true;
+}
 
 // Support ticket routes
 app.use("/api/support", supportLimiter, supportRoutes);
@@ -259,6 +293,7 @@ const wss = new WebSocketServer({
 });
 
 wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
+  let identitySubject: string | undefined;
   const oidcConfigured = Boolean(
     process.env.OIDC_ISSUER && process.env.OIDC_AUDIENCE,
   );
@@ -270,7 +305,8 @@ wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
     }
 
     try {
-      await verifyAccessToken(token);
+      const identity = await verifyAccessToken(token);
+      identitySubject = identity.subject;
     } catch {
       ws.close(1008, "Invalid authentication");
       return;
@@ -301,7 +337,7 @@ wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
       }
 
       const message = parsedMessage.data;
-      handleClientMessage(ws, message, clientIP);
+      void handleClientMessage(ws, message, clientIP, identitySubject);
     } catch (error) {
       ws.send(
         JSON.stringify({ type: "error", message: "Invalid message format" }),
@@ -334,10 +370,87 @@ function handleClientMessage(
   ws: WebSocket,
   message: ClientMessage,
   clientIP: string,
+  identitySubject?: string,
 ) {
   switch (message.type) {
     case "register": {
       const { deviceId, localPort, subdomain, password, demo } = message;
+
+      if (process.env.OIDC_ISSUER && !identitySubject) {
+        ws.send(JSON.stringify({ type: "error", message: "Authentication required" }));
+        return;
+      }
+
+      if (identitySubject) {
+        void Device.findOneAndUpdate(
+          { deviceId },
+          {
+            $setOnInsert: { deviceId, ownerSubject: identitySubject },
+            $set: { lastSeenAt: new Date() },
+          },
+          { upsert: true, new: true },
+        ).then((device) => {
+          if (device.ownerSubject !== identitySubject) {
+            ws.send(JSON.stringify({ type: "error", message: "Device ownership check failed" }));
+            return;
+          }
+
+          registerTunnel(ws, clientIP, message);
+        }).catch(() => {
+          ws.send(JSON.stringify({ type: "error", message: "Device registration failed" }));
+        });
+        return;
+      }
+
+      registerTunnel(ws, clientIP, message);
+      return;
+    }
+
+    case "response": {
+      const { requestId, status, headers, body } = message;
+      const connectionTunnel = tunnelManager.getTunnelByWebSocket(ws);
+      if (!connectionTunnel) {
+        ws.send(JSON.stringify({ type: "error", message: "Tunnel is not registered" }));
+        return;
+      }
+
+      requestForwarder.handleResponse(
+        requestId,
+        { status, headers, body },
+        connectionTunnel.id,
+      );
+      return;
+    }
+
+    case "ping": {
+      ws.send(JSON.stringify({ type: "pong", timestamp: Date.now() }));
+      return;
+    }
+
+    case "stop": {
+      const { tunnelId } = message;
+      const tunnel = tunnelManager.getTunnel(tunnelId);
+      if (!tunnel || tunnel.ws !== ws) {
+        ws.send(JSON.stringify({ type: "error", message: "Tunnel ownership check failed" }));
+        return;
+      }
+
+      tunnelManager.removeTunnel(tunnelId);
+      ws.send(JSON.stringify({ type: "stopped", tunnelId }));
+      return;
+    }
+
+    default:
+      return;
+  }
+}
+
+function registerTunnel(
+  ws: WebSocket,
+  clientIP: string,
+  message: Extract<ClientMessage, { type: "register" }>,
+): void {
+  const { deviceId, localPort, subdomain, password, demo } = message;
 
       // Check tunnel limits per IP
       if (!tunnelTracker.canCreateTunnel(clientIP)) {
@@ -421,46 +534,6 @@ function handleClientMessage(
       console.log(
         `Tunnel registered: ${name} -> localhost:${localPort} (${deviceId})`,
       );
-      break;
-    }
-
-    case "response": {
-      const { requestId, status, headers, body } = message;
-      const connectionTunnel = tunnelManager.getTunnelByWebSocket(ws);
-      if (!connectionTunnel) {
-        ws.send(JSON.stringify({ type: "error", message: "Tunnel is not registered" }));
-        return;
-      }
-
-      requestForwarder.handleResponse(
-        requestId,
-        { status, headers, body },
-        connectionTunnel.id,
-      );
-      break;
-    }
-
-    case "ping": {
-      ws.send(JSON.stringify({ type: "pong", timestamp: Date.now() }));
-      break;
-    }
-
-    case "stop": {
-      const { tunnelId } = message;
-      const tunnel = tunnelManager.getTunnel(tunnelId);
-      if (!tunnel || tunnel.ws !== ws) {
-        ws.send(JSON.stringify({ type: "error", message: "Tunnel ownership check failed" }));
-        return;
-      }
-
-      tunnelManager.removeTunnel(tunnelId);
-      ws.send(JSON.stringify({ type: "stopped", tunnelId }));
-      break;
-    }
-
-    default:
-      return;
-  }
 }
 
 // Start server
