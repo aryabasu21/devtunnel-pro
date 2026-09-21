@@ -277,7 +277,6 @@ app.all("*", async (req: Request, res: Response) => {
     res.status(502).json({
       error: "Bad Gateway",
       message: "Failed to connect to local server",
-      details: error.message,
     });
   }
 });
