@@ -92,6 +92,19 @@ devportal logs <tunnel-id>
 ### Configuration
 
 ```bash
+
+### Authenticated server connections
+
+When the server has OIDC authentication enabled, configure a bearer token before
+starting a tunnel:
+
+```bash
+devportal config token <server-bearer-token>
+devportal start 3000
+```
+
+The server token authenticates the CLI to DevPortal. The separate `--auth-header`
+option is forwarded to the local application and is not used for server login.
 # View current config
 devportal config
 
