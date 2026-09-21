@@ -120,10 +120,19 @@ export class RequestForwarder {
     });
   }
 
-  handleResponse(requestId: string, response: ForwardedResponse): void {
+  handleResponse(
+    requestId: string,
+    response: ForwardedResponse,
+    tunnelId: string,
+  ): void {
     const pending = this.pendingRequests.get(requestId);
     if (!pending) {
       console.warn(`No pending request found for ${requestId}`);
+      return;
+    }
+
+    if (pending.logData.tunnelId !== tunnelId) {
+      console.warn(`Tunnel ${tunnelId} attempted to answer request ${requestId}`);
       return;
     }
 

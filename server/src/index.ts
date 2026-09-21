@@ -383,7 +383,17 @@ function handleClientMessage(
 
     case "response": {
       const { requestId, status, headers, body } = message;
-      requestForwarder.handleResponse(requestId, { status, headers, body });
+      const connectionTunnel = tunnelManager.getTunnelByWebSocket(ws);
+      if (!connectionTunnel) {
+        ws.send(JSON.stringify({ type: "error", message: "Tunnel is not registered" }));
+        return;
+      }
+
+      requestForwarder.handleResponse(
+        requestId,
+        { status, headers, body },
+        connectionTunnel.id,
+      );
       break;
     }
 
@@ -394,6 +404,12 @@ function handleClientMessage(
 
     case "stop": {
       const { tunnelId } = message;
+      const tunnel = tunnelManager.getTunnel(tunnelId);
+      if (!tunnel || tunnel.ws !== ws) {
+        ws.send(JSON.stringify({ type: "error", message: "Tunnel ownership check failed" }));
+        return;
+      }
+
       tunnelManager.removeTunnel(tunnelId);
       ws.send(JSON.stringify({ type: "stopped", tunnelId }));
       break;

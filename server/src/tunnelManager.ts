@@ -37,6 +37,10 @@ export class TunnelManager {
     return id ? this.tunnels.get(id) : undefined;
   }
 
+  getTunnelByWebSocket(ws: WebSocket): Tunnel | undefined {
+    return Array.from(this.tunnels.values()).find((tunnel) => tunnel.ws === ws);
+  }
+
   getTunnelsByDevice(deviceId: string): Tunnel[] {
     const ids = this.tunnelsByDevice.get(deviceId);
     if (!ids) return [];
