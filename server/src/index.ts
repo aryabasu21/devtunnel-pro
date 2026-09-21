@@ -240,8 +240,6 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
   const clientIP = req.socket.remoteAddress || "unknown";
   console.log("New CLI connection from:", clientIP);
 
-  let tunnelId: string | null = null;
-
   // Server-side ping to keep connection alive (every 20 seconds)
   const pingInterval = setInterval(() => {
     if (ws.readyState === WebSocket.OPEN) {
@@ -252,9 +250,7 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
   ws.on("message", (data: Buffer) => {
     try {
       const message = JSON.parse(data.toString());
-      handleClientMessage(ws, message, clientIP, (id) => {
-        tunnelId = id;
-      });
+      handleClientMessage(ws, message, clientIP);
     } catch (error) {
       console.error("Invalid message:", error);
       ws.send(
@@ -266,11 +262,11 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
   ws.on("close", () => {
     console.log("CLI disconnected");
     clearInterval(pingInterval);
-    if (tunnelId) {
-      tunnelManager.removeTunnel(tunnelId);
-      // Remove tunnel from IP tracking
+    const disconnectedTunnels = tunnelManager.removeTunnelsByWebSocket(ws);
+    disconnectedTunnels.forEach((tunnel) => {
+      requestForwarder.rejectPendingForTunnel(tunnel.id);
       tunnelTracker.removeTunnel(clientIP);
-    }
+    });
   });
 
   ws.on("error", (error) => {
@@ -288,7 +284,6 @@ function handleClientMessage(
   ws: WebSocket,
   message: any,
   clientIP: string,
-  setTunnelId: (id: string) => void,
 ) {
   switch (message.type) {
     case "register": {
@@ -361,8 +356,6 @@ function handleClientMessage(
         expiresAt,
         ws,
       });
-
-      setTunnelId(id);
 
       // Add tunnel to IP tracking
       tunnelTracker.addTunnel(clientIP);

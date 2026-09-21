@@ -41,6 +41,10 @@ export class TunnelManager {
     return Array.from(this.tunnels.values()).find((tunnel) => tunnel.ws === ws);
   }
 
+  getTunnelsByWebSocket(ws: WebSocket): Tunnel[] {
+    return Array.from(this.tunnels.values()).filter((tunnel) => tunnel.ws === ws);
+  }
+
   getTunnelsByDevice(deviceId: string): Tunnel[] {
     const ids = this.tunnelsByDevice.get(deviceId);
     if (!ids) return [];
@@ -49,7 +53,7 @@ export class TunnelManager {
       .filter((t): t is Tunnel => t !== undefined);
   }
 
-  removeTunnel(id: string): void {
+  removeTunnel(id: string, closeConnection = true): void {
     const tunnel = this.tunnels.get(id);
     if (!tunnel) return;
 
@@ -65,11 +69,17 @@ export class TunnelManager {
     }
 
     // Close WebSocket connection
-    if (tunnel.ws.readyState === WebSocket.OPEN) {
+    if (closeConnection && tunnel.ws.readyState === WebSocket.OPEN) {
       tunnel.ws.close();
     }
 
     console.log(`Tunnel removed: ${tunnel.name}`);
+  }
+
+  removeTunnelsByWebSocket(ws: WebSocket): Tunnel[] {
+    const tunnels = this.getTunnelsByWebSocket(ws);
+    tunnels.forEach((tunnel) => this.removeTunnel(tunnel.id, false));
+    return tunnels;
   }
 
   updateTunnelStatus(id: string, status: 'live' | 'stopped'): void {

@@ -167,6 +167,23 @@ export class RequestForwarder {
     });
   }
 
+  rejectPendingForTunnel(tunnelId: string): void {
+    for (const [requestId, pending] of this.pendingRequests.entries()) {
+      if (pending.logData.tunnelId !== tunnelId) continue;
+
+      clearTimeout(pending.timeout);
+      this.pendingRequests.delete(requestId);
+      this.saveRequestLog(
+        pending.logData,
+        502,
+        {},
+        "Tunnel connection closed",
+        Date.now() - pending.startTime,
+      );
+      pending.reject(new Error("Tunnel connection closed"));
+    }
+  }
+
   private filterHeaders(headers: Record<string, any>): Record<string, string> {
     const filtered: Record<string, string> = {};
     const skipHeaders = ["connection", "upgrade", "keep-alive"];
