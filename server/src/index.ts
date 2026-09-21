@@ -16,6 +16,11 @@ import {
   supportLimiter,
   tunnelTracker,
 } from "./middleware/rateLimiting";
+import {
+  authenticate,
+  getBearerTokenFromHeaders,
+  verifyAccessToken,
+} from "./middleware/auth";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -126,7 +131,7 @@ app.get("/ready", (req, res) => {
 app.options("/api/*", cors());
 
 // API: Get tunnel info
-app.get("/api/tunnels/:tunnelId", (req, res) => {
+app.get("/api/tunnels/:tunnelId", authenticate, (req, res) => {
   const tunnel = tunnelManager.getTunnel(req.params.tunnelId);
   if (!tunnel) {
     return res.status(404).json({ error: "Tunnel not found" });
@@ -141,7 +146,7 @@ app.get("/api/tunnels/:tunnelId", (req, res) => {
 });
 
 // API: List tunnels for device
-app.get("/api/devices/:deviceId/tunnels", (req, res) => {
+app.get("/api/devices/:deviceId/tunnels", authenticate, (req, res) => {
   const tunnels = tunnelManager.getTunnelsByDevice(req.params.deviceId);
   res.json(
     tunnels.map((t) => ({
@@ -253,7 +258,25 @@ const wss = new WebSocketServer({
   maxPayload: 20 * 1024 * 1024,
 });
 
-wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
+wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
+  const oidcConfigured = Boolean(
+    process.env.OIDC_ISSUER && process.env.OIDC_AUDIENCE,
+  );
+  if (oidcConfigured) {
+    const token = getBearerTokenFromHeaders(req.headers);
+    if (!token) {
+      ws.close(1008, "Authentication required");
+      return;
+    }
+
+    try {
+      await verifyAccessToken(token);
+    } catch {
+      ws.close(1008, "Invalid authentication");
+      return;
+    }
+  }
+
   const clientIP = req.socket.remoteAddress || "unknown";
   console.log("New CLI connection from:", clientIP);
 

@@ -1,8 +1,10 @@
 import { Router, Request, Response } from "express";
 import { RequestLog } from "../models/RequestLog";
 import { z } from "zod";
+import { authenticate } from "../middleware/auth";
 
 const router = Router();
+router.use(authenticate);
 
 const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),

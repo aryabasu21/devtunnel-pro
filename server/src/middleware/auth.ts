@@ -25,16 +25,10 @@ const jwksUrl = process.env.OIDC_JWKS_URL ||
 const remoteJwks = jwksUrl ? createRemoteJWKSet(new URL(jwksUrl)) : null;
 
 function getBearerToken(request: Request): string | null {
-  const authorization = request.headers.authorization;
-  if (!authorization?.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authorization.slice("Bearer ".length).trim();
-  return token.length > 0 ? token : null;
+  return getBearerTokenFromHeaders(request.headers);
 }
 
-async function verifyAccessToken(token: string): Promise<AuthenticatedIdentity> {
+export async function verifyAccessToken(token: string): Promise<AuthenticatedIdentity> {
   if (!remoteJwks || !issuer || !audience) {
     throw new Error("OIDC authentication is not configured");
   }
@@ -58,6 +52,18 @@ async function verifyAccessToken(token: string): Promise<AuthenticatedIdentity> 
         : undefined,
     claims: payload,
   };
+}
+
+export function getBearerTokenFromHeaders(
+  headers: Pick<Request["headers"], "authorization">,
+): string | null {
+  const authorization = headers.authorization;
+  if (!authorization?.startsWith("Bearer ")) {
+    return null;
+  }
+
+  const token = authorization.slice("Bearer ".length).trim();
+  return token.length > 0 ? token : null;
 }
 
 export async function authenticate(
