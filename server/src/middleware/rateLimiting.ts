@@ -1,7 +1,15 @@
 import rateLimit from "express-rate-limit";
+import { RedisStore } from "rate-limit-redis";
 import { NextFunction, Request, Response } from "express";
+import { redisEnabled, sendRedisCommand } from "../services/redisPresence";
 
 // Rate limiting inspired by tunnl.gg's approach
+
+function createDistributedStore(): RedisStore | undefined {
+  return redisEnabled
+    ? new RedisStore({ sendCommand: sendRedisCommand })
+    : undefined;
+}
 
 // API rate limits
 export const apiLimiter = rateLimit({
@@ -15,6 +23,7 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  store: createDistributedStore(),
 });
 
 // Tunnel creation rate limits
@@ -29,6 +38,7 @@ export const tunnelLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  store: createDistributedStore(),
   keyGenerator: (req: Request) => {
     // Use IP address for rate limiting
     return req.ip || req.socket.remoteAddress || "unknown";
@@ -47,6 +57,7 @@ export const supportLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  store: createDistributedStore(),
 });
 
 // Strict rate limit for abuse protection
@@ -60,6 +71,7 @@ export const strictLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  store: createDistributedStore(),
   skip: (req: Request) => {
     const host = req.headers.host || "";
     const isTunnelSubdomain =

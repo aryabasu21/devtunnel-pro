@@ -33,6 +33,16 @@ export async function checkRedisReadiness(): Promise<boolean> {
   }
 }
 
+export async function sendRedisCommand(...args: string[]): Promise<
+  boolean | number | string | (boolean | number | string)[]
+> {
+  if (!redis) throw new Error("Redis is not configured");
+  if (redis.status === "wait") await redis.connect();
+  return redis.sendCommand(
+    new Redis.Command(args[0], args.slice(1)),
+  ) as Promise<boolean | number | string | (boolean | number | string)[]>;
+}
+
 export async function registerPresence(input: {
   tunnelId: string;
   deviceId: string;
