@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import { SupportTicket } from "../models/SupportTicket";
 import { sendTicketNotification } from "../services/emailService";
-import { authenticate } from "../middleware/auth";
+import { authenticate, requireRole } from "../middleware/auth";
 
 const router = Router();
 
@@ -144,7 +144,7 @@ router.post(
 );
 
 // GET /api/support - List all tickets (admin)
-router.use(authenticate);
+router.use(authenticate, requireRole("support_admin"));
 
 router.get("/", async (req: Request, res: Response) => {
   try {

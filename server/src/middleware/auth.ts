@@ -104,3 +104,23 @@ export function requireIdentity(request: Request): AuthenticatedIdentity {
 
   return request.identity;
 }
+
+export function requireRole(role: string) {
+  return (request: Request, response: Response, next: NextFunction): void => {
+    const identity = request.identity;
+    const roles = identity?.claims.roles;
+    const roleList = Array.isArray(roles)
+      ? roles.filter((value): value is string => typeof value === "string")
+      : [];
+
+    if (!identity || !roleList.includes(role)) {
+      response.status(403).json({
+        error: "insufficient_permissions",
+        message: "You do not have permission to access this resource.",
+      });
+      return;
+    }
+
+    next();
+  };
+}
