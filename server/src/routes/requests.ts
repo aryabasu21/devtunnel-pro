@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { RequestLog } from "../models/RequestLog";
 import { z } from "zod";
 import { authenticate } from "../middleware/auth";
+import { Device } from "../models/Device";
 
 const router = Router();
 router.use(authenticate);
@@ -15,6 +16,26 @@ const requestFilterSchema = z.object({
   deviceId: z.string().trim().min(1).max(128).optional(),
   tunnelId: z.string().trim().min(1).max(128).optional(),
 });
+
+async function getOwnedDeviceIds(
+  request: Request,
+  requestedDeviceId?: string,
+): Promise<string[]> {
+  if (!request.identity) return [];
+
+  const filter = { ownerSubject: request.identity.subject };
+  if (requestedDeviceId) {
+    const device = await Device.exists({ ...filter, deviceId: requestedDeviceId });
+    return device ? [requestedDeviceId] : [];
+  }
+
+  const devices = await Device.find(filter).select({ deviceId: 1 }).lean();
+  return devices.map((device) => device.deviceId);
+}
+
+async function ownsLog(request: Request, deviceId: string): Promise<boolean> {
+  return (await getOwnedDeviceIds(request, deviceId)).length === 1;
+}
 
 // GET /api/requests?deviceId=xxx&tunnelId=xxx&limit=50&offset=0
 router.get("/", async (req: Request, res: Response) => {
@@ -31,8 +52,10 @@ router.get("/", async (req: Request, res: Response) => {
     const { limit, offset } = pagination.data;
     const { deviceId, tunnelId } = filters.data;
 
-    const filter: Record<string, string> = {};
-    if (deviceId) filter.deviceId = deviceId;
+    const ownedDeviceIds = await getOwnedDeviceIds(req, deviceId);
+    const filter: Record<string, unknown> = {
+      deviceId: { $in: ownedDeviceIds },
+    };
     if (tunnelId) filter.tunnelId = tunnelId;
 
     const logs = await RequestLog.find(filter)
@@ -72,7 +95,7 @@ router.get("/:id", async (req: Request, res: Response) => {
   try {
     const log = await RequestLog.findById(req.params.id).lean();
 
-    if (!log) {
+    if (!log || !(await ownsLog(req, log.deviceId))) {
       return res.status(404).json({ error: "Request log not found" });
     }
 
@@ -104,7 +127,7 @@ router.post("/:id/replay", async (req: Request, res: Response) => {
   try {
     const log = await RequestLog.findById(req.params.id);
 
-    if (!log) {
+    if (!log || !(await ownsLog(req, log.deviceId))) {
       return res.status(404).json({ error: "Request log not found" });
     }
 
@@ -140,7 +163,11 @@ router.delete("/", async (req: Request, res: Response) => {
 
     const cutoff = new Date(Date.now() - olderThan.data * 24 * 60 * 60 * 1000);
 
-    const result = await RequestLog.deleteMany({ timestamp: { $lt: cutoff } });
+    const ownedDeviceIds = await getOwnedDeviceIds(req);
+    const result = await RequestLog.deleteMany({
+      deviceId: { $in: ownedDeviceIds },
+      timestamp: { $lt: cutoff },
+    });
 
     res.json({
       success: true,
