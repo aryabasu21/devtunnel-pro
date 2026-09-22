@@ -8,6 +8,14 @@ import { TunnelManager } from "./tunnelManager";
 import { RequestForwarder } from "./requestForwarder";
 import { Device } from "./models/Device";
 import { TunnelRecord, type TunnelRecordStatus } from "./models/Tunnel";
+import {
+  checkRedisReadiness,
+  closeRedis,
+  redisEnabled,
+  registerPresence,
+  removePresence,
+  startPresenceHeartbeat,
+} from "./services/redisPresence";
 import supportRoutes from "./routes/support";
 import requestRoutes from "./routes/requests";
 import { generateSubdomain, isValidSubdomain } from "./utils/subdomain";
@@ -43,6 +51,9 @@ mongoose
 // Tunnel manager
 const tunnelManager = new TunnelManager();
 const requestForwarder = new RequestForwarder(tunnelManager);
+const presenceHeartbeat = startPresenceHeartbeat(() =>
+  tunnelManager.getAllTunnels().map((tunnel) => tunnel.id),
+);
 
 // Middleware
 const allowedOrigins = [
@@ -119,13 +130,16 @@ app.get("/health", (req, res) => {
 
 app.get("/ready", (req, res) => {
   const databaseReady = mongoose.connection.readyState === 1;
-  const ready = databaseReady;
+  void checkRedisReadiness().then((redisReady) => {
+    const ready = databaseReady && redisReady;
 
-  res.status(ready ? 200 : 503).json({
+    res.status(ready ? 200 : 503).json({
     status: ready ? "ready" : "not_ready",
     checks: {
       database: databaseReady ? "ready" : "unavailable",
+      redis: redisReady ? (redisEnabled ? "ready" : "not_configured") : "unavailable",
     },
+    });
   });
 });
 
@@ -375,6 +389,7 @@ wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
     disconnectedTunnels.forEach((tunnel) => {
       requestForwarder.rejectPendingForTunnel(tunnel.id);
       void updateTunnelRecord(tunnel.id, "disconnected");
+      void removePresence(tunnel.id);
       tunnelTracker.removeTunnel(clientIP);
     });
   });
@@ -470,12 +485,12 @@ function handleClientMessage(
   }
 }
 
-function registerTunnel(
+async function registerTunnel(
   ws: WebSocket,
   clientIP: string,
   message: Extract<ClientMessage, { type: "register" }>,
   ownerSubject?: string,
-): void {
+): Promise<void> {
   const { deviceId, localPort, subdomain, password, demo } = message;
 
       // Check tunnel limits per IP
@@ -545,6 +560,15 @@ function registerTunnel(
         expiresAt,
         ws,
       });
+
+      try {
+        await registerPresence({ tunnelId: id, deviceId, name });
+      } catch (error) {
+        tunnelManager.removeTunnel(id, false);
+        ws.send(JSON.stringify({ type: "error", message: "Shared tunnel coordination is unavailable" }));
+        console.error("Failed to register tunnel presence:", error);
+        return;
+      }
 
       void TunnelRecord.findOneAndUpdate(
         { tunnelId: id },
@@ -617,13 +641,17 @@ setInterval(() => {
 // Graceful shutdown
 process.on("SIGTERM", () => {
   console.log("Shutting down...");
+  clearInterval(presenceHeartbeat);
   requestForwarder.rejectAllPending();
   tunnelManager.getAllTunnels().forEach((tunnel) => {
+    void removePresence(tunnel.id);
     tunnelManager.removeTunnel(tunnel.id, false);
   });
   wss.close();
   httpServer.close(() => {
-    console.log("Server closed");
-    process.exit(0);
+    void closeRedis().finally(() => {
+      console.log("Server closed");
+      process.exit(0);
+    });
   });
 });

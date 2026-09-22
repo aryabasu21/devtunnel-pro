@@ -45,10 +45,18 @@ authenticated routes:
 - `OIDC_ISSUER` - the issuer URL from the identity provider
 - `OIDC_AUDIENCE` - the API audience configured for this server
 - `OIDC_JWKS_URL` - optional JWKS URL; defaults to the issuer's standard JWKS path
+- `REDIS_URL` - Redis connection URL for shared tunnel presence and coordination
+- `REQUIRE_REDIS` - set to `true` in scaled deployments; local development can use `false`
+- `INSTANCE_ID` - optional server instance label used in tunnel presence records
 
 The authentication middleware is in `src/middleware/auth.ts`. It validates the
 signature, issuer, audience, expiry, and subject before attaching an identity to the
 Express request.
+
+Redis presence records expire automatically if an instance stops refreshing them.
+The live WebSocket remains process-local until the gateway routing phase is
+implemented, so do not increase Railway replicas until Redis-backed gateway
+routing is enabled and verified.
 
 ## API Endpoints
 
