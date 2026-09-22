@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { TunnelManager } from "./tunnelManager";
 import { RequestForwarder } from "./requestForwarder";
 import { Device } from "./models/Device";
+import { TunnelRecord, type TunnelRecordStatus } from "./models/Tunnel";
 import supportRoutes from "./routes/support";
 import requestRoutes from "./routes/requests";
 import { generateSubdomain, isValidSubdomain } from "./utils/subdomain";
@@ -134,18 +135,23 @@ app.options("/api/*", cors());
 // API: Get tunnel info
 app.get("/api/tunnels/:tunnelId", authenticate, async (req, res) => {
   const tunnel = tunnelManager.getTunnel(req.params.tunnelId);
-  if (!tunnel) {
+  const persistedTunnel = tunnel
+    ? null
+    : await TunnelRecord.findOne({ tunnelId: req.params.tunnelId }).lean();
+
+  if (!tunnel && !persistedTunnel) {
     return res.status(404).json({ error: "Tunnel not found" });
   }
 
-  if (!(await assertDeviceOwnership(req, res, tunnel.deviceId))) return;
+  const deviceId = tunnel?.deviceId || persistedTunnel?.deviceId;
+  if (!deviceId || !(await assertDeviceOwnership(req, res, deviceId))) return;
 
   res.json({
-    id: tunnel.id,
-    name: tunnel.name,
-    url: tunnel.url,
-    status: tunnel.status,
-    createdAt: tunnel.createdAt,
+    id: tunnel?.id || persistedTunnel?.tunnelId,
+    name: tunnel?.name || persistedTunnel?.name,
+    url: tunnel?.url || persistedTunnel?.url,
+    status: tunnel?.status || persistedTunnel?.status,
+    createdAt: tunnel?.createdAt || persistedTunnel?.createdAt.toISOString(),
   });
 });
 
@@ -153,15 +159,33 @@ app.get("/api/tunnels/:tunnelId", authenticate, async (req, res) => {
 app.get("/api/devices/:deviceId/tunnels", authenticate, async (req, res) => {
   if (!(await assertDeviceOwnership(req, res, req.params.deviceId))) return;
 
-  const tunnels = tunnelManager.getTunnelsByDevice(req.params.deviceId);
+  const activeTunnels = tunnelManager.getTunnelsByDevice(req.params.deviceId);
+  const persistedTunnels = await TunnelRecord.find({
+    deviceId: req.params.deviceId,
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+  const activeIds = new Set(activeTunnels.map((tunnel) => tunnel.id));
+
   res.json(
-    tunnels.map((t) => ({
-      id: t.id,
-      name: t.name,
-      url: t.url,
-      status: t.status,
-      createdAt: t.createdAt,
-    })),
+    persistedTunnels
+      .filter((tunnel) => !activeIds.has(tunnel.tunnelId))
+      .map((tunnel) => ({
+        id: tunnel.tunnelId,
+        name: tunnel.name,
+        url: tunnel.url,
+        status: tunnel.status,
+        createdAt: tunnel.createdAt.toISOString(),
+      }))
+      .concat(
+        activeTunnels.map((tunnel) => ({
+          id: tunnel.id,
+          name: tunnel.name,
+          url: tunnel.url,
+          status: tunnel.status,
+          createdAt: tunnel.createdAt,
+        })),
+      ),
   );
 });
 
@@ -350,6 +374,7 @@ wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
     const disconnectedTunnels = tunnelManager.removeTunnelsByWebSocket(ws);
     disconnectedTunnels.forEach((tunnel) => {
       requestForwarder.rejectPendingForTunnel(tunnel.id);
+      void updateTunnelRecord(tunnel.id, "disconnected");
       tunnelTracker.removeTunnel(clientIP);
     });
   });
@@ -394,7 +419,7 @@ function handleClientMessage(
             return;
           }
 
-          registerTunnel(ws, clientIP, message);
+          registerTunnel(ws, clientIP, message, identitySubject);
         }).catch(() => {
           ws.send(JSON.stringify({ type: "error", message: "Device registration failed" }));
         });
@@ -435,6 +460,7 @@ function handleClientMessage(
       }
 
       tunnelManager.removeTunnel(tunnelId);
+      void updateTunnelRecord(tunnelId, "stopped");
       ws.send(JSON.stringify({ type: "stopped", tunnelId }));
       return;
     }
@@ -448,6 +474,7 @@ function registerTunnel(
   ws: WebSocket,
   clientIP: string,
   message: Extract<ClientMessage, { type: "register" }>,
+  ownerSubject?: string,
 ): void {
   const { deviceId, localPort, subdomain, password, demo } = message;
 
@@ -519,6 +546,26 @@ function registerTunnel(
         ws,
       });
 
+      void TunnelRecord.findOneAndUpdate(
+        { tunnelId: id },
+        {
+          $set: {
+            name,
+            url,
+            deviceId,
+            ownerSubject,
+            localPort,
+            status: "live",
+            lastSeenAt: new Date(),
+            expiresAt: expiresAt ? new Date(expiresAt) : null,
+          },
+          $setOnInsert: { tunnelId: id, createdAt: new Date() },
+        },
+        { upsert: true, new: true },
+      ).catch((error) => {
+        console.error("Failed to persist tunnel metadata:", error);
+      });
+
       // Add tunnel to IP tracking
       tunnelTracker.addTunnel(clientIP);
 
@@ -533,6 +580,20 @@ function registerTunnel(
       console.log(
         `Tunnel registered: ${name} -> localhost:${localPort} (${deviceId})`,
       );
+}
+
+async function updateTunnelRecord(
+  tunnelId: string,
+  status: TunnelRecordStatus,
+): Promise<void> {
+  try {
+    await TunnelRecord.updateOne(
+      { tunnelId },
+      { $set: { status, lastSeenAt: new Date() } },
+    );
+  } catch (error) {
+    console.error("Failed to update tunnel metadata:", error);
+  }
 }
 
 // Start server
