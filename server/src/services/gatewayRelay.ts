@@ -4,6 +4,7 @@ import {
   redisConnectionUrl,
 } from "./redisPresence";
 import type { ForwardedResponse } from "../requestForwarder";
+import { z } from "zod";
 
 export interface GatewayRequest {
   requestId: string;
@@ -22,6 +23,23 @@ interface PendingRelay {
 }
 
 const REQUEST_TIMEOUT_MS = 30_000;
+
+const gatewayRequestSchema = z.object({
+  requestId: z.string().min(1).max(128),
+  originInstanceId: z.string().min(1).max(128),
+  tunnelId: z.string().min(1).max(128),
+  method: z.string().min(1).max(16),
+  path: z.string().min(1).max(16_384),
+  headers: z.record(z.string(), z.string()).default({}),
+  body: z.string().max(20_000_000).nullable(),
+});
+
+const gatewayResponseSchema = z.object({
+  requestId: z.string().min(1).max(128),
+  status: z.number().int().min(100).max(599),
+  headers: z.record(z.string(), z.string()).default({}),
+  body: z.string().max(20_000_000),
+});
 
 function requestChannel(targetInstanceId: string): string {
   return `devportal:gateway:requests:${targetInstanceId}`;
@@ -100,9 +118,12 @@ export class GatewayRelay {
       sendToTunnel: (request: GatewayRequest) => Promise<ForwardedResponse>,
     ) => Promise<ForwardedResponse>,
   ): Promise<void> {
-    let parsed: GatewayRequest | ForwardedResponse & { requestId: string };
+    let parsed: GatewayRequest | (ForwardedResponse & { requestId: string });
     try {
-      parsed = JSON.parse(message) as typeof parsed;
+      const raw: unknown = JSON.parse(message);
+      parsed = channel === responseChannel(instanceId)
+        ? gatewayResponseSchema.parse(raw)
+        : gatewayRequestSchema.parse(raw);
     } catch {
       return;
     }
