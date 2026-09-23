@@ -2,10 +2,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { lazy, Suspense } from "react";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
 
 // Lazy-load pages for code splitting
 const Docs = lazy(() => import("./pages/Docs.tsx"));
@@ -21,6 +23,18 @@ const queryClient = new QueryClient();
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-8 w-8 border border-primary border-t-transparent" />
+  </div>
+);
+
+const AuthenticationRequired = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background p-6">
+    <div className="text-center space-y-4">
+      <h1 className="text-2xl font-semibold">Sign in to access your dashboard</h1>
+      <p className="text-muted-foreground">Your tunnels and request logs are private.</p>
+      <SignInButton mode="modal">
+        <button className="rounded bg-primary px-4 py-2 text-primary-foreground">Sign in</button>
+      </SignInButton>
+    </div>
   </div>
 );
 
@@ -42,6 +56,21 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route
+              path="/dashboard/:deviceId"
+              element={
+                <>
+                  <SignedIn>
+                    <Suspense fallback={<PageLoader />}>
+                      <Dashboard />
+                    </Suspense>
+                  </SignedIn>
+                  <SignedOut>
+                    <AuthenticationRequired />
+                  </SignedOut>
+                </>
+              }
+            />
             <Route
               path="/docs"
               element={

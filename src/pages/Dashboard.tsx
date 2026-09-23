@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import TunnelList from "@/components/TunnelList";
+import Navbar from "@/components/Navbar";
 import QRCodeModal from "@/components/QRCodeModal";
 import {
   getTunnelsByDevice,
@@ -15,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Home, Copy, User } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 type View = "tunnels";
 
@@ -40,6 +42,7 @@ interface TunnelDataUI extends TunnelData {
 
 const Dashboard = () => {
   const { deviceId: urlDeviceId } = useParams();
+  const { getToken } = useAuth();
   const navigate = useNavigate();
   const [deviceId, setDeviceId] = useState<string>("");
   const [tunnels, setTunnels] = useState<TunnelDataUI[]>([]);
@@ -81,8 +84,8 @@ const Dashboard = () => {
       setIsLoading(true);
       try {
         const [tunnelsData, statusData] = await Promise.all([
-          getTunnelsByDevice(deviceId),
-          getServerStatus(),
+          getTunnelsByDevice(deviceId, getToken),
+          getServerStatus(getToken),
         ]);
 
         const tunnelsWithCount = tunnelsData.map((t) => ({
@@ -138,7 +141,7 @@ const Dashboard = () => {
     // Poll for updates every 2 seconds for instant updates (like tunnl.gg)
     const interval = setInterval(fetchData, 2000);
     return () => clearInterval(interval);
-  }, [deviceId, selectedTunnelId]);
+  }, [deviceId, selectedTunnelId, getToken]);
 
   const handleCreateTunnel = useCallback(() => {
     const startCommand = getStartCommand(platform);
@@ -215,7 +218,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
+      <Navbar />
       {qrTunnel && (
         <QRCodeModal
           url={qrTunnel.url}

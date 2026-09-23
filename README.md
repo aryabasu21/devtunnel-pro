@@ -28,6 +28,12 @@ DevPortal is a frontend dashboard experience for exposing localhost services, in
 npm install
 ```
 
+### Configure the frontend
+
+Copy `.env.example` to `.env.local` and set `VITE_CLERK_PUBLISHABLE_KEY` and
+`VITE_API_URL`. The dashboard requires a signed-in Clerk session and requests the
+`devportal` JWT template before calling protected APIs.
+
 ### 2. Start development server
 
 ```bash

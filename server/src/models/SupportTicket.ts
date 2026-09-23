@@ -10,7 +10,10 @@ export interface ISupportTicket extends Document {
     originalName: string;
     mimetype: string;
     size: number;
-    data: Buffer;
+    publicId?: string;
+    secureUrl?: string;
+    resourceType?: string;
+    format?: string;
   }[];
   status: "pending" | "in_progress" | "resolved" | "closed";
   createdAt: Date;
@@ -22,7 +25,10 @@ const AttachmentSchema = new Schema({
   originalName: { type: String, required: true },
   mimetype: { type: String, required: true },
   size: { type: Number, required: true },
-  data: { type: Buffer, required: true },
+  publicId: { type: String },
+  secureUrl: { type: String },
+  resourceType: { type: String },
+  format: { type: String },
 });
 
 const SupportTicketSchema = new Schema<ISupportTicket>(

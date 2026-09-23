@@ -1,6 +1,15 @@
 // API client for DevPortal Tunnel Server
 
 const API_URL = import.meta.env.VITE_API_URL || "https://tunnel.stylnode.in";
+export type TokenGetter = () => Promise<string | null>;
+
+async function request(input: RequestInfo | URL, init: RequestInit = {}, getToken?: TokenGetter): Promise<Response> {
+  const token = getToken ? await getToken() : null;
+  const headers = new Headers(init.headers);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  return fetch(input, { ...init, headers });
+}
 
 export interface TunnelData {
   id: string;
@@ -41,8 +50,8 @@ export interface ServerStatus {
 }
 
 // Get server status
-export async function getServerStatus(): Promise<ServerStatus> {
-  const response = await fetch(API_URL);
+export async function getServerStatus(getToken?: TokenGetter): Promise<ServerStatus> {
+  const response = await request(API_URL, {}, getToken);
   if (!response.ok) {
     throw new Error("Failed to fetch server status");
   }
@@ -52,8 +61,9 @@ export async function getServerStatus(): Promise<ServerStatus> {
 // Get tunnels for a device
 export async function getTunnelsByDevice(
   deviceId: string,
+  getToken?: TokenGetter,
 ): Promise<TunnelData[]> {
-  const response = await fetch(`${API_URL}/api/devices/${deviceId}/tunnels`);
+  const response = await request(`${API_URL}/api/devices/${deviceId}/tunnels`, {}, getToken);
   if (!response.ok) {
     throw new Error("Failed to fetch tunnels");
   }
@@ -61,8 +71,8 @@ export async function getTunnelsByDevice(
 }
 
 // Get single tunnel info
-export async function getTunnel(tunnelId: string): Promise<TunnelData> {
-  const response = await fetch(`${API_URL}/api/tunnels/${tunnelId}`);
+export async function getTunnel(tunnelId: string, getToken?: TokenGetter): Promise<TunnelData> {
+  const response = await request(`${API_URL}/api/tunnels/${tunnelId}`, {}, getToken);
   if (!response.ok) {
     throw new Error("Failed to fetch tunnel");
   }
@@ -87,7 +97,7 @@ export async function getRequestLogs(params: {
   tunnelId?: string;
   limit?: number;
   offset?: number;
-}): Promise<{
+}, getToken?: TokenGetter): Promise<{
   logs: RequestLog[];
   total: number;
   limit: number;
@@ -99,7 +109,7 @@ export async function getRequestLogs(params: {
   if (params.limit) searchParams.append("limit", params.limit.toString());
   if (params.offset) searchParams.append("offset", params.offset.toString());
 
-  const response = await fetch(`${API_URL}/api/requests?${searchParams}`);
+  const response = await request(`${API_URL}/api/requests?${searchParams}`, {}, getToken);
   if (!response.ok) {
     throw new Error("Failed to fetch request logs");
   }
@@ -107,8 +117,8 @@ export async function getRequestLogs(params: {
 }
 
 // Get single request log details
-export async function getRequestLogDetails(id: string): Promise<RequestLogDetails> {
-  const response = await fetch(`${API_URL}/api/requests/${id}`);
+export async function getRequestLogDetails(id: string, getToken?: TokenGetter): Promise<RequestLogDetails> {
+  const response = await request(`${API_URL}/api/requests/${id}`, {}, getToken);
   if (!response.ok) {
     throw new Error("Failed to fetch request log details");
   }
@@ -116,7 +126,7 @@ export async function getRequestLogDetails(id: string): Promise<RequestLogDetail
 }
 
 // Replay a request
-export async function replayRequest(id: string): Promise<{
+export async function replayRequest(id: string, getToken?: TokenGetter): Promise<{
   success: boolean;
   message: string;
   request: {
@@ -126,9 +136,9 @@ export async function replayRequest(id: string): Promise<{
     body?: string;
   };
 }> {
-  const response = await fetch(`${API_URL}/api/requests/${id}/replay`, {
+  const response = await request(`${API_URL}/api/requests/${id}/replay`, {
     method: "POST",
-  });
+  }, getToken);
   if (!response.ok) {
     throw new Error("Failed to replay request");
   }

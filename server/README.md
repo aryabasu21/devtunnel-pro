@@ -53,6 +53,10 @@ The authentication middleware is in `src/middleware/auth.ts`. It validates the
 signature, issuer, audience, expiry, and subject before attaching an identity to the
 Express request.
 
+Support attachments are uploaded to Cloudinary and only their metadata and secure
+URLs are stored in MongoDB. Set the `CLOUDINARY_*` variables before accepting file
+uploads in production.
+
 Redis presence records expire automatically if an instance stops refreshing them.
 When `REDIS_URL` is configured, HTTP rate limits also use Redis so limits are
 shared across Railway replicas.

@@ -3,6 +3,7 @@ import multer from "multer";
 import { SupportTicket } from "../models/SupportTicket";
 import { sendTicketNotification } from "../services/emailService";
 import { authenticate, requireRole } from "../middleware/auth";
+import { uploadAttachments } from "../services/cloudinaryService";
 
 const router = Router();
 
@@ -64,15 +65,7 @@ router.post(
 
       // Process attachments
       const files = req.files as Express.Multer.File[];
-      const attachments = files
-        ? files.map((file) => ({
-            filename: `${Date.now()}-${file.originalname}`,
-            originalName: file.originalname,
-            mimetype: file.mimetype,
-            size: file.size,
-            data: file.buffer,
-          }))
-        : [];
+      const attachments = files ? await uploadAttachments(files) : [];
 
       // Generate unique 8-digit ticketId
 
@@ -118,6 +111,7 @@ router.post(
           originalName: a.originalName,
           mimetype: a.mimetype,
           size: a.size,
+          secureUrl: a.secureUrl,
         })),
       }).catch((err) =>
         console.error("[Support] Email notification failed:", err),
@@ -155,7 +149,7 @@ router.get("/", async (req: Request, res: Response) => {
     if (email) filter.email = email;
 
     const tickets = await SupportTicket.find(filter)
-      .select("-attachments.data") // Exclude file data from listing
+      .select("-attachments.data")
       .sort({ createdAt: -1 })
       .skip(Number(offset))
       .limit(Number(limit));
@@ -204,6 +198,7 @@ router.get("/:id", async (req: Request, res: Response) => {
         originalName: a.originalName,
         mimetype: a.mimetype,
         size: a.size,
+        secureUrl: a.secureUrl,
       })),
       status: ticket.status,
       createdAt: ticket.createdAt,
@@ -233,13 +228,11 @@ router.get("/:id/attachment/:filename", async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Attachment not found" });
     }
 
-    res.set({
-      "Content-Type": attachment.mimetype,
-      "Content-Disposition": `inline; filename="${attachment.originalName}"`,
-      "Content-Length": attachment.size,
-    });
+    if (!attachment.secureUrl) {
+      return res.status(410).json({ error: "Attachment storage is unavailable" });
+    }
 
-    res.send(attachment.data);
+    res.redirect(302, attachment.secureUrl);
   } catch (error: any) {
     console.error("[Support] Error downloading attachment:", error.message);
     res.status(500).json({ error: "Failed to download attachment" });

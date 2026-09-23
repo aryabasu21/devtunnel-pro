@@ -18,6 +18,7 @@ export interface TicketEmailData {
     originalName: string;
     mimetype: string;
     size: number;
+    secureUrl?: string;
   }[];
 }
 
@@ -44,7 +45,7 @@ export async function sendTicketNotification(
     data.attachments
       ?.map((a, i) => {
         const sizeKB = Math.round(a.size / 1024);
-        const viewUrl = `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
+        const viewUrl = a.secureUrl || `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
         return `  ${i + 1}. ${a.originalName} (${sizeKB} KB) - ${a.mimetype}\n     View: ${viewUrl}`;
       })
       .join("\n") || "  None";
@@ -53,7 +54,7 @@ export async function sendTicketNotification(
     data.attachments
       ?.map((a) => {
         const sizeKB = Math.round(a.size / 1024);
-        const viewUrl = `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
+        const viewUrl = a.secureUrl || `${apiBaseUrl}/api/support/${data.ticketId}/attachment/${a.filename}`;
         const isImage = a.mimetype.startsWith("image/");
         return `
       <tr>
