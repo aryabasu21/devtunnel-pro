@@ -3,6 +3,8 @@ import { WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { TunnelManager, Tunnel } from "./tunnelManager";
 import { RequestLog } from "./models/RequestLog";
+import type { GatewayRequest } from "./services/gatewayRelay";
+import { instanceId } from "./services/redisPresence";
 
 interface PendingRequest {
   resolve: (response: ForwardedResponse) => void;
@@ -117,6 +119,65 @@ export class RequestForwarder {
 
         reject(error);
       }
+    });
+  }
+
+  async forwardRemote(
+    tunnel: Pick<Tunnel, "id" | "name" | "deviceId" | "localPort">,
+    req: Request,
+    send: (request: GatewayRequest) => Promise<ForwardedResponse>,
+  ): Promise<ForwardedResponse> {
+    const startTime = Date.now();
+    const requestId = uuidv4();
+    const logData = {
+      tunnelId: tunnel.id,
+      tunnelName: tunnel.name,
+      deviceId: tunnel.deviceId,
+      method: req.method,
+      path: req.originalUrl,
+      query: req.query || {},
+      headers: this.sanitizeHeaders(req.headers),
+      requestBody: this.serializeBody(req.body) || undefined,
+      userAgent: req.headers["user-agent"],
+      ip: req.ip || req.socket.remoteAddress || "unknown",
+    };
+    const headers = this.filterHeaders(req.headers);
+    headers["host"] = `localhost:${tunnel.localPort}`;
+    headers["origin"] = `http://localhost:${tunnel.localPort}`;
+    headers["referer"] = `http://localhost:${tunnel.localPort}`;
+    headers["x-forwarded-host"] = req.headers.host || "";
+    headers["x-forwarded-proto"] = "https";
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.pendingRequests.delete(requestId);
+        this.saveRequestLog(logData, 504, {}, "Request timeout", Date.now() - startTime);
+        reject(new Error("Request timeout"));
+      }, this.REQUEST_TIMEOUT);
+      this.pendingRequests.set(requestId, {
+        resolve,
+        reject,
+        timeout,
+        startTime,
+        logData,
+      });
+
+      void send({
+        requestId,
+        originInstanceId: instanceId,
+        tunnelId: tunnel.id,
+        method: req.method,
+        path: req.originalUrl,
+        headers,
+        body: this.serializeBody(req.body),
+      }).then((response) => {
+        this.handleResponse(requestId, response, tunnel.id);
+      }).catch((error: unknown) => {
+        clearTimeout(timeout);
+        this.pendingRequests.delete(requestId);
+        this.saveRequestLog(logData, 502, {}, "Remote gateway connection failed", Date.now() - startTime);
+        reject(error instanceof Error ? error : new Error("Remote gateway connection failed"));
+      });
     });
   }
 

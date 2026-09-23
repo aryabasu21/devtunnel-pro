@@ -1,16 +1,16 @@
 import Redis from "ioredis";
 import { randomUUID } from "crypto";
 
-const redisUrl = process.env.REDIS_URL;
+export const redisConnectionUrl = process.env.REDIS_URL;
 const requireRedis = process.env.REQUIRE_REDIS === "true";
 const presenceTtlSeconds = 45;
 const tunnelLimit = 3;
 const tunnelSlotTtlSeconds = 24 * 60 * 60;
 
 export const instanceId = process.env.INSTANCE_ID || randomUUID();
-export const redisEnabled = Boolean(redisUrl);
+export const redisEnabled = Boolean(redisConnectionUrl);
 
-const redis = redisUrl ? new Redis(redisUrl, { lazyConnect: true }) : null;
+const redis = redisConnectionUrl ? new Redis(redisConnectionUrl, { lazyConnect: true }) : null;
 
 if (redis) {
   redis.on("error", (error) => {

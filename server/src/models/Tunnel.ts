@@ -14,6 +14,7 @@ export interface ITunnel extends Document {
   deviceId: string;
   ownerSubject?: string;
   localPort: number;
+  passwordProtected: boolean;
   status: TunnelRecordStatus;
   createdAt: Date;
   lastSeenAt: Date;
@@ -28,6 +29,7 @@ const TunnelSchema = new Schema<ITunnel>(
     deviceId: { type: String, required: true, index: true },
     ownerSubject: { type: String, index: true },
     localPort: { type: Number, required: true, min: 1, max: 65535 },
+    passwordProtected: { type: Boolean, required: true, default: false },
     status: {
       type: String,
       enum: ["pending", "live", "disconnected", "expired", "stopped"],

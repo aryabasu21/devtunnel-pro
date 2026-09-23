@@ -20,6 +20,7 @@ import {
   removePresence,
   startPresenceHeartbeat,
 } from "./services/redisPresence";
+import { gatewayRelay, type GatewayRequest } from "./services/gatewayRelay";
 import supportRoutes from "./routes/support";
 import requestRoutes from "./routes/requests";
 import { generateSubdomain, isValidSubdomain } from "./utils/subdomain";
@@ -58,6 +59,39 @@ const requestForwarder = new RequestForwarder(tunnelManager);
 const presenceHeartbeat = startPresenceHeartbeat(() =>
   tunnelManager.getAllTunnels().map((tunnel) => tunnel.id),
 );
+
+void gatewayRelay.start(async (request: GatewayRequest, sendToTunnel) => {
+  const tunnel = tunnelManager.getTunnel(request.tunnelId);
+  if (!tunnel || tunnel.status !== "live" || tunnel.ws.readyState !== WebSocket.OPEN) {
+    return {
+      status: 502,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ error: "Local tunnel connection unavailable" }),
+    };
+  }
+
+  const responsePromise = sendToTunnel(request);
+  try {
+    tunnel.ws.send(JSON.stringify({
+      type: "request",
+      requestId: request.requestId,
+      method: request.method,
+      path: request.path,
+      headers: request.headers,
+      body: request.body,
+    }));
+  } catch {
+    return {
+      status: 502,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ error: "Local tunnel connection failed" }),
+    };
+  }
+
+  return responsePromise;
+}).catch((error) => {
+  console.error("Gateway relay startup failed:", error);
+});
 
 // Middleware
 const allowedOrigins = [
@@ -245,6 +279,20 @@ app.use("/api/support", supportLimiter, supportRoutes);
 // Request logging routes
 app.use("/api/requests", apiLimiter, requestRoutes);
 
+function sendForwardedResponse(res: Response, response: Awaited<ReturnType<RequestForwarder["forward"]>>): void {
+  res.status(response.status);
+  Object.entries(response.headers).forEach(([key, value]) => {
+    const lowerKey = key.toLowerCase();
+    if (
+      value &&
+      !["transfer-encoding", "content-length", "connection", "content-encoding"].includes(lowerKey)
+    ) {
+      res.setHeader(key, value);
+    }
+  });
+  res.end(response.body);
+}
+
 // Wildcard route - forward to tunnel
 app.all("*", async (req: Request, res: Response) => {
   // Skip WebSocket upgrade path
@@ -287,11 +335,34 @@ app.all("*", async (req: Request, res: Response) => {
     if (persistedTunnel) {
       const presence = await getPresence(persistedTunnel.tunnelId);
       if (presence && presence.instanceId !== instanceId) {
-        res.setHeader("Retry-After", "5");
-        return res.status(503).json({
-          error: "tunnel_gateway_unavailable",
-          message: "This tunnel is connected to another gateway instance.",
-        });
+        if (persistedTunnel.passwordProtected) {
+          return res.status(503).json({
+            error: "password_protected_gateway_unavailable",
+            message: "Password-protected tunnels require gateway-local routing.",
+          });
+        }
+
+        try {
+          const response = await requestForwarder.forwardRemote(
+            {
+              id: persistedTunnel.tunnelId,
+              name: persistedTunnel.name,
+              deviceId: persistedTunnel.deviceId,
+              localPort: persistedTunnel.localPort,
+            },
+            req,
+            (request) => gatewayRelay.requestRemote(presence.instanceId, request),
+          );
+          sendForwardedResponse(res, response);
+          return;
+        } catch (error) {
+          console.error("Remote tunnel forwarding failed:", error);
+          res.setHeader("Retry-After", "5");
+          return res.status(503).json({
+            error: "tunnel_gateway_unavailable",
+            message: "This tunnel is temporarily unavailable through the gateway.",
+          });
+        }
       }
     }
 
@@ -313,26 +384,7 @@ app.all("*", async (req: Request, res: Response) => {
   // Forward request to CLI client
   try {
     const response = await requestForwarder.forward(tunnel, req);
-    res.status(response.status);
-
-    // Filter headers that Express should set automatically
-    Object.entries(response.headers).forEach(([key, value]) => {
-      const lowerKey = key.toLowerCase();
-      if (
-        value &&
-        ![
-          "transfer-encoding",
-          "content-length",
-          "connection",
-          "content-encoding",
-        ].includes(lowerKey)
-      ) {
-        res.setHeader(key, value);
-      }
-    });
-
-    // Send response body
-    res.end(response.body);
+    sendForwardedResponse(res, response);
   } catch (error: any) {
     console.error("Forward error:", error.message);
     res.status(502).json({
@@ -471,6 +523,9 @@ function handleClientMessage(
 
     case "response": {
       const { requestId, status, headers, body } = message;
+      if (gatewayRelay.handleTunnelResponse(requestId, { status, headers, body })) {
+        return;
+      }
       const connectionTunnel = tunnelManager.getTunnelByWebSocket(ws);
       if (!connectionTunnel) {
         ws.send(JSON.stringify({ type: "error", message: "Tunnel is not registered" }));
@@ -623,6 +678,7 @@ async function registerTunnel(
             deviceId,
             ownerSubject,
             localPort,
+            passwordProtected: Boolean(password),
             status: "live",
             lastSeenAt: new Date(),
             expiresAt: expiresAt ? new Date(expiresAt) : null,
@@ -700,6 +756,7 @@ process.on("SIGTERM", () => {
   wss.close();
   httpServer.close(() => {
     void closeRedis().finally(() => {
+      void gatewayRelay.close();
       console.log("Server closed");
       process.exit(0);
     });
