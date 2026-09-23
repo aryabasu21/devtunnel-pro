@@ -635,7 +635,11 @@ httpServer.listen({ port: PORT, host: "0.0.0.0" }, () => {
 
 // Cleanup expired tunnels periodically
 setInterval(() => {
-  tunnelManager.cleanupExpired();
+  const expiredTunnels = tunnelManager.cleanupExpired();
+  expiredTunnels.forEach((tunnel) => {
+    void updateTunnelRecord(tunnel.id, "expired");
+    void removePresence(tunnel.id);
+  });
 }, 60000);
 
 // Graceful shutdown

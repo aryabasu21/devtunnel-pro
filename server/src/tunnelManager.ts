@@ -97,13 +97,17 @@ export class TunnelManager {
     return Array.from(this.tunnels.values());
   }
 
-  cleanupExpired(): void {
+  cleanupExpired(): Tunnel[] {
     const now = new Date();
+    const expiredTunnels: Tunnel[] = [];
     for (const tunnel of this.tunnels.values()) {
       if (tunnel.expiresAt && new Date(tunnel.expiresAt) < now) {
         console.log(`Tunnel expired: ${tunnel.name}`);
+        expiredTunnels.push(tunnel);
         this.removeTunnel(tunnel.id);
       }
     }
+
+    return expiredTunnels;
   }
 }
