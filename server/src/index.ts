@@ -410,8 +410,8 @@ httpServer.listen({ port: PORT, host: "0.0.0.0" }, () => {
 ╔═══════════════════════════════════════════════════════╗
 ║           DevPortal Server v1.0.2                     ║
 ╠═══════════════════════════════════════════════════════╣
-║  HTTP:      http://localhost:${String(PORT).padEnd(25)}║
-║  WebSocket: ws://localhost:${PORT}${WS_PATH.padEnd(21)}║
+║  HTTP:      http://${DOMAIN.padEnd(42)}║
+║  WebSocket: ws://${DOMAIN.padEnd(42)}${WS_PATH.padEnd(21)}║
 ║  Domain:    ${DOMAIN.padEnd(42)}║
 ╚═══════════════════════════════════════════════════════╝
   `);
