@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { createServer, IncomingMessage } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import cors from "cors";
+import helmet from "helmet";
 import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { TunnelManager } from "./tunnelManager";
@@ -36,12 +37,14 @@ import {
   getBearerTokenFromHeaders,
   verifyAccessToken,
 } from "./middleware/auth";
+import { config } from "./config";
 
 const app = express();
-const PORT = process.env.PORT || 3001;
-const DOMAIN = process.env.DOMAIN || "localhost:3001";
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/devportal";
+app.set("trust proxy", 1);
+app.use(helmet());
+const PORT = config.port;
+const DOMAIN = config.domain;
+const MONGODB_URI = config.mongodbUri;
 const WS_PATH = "/ws";
 
 // Connect to MongoDB
@@ -375,7 +378,7 @@ app.all("*", async (req: Request, res: Response) => {
 
   // Check password protection
   if (tunnel.password) {
-    const authHeader = req.headers["x-tunnel-password"] || req.query.password;
+    const authHeader = req.headers["x-tunnel-password"];
     if (authHeader !== tunnel.password) {
       return res.status(401).json({ error: "Password required" });
     }
