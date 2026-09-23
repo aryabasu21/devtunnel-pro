@@ -93,6 +93,24 @@ export async function removePresence(tunnelId: string): Promise<void> {
   await redis.del(presenceKey(tunnelId));
 }
 
+export async function getPresence(tunnelId: string): Promise<{
+  instanceId: string;
+  deviceId: string;
+  name: string;
+} | null> {
+  if (!redis) return null;
+  if (redis.status === "wait") await redis.connect();
+
+  const values = await redis.hgetall(presenceKey(tunnelId));
+  if (!values.instanceId || !values.deviceId || !values.name) return null;
+
+  return {
+    instanceId: values.instanceId,
+    deviceId: values.deviceId,
+    name: values.name,
+  };
+}
+
 export async function reserveTunnelSlot(ip: string): Promise<boolean> {
   if (!redis) {
     if (requireRedis) throw new Error("Redis is required but REDIS_URL is not configured");

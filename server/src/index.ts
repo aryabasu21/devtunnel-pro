@@ -11,6 +11,8 @@ import { TunnelRecord, type TunnelRecordStatus } from "./models/Tunnel";
 import {
   checkRedisReadiness,
   closeRedis,
+  getPresence,
+  instanceId,
   redisEnabled,
   registerPresence,
   releaseTunnelSlot,
@@ -127,7 +129,11 @@ app.use(strictLimiter); // Apply basic rate limiting to all routes
 
 // Health check
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", tunnels: tunnelManager.getActiveTunnelCount() });
+  res.json({
+    status: "ok",
+    instanceId,
+    tunnels: tunnelManager.getActiveTunnelCount(),
+  });
 });
 
 app.get("/ready", (req, res) => {
@@ -274,6 +280,21 @@ app.all("*", async (req: Request, res: Response) => {
   const tunnel = tunnelManager.getTunnelByName(subdomain);
 
   if (!tunnel || tunnel.status !== "live") {
+    const persistedTunnel = await TunnelRecord.findOne({
+      name: subdomain,
+      status: "live",
+    }).lean();
+    if (persistedTunnel) {
+      const presence = await getPresence(persistedTunnel.tunnelId);
+      if (presence && presence.instanceId !== instanceId) {
+        res.setHeader("Retry-After", "5");
+        return res.status(503).json({
+          error: "tunnel_gateway_unavailable",
+          message: "This tunnel is connected to another gateway instance.",
+        });
+      }
+    }
+
     return res.status(404).json({
       error: "Tunnel not found",
       message: `No active tunnel found for ${subdomain}`,

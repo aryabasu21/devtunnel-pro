@@ -57,8 +57,10 @@ Redis presence records expire automatically if an instance stops refreshing them
 When `REDIS_URL` is configured, HTTP rate limits also use Redis so limits are
 shared across Railway replicas.
 The live WebSocket remains process-local until the gateway routing phase is
-implemented, so do not increase Railway replicas until Redis-backed gateway
-routing is enabled and verified.
+implemented. If a request reaches the wrong replica, the server returns
+`503 tunnel_gateway_unavailable` with a retry hint instead of forwarding to the
+wrong tunnel or returning a misleading `404`. Do not increase Railway replicas
+until a WebSocket-aware gateway is enabled and verified.
 
 ## API Endpoints
 
