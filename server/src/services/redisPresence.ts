@@ -4,6 +4,8 @@ import { randomUUID } from "crypto";
 const redisUrl = process.env.REDIS_URL;
 const requireRedis = process.env.REQUIRE_REDIS === "true";
 const presenceTtlSeconds = 45;
+const tunnelLimit = 3;
+const tunnelSlotTtlSeconds = 24 * 60 * 60;
 
 export const instanceId = process.env.INSTANCE_ID || randomUUID();
 export const redisEnabled = Boolean(redisUrl);
@@ -18,6 +20,10 @@ if (redis) {
 
 function presenceKey(tunnelId: string): string {
   return `devportal:tunnel:${tunnelId}:presence`;
+}
+
+function tunnelSlotKey(ip: string): string {
+  return `devportal:limits:tunnels:${ip}`;
 }
 
 export async function checkRedisReadiness(): Promise<boolean> {
@@ -85,6 +91,34 @@ export async function removePresence(tunnelId: string): Promise<void> {
   if (!redis) return;
   if (redis.status === "wait") await redis.connect();
   await redis.del(presenceKey(tunnelId));
+}
+
+export async function reserveTunnelSlot(ip: string): Promise<boolean> {
+  if (!redis) {
+    if (requireRedis) throw new Error("Redis is required but REDIS_URL is not configured");
+    return true;
+  }
+
+  if (redis.status === "wait") await redis.connect();
+  const key = tunnelSlotKey(ip);
+  const count = Number(await redis.incr(key));
+  if (count === 1) await redis.expire(key, tunnelSlotTtlSeconds);
+
+  if (count > tunnelLimit) {
+    await redis.decr(key);
+    return false;
+  }
+
+  return true;
+}
+
+export async function releaseTunnelSlot(ip: string): Promise<void> {
+  if (!redis) return;
+  if (redis.status === "wait") await redis.connect();
+
+  const key = tunnelSlotKey(ip);
+  const count = Number(await redis.decr(key));
+  if (count <= 0) await redis.del(key);
 }
 
 export function startPresenceHeartbeat(

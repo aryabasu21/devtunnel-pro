@@ -5,6 +5,7 @@ export interface Tunnel {
   name: string;
   url: string;
   deviceId: string;
+  clientIp: string;
   localPort: number;
   password: string | null;
   status: 'live' | 'stopped';

@@ -13,6 +13,8 @@ import {
   closeRedis,
   redisEnabled,
   registerPresence,
+  releaseTunnelSlot,
+  reserveTunnelSlot,
   removePresence,
   startPresenceHeartbeat,
 } from "./services/redisPresence";
@@ -390,6 +392,7 @@ wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
       requestForwarder.rejectPendingForTunnel(tunnel.id);
       void updateTunnelRecord(tunnel.id, "disconnected");
       void removePresence(tunnel.id);
+      void releaseTunnelSlot(clientIP);
       tunnelTracker.removeTunnel(clientIP);
     });
   });
@@ -476,6 +479,7 @@ function handleClientMessage(
 
       tunnelManager.removeTunnel(tunnelId);
       void updateTunnelRecord(tunnelId, "stopped");
+      void releaseTunnelSlot(tunnel.clientIp);
       ws.send(JSON.stringify({ type: "stopped", tunnelId }));
       return;
     }
@@ -493,8 +497,23 @@ async function registerTunnel(
 ): Promise<void> {
   const { deviceId, localPort, subdomain, password, demo } = message;
 
+  let distributedSlotReserved = false;
+  try {
+    distributedSlotReserved = await reserveTunnelSlot(clientIP);
+  } catch (error) {
+    console.error("Failed to reserve distributed tunnel slot:", error);
+    ws.send(JSON.stringify({ type: "error", message: "Tunnel limits are temporarily unavailable" }));
+    return;
+  }
+
+  if (!distributedSlotReserved) {
+    ws.send(JSON.stringify({ type: "error", message: "Tunnel limit exceeded" }));
+    return;
+  }
+
       // Check tunnel limits per IP
       if (!tunnelTracker.canCreateTunnel(clientIP)) {
+        await releaseTunnelSlot(clientIP);
         ws.send(
           JSON.stringify({
             type: "error",
@@ -510,6 +529,7 @@ async function registerTunnel(
       if (subdomain) {
         // Validate custom subdomain
         if (!isValidSubdomain(subdomain)) {
+          await releaseTunnelSlot(clientIP);
           ws.send(
             JSON.stringify({
               type: "error",
@@ -521,6 +541,7 @@ async function registerTunnel(
 
         // Check if subdomain is already taken
         if (tunnelManager.getTunnelByName(subdomain)) {
+          await releaseTunnelSlot(clientIP);
           ws.send(
             JSON.stringify({
               type: "error",
@@ -553,6 +574,7 @@ async function registerTunnel(
         name,
         url,
         deviceId,
+        clientIp: clientIP,
         localPort,
         password: password || null,
         status: "live",
@@ -565,6 +587,7 @@ async function registerTunnel(
         await registerPresence({ tunnelId: id, deviceId, name });
       } catch (error) {
         tunnelManager.removeTunnel(id, false);
+        await releaseTunnelSlot(clientIP);
         ws.send(JSON.stringify({ type: "error", message: "Shared tunnel coordination is unavailable" }));
         console.error("Failed to register tunnel presence:", error);
         return;
@@ -639,6 +662,7 @@ setInterval(() => {
   expiredTunnels.forEach((tunnel) => {
     void updateTunnelRecord(tunnel.id, "expired");
     void removePresence(tunnel.id);
+    void releaseTunnelSlot(tunnel.clientIp);
   });
 }, 60000);
 
@@ -649,6 +673,7 @@ process.on("SIGTERM", () => {
   requestForwarder.rejectAllPending();
   tunnelManager.getAllTunnels().forEach((tunnel) => {
     void removePresence(tunnel.id);
+    void releaseTunnelSlot(tunnel.clientIp);
     tunnelManager.removeTunnel(tunnel.id, false);
   });
   wss.close();
