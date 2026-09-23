@@ -46,6 +46,8 @@ jobs:
         run: npm ci
       - name: Build server
         run: npm run build
+      - name: Run server tests
+        run: npm run test
 
   cli:
     name: CLI build
