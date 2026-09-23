@@ -9,6 +9,7 @@ export interface AuthenticatedIdentity {
   claims: JWTPayload;
 }
 
+// Express module augmentation requires a namespace declaration.
 declare global {
   namespace Express {
     interface Request {

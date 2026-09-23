@@ -26,8 +26,10 @@ export async function portCommand(action?: string, port?: number): Promise<void>
       break;
 
     case 'scan':
-      const startPort = port || 3000;
-      await scanPorts(startPort, startPort + 9);
+      {
+        const startPort = port || 3000;
+        await scanPorts(startPort, startPort + 9);
+      }
       break;
 
     case 'list':
