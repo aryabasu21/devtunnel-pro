@@ -29,10 +29,10 @@ export const tunnelLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request) => {
-    // Use IP address for rate limiting
-    return req.ip || req.socket.remoteAddress || "unknown";
-  },
+  // keyGenerator: (req: Request) => {
+  //   // Use IP address for rate limiting
+  //   return req.ip || req.socket.remoteAddress || "unknown";
+  // },
 });
 
 // Support form rate limits
