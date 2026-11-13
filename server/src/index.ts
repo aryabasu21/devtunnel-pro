@@ -22,6 +22,8 @@ import { generateSubdomain, isValidSubdomain } from "./utils/subdomain";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const PORT = Number(process.env.PORT) || 3001;
 
 const DOMAIN = process.env.DOMAIN || "localhost:3001";
