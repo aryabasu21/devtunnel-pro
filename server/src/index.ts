@@ -68,7 +68,9 @@ const allowedOrigins = [
   "http://localhost:8080",
 
   // Allow tunnel subdomains
-  /^https:\/\/[a-z0-9-]+\.tunnel\.stylnode\.in$/,
+  new RegExp(
+    `^https://[a-z0-9-]+\\.${DOMAIN.split(":")[0].replace(/\./g, "\\.")}$`,
+  ),
 ];
 
 app.use(
@@ -239,10 +241,12 @@ app.all("*", async (req: Request, res: Response) => {
   // Base domain
   // --------------------------------------------------------
 
+  const baseDomain = DOMAIN.split(":")[0];
+  const hostName = host.split(":")[0];
   const isBaseDomain =
-    hostParts[0] === "tunnel" ||
-    host.startsWith("localhost") ||
-    host.includes("onrender.com") ||
+    hostName === baseDomain ||
+    hostName.startsWith("localhost") ||
+    hostName.includes("onrender.com") ||
     hostParts.length <= 2;
 
   if (isBaseDomain) {
