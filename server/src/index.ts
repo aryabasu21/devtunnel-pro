@@ -409,7 +409,7 @@ httpServer.on("upgrade", (req: IncomingMessage, socket, head) => {
     // ======================================================
 
     const isCliHost =
-      host.startsWith("tunnel.stylnode.in") ||
+      host.startsWith("tunnl.stylnode.in") ||
       host.startsWith("localhost") ||
       host.includes("onrender.com");
 
@@ -440,7 +440,7 @@ httpServer.on("upgrade", (req: IncomingMessage, socket, head) => {
 
     const isTunnelHost =
       hostParts.length >= 4 &&
-      hostParts.slice(1).join(".") === "tunnel.stylnode.in";
+      hostParts.slice(1).join(".") === "tunnl.stylnode.in";
 
     if (!isTunnelHost) {
       socket.write(

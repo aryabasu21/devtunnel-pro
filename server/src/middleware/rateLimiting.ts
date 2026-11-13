@@ -63,7 +63,7 @@ export const strictLimiter = rateLimit({
   skip: (req: Request) => {
     const host = req.headers.host || "";
     const isTunnelSubdomain =
-      host.endsWith(".tunnel.stylnode.in") && host !== "tunnel.stylnode.in";
+      host.endsWith(".tunnl.stylnode.in") && host !== "tunnl.stylnode.in";
     const isLocalTunnel = /\.localhost:\d+$/.test(host);
 
     return isTunnelSubdomain || isLocalTunnel;

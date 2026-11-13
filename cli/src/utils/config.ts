@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { getConfigDir } from './device';
+import * as fs from "fs";
+import * as path from "path";
+import { getConfigDir } from "./device";
 
 export interface Config {
   serverUrl: string;
@@ -8,12 +8,12 @@ export interface Config {
   frontendUrl: string;
 }
 
-const CONFIG_FILE = path.join(getConfigDir(), 'config.json');
+const CONFIG_FILE = path.join(getConfigDir(), "config.json");
 
 const DEFAULT_CONFIG: Config = {
-  serverUrl: 'https://tunnel.stylnode.in',
-  wsUrl: 'wss://tunnel.stylnode.in/ws',
-  frontendUrl: 'https://devportal.stylnode.in',
+  serverUrl: "https://tunnl.stylnode.in",
+  wsUrl: "wss://tunnl.stylnode.in/ws",
+  frontendUrl: "https://devportal.stylnode.in",
 };
 
 export function getConfig(): Config {
@@ -23,7 +23,7 @@ export function getConfig(): Config {
   }
 
   try {
-    const config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+    const config = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"));
     return { ...DEFAULT_CONFIG, ...config };
   } catch {
     return DEFAULT_CONFIG;
@@ -32,7 +32,7 @@ export function getConfig(): Config {
 
 export function saveConfig(config: Partial<Config>): void {
   const currentConfig = fs.existsSync(CONFIG_FILE)
-    ? JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'))
+    ? JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"))
     : {};
 
   const newConfig = { ...currentConfig, ...config };
@@ -41,11 +41,11 @@ export function saveConfig(config: Partial<Config>): void {
 
 export function setServerUrl(url: string): void {
   // Derive WebSocket URL from HTTP URL (same host, /ws path)
-  const wsUrl = url.replace('https://', 'wss://').replace('http://', 'ws://');
-  const wsWithPath = wsUrl.replace(/\/$/, '') + '/ws';
+  const wsUrl = url.replace("https://", "wss://").replace("http://", "ws://");
+  const wsWithPath = wsUrl.replace(/\/$/, "") + "/ws";
 
   saveConfig({
-    serverUrl: url.replace(/\/$/, ''),
+    serverUrl: url.replace(/\/$/, ""),
     wsUrl: wsWithPath,
   });
 }

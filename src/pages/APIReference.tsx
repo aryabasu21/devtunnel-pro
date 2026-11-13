@@ -23,12 +23,12 @@ const APIReference = () => {
       method: "GET",
       path: "/api/devices/{deviceId}/tunnels",
       description: "Get all active tunnels for a device",
-      example: `curl -X GET https://tunnel.stylnode.in/api/devices/dev_abc123_def456/tunnels`,
+      example: `curl -X GET https://tunnl.stylnode.in.in/api/devices/dev_abc123_def456/tunnels`,
       response: `[
   {
     "id": "t-abc123",
     "name": "happy-tiger-a1b2c3d4",
-    "url": "https://happy-tiger-a1b2c3d4.tunnel.stylnode.in",
+    "url": "https://happy-tiger-a1b2c3d4.tunnl.stylnode.in.in",
     "status": "live",
     "createdAt": "2026-03-18T10:30:00Z"
   }
@@ -38,7 +38,7 @@ const APIReference = () => {
       method: "GET",
       path: "/health",
       description: "Check server status and active tunnels count",
-      example: `curl -X GET https://tunnel.stylnode.in/health`,
+      example: `curl -X GET https://tunnl.stylnode.in/health`,
       response: `{
   "status": "ok",
   "tunnels": 42
@@ -48,7 +48,7 @@ const APIReference = () => {
       method: "POST",
       path: "/api/tunnels/{id}/stop",
       description: "Stop a specific tunnel",
-      example: `curl -X POST https://tunnel.stylnode.in/api/tunnels/t-abc123/stop`,
+      example: `curl -X POST https://tunnl.stylnode.in.in/api/tunnels/t-abc123/stop`,
       response: `{
   "success": true,
   "message": "Tunnel stopped successfully"
@@ -58,7 +58,7 @@ const APIReference = () => {
       method: "GET",
       path: "/api/requests",
       description: "Get request logs (with optional filtering)",
-      example: `curl -X GET "https://tunnel.stylnode.in/api/requests?deviceId=dev_abc123&limit=10"`,
+      example: `curl -X GET "https://tunnl.stylnode.in.in/api/requests?deviceId=dev_abc123&limit=10"`,
       response: `{
   "logs": [
     {
@@ -334,7 +334,7 @@ await tunnel.close();`}
                   code={`# Start tunnel for webhook testing
 $ devportal-tunnel start 3000
 
-Tunnel active → https://cosmic-river-847.tunnel.stylnode.in
+Tunnel active → https://cosmic-river-847.tunnl.stylnode.in.in
 Local server  → http://localhost:3000
 
 # Add your tunnel URL to Stripe/GitHub/Slack dashboard
@@ -389,7 +389,7 @@ $ devportal
                 <div>
                   <h4 className="text-base font-semibold mb-2">Base URL</h4>
                   <code className="text-base bg-background border border-border rounded px-3 py-2 block">
-                    https://tunnel.stylnode.in
+                    https://tunnl.stylnode.in
                   </code>
                 </div>
 

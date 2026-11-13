@@ -31,6 +31,6 @@
         <text x="30" y="56" fill="#C4B5FD" font-size="24" font-family="Consolas, Menlo, monospace">$ devportal-tunnel
             start 3000 --subdomain myapi</text>
         <text x="30" y="102" fill="#34D399" font-size="24" font-family="Consolas, Menlo, monospace">✓
-            https://myapi.tunnel.stylnode.in</text>
+            https://myapi.tunnl.stylnode.in.in</text>
     </g>
 </svg>

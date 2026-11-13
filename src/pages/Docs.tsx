@@ -242,7 +242,10 @@ const Docs = () => {
           name="description"
           content="Learn how to use DevPortal to share your localhost, inspect traffic, replay requests, and debug APIs with comprehensive guides and examples."
         />
-        <meta name="keywords" content="DevPortal documentation, tunnel setup, API testing, request inspection" />
+        <meta
+          name="keywords"
+          content="DevPortal documentation, tunnel setup, API testing, request inspection"
+        />
         <link rel="canonical" href="https://devportal.stylnode.in/docs" />
       </Helmet>
       <Navbar />
@@ -352,7 +355,7 @@ $ npx devportal-tunnel start 3000`}
                     <TerminalBlock
                       code={`$ devportal-tunnel start 3000
 
-Tunnel active → https://cosmic-river-847.tunnel.stylnode.in
+Tunnel active → https://cosmic-river-847.tunnl.stylnode.in
 Local server  → http://localhost:3000
 Dashboard     → Open browser to inspect traffic`}
                     />
@@ -415,7 +418,7 @@ POST /api/webhook        200   23ms`}
                         <span>
                           Allow{" "}
                           <code className="text-cyan-300">
-                            *.tunnel.stylnode.in
+                            *.tunnl.stylnode.in
                           </code>{" "}
                           subdomains
                         </span>
@@ -433,7 +436,9 @@ POST /api/webhook        200   23ms`}
 
                       <div className="flex items-center gap-2 text-zinc-300">
                         <span className="text-red-400">✖</span>
-                        <span>Block everything else (optional for development)</span>
+                        <span>
+                          Block everything else (optional for development)
+                        </span>
                       </div>
                     </div>
 
@@ -493,13 +498,14 @@ app.use(
                       <p className="text-zinc-400">
                         ✓ The tunnel rule already allows all{" "}
                         <code className="text-cyan-300">
-                          *.tunnel.stylnode.in
+                          *.tunnl.stylnode.in
                         </code>{" "}
                         subdomains — no changes needed.
                       </p>
 
                       <p className="text-zinc-400">
-                        ✓ Postman, Insomnia, Thunder Client, and other API tools are automatically allowed via the origin check.
+                        ✓ Postman, Insomnia, Thunder Client, and other API tools
+                        are automatically allowed via the origin check.
                       </p>
                     </div>
                   </div>
@@ -513,7 +519,8 @@ app.use(
                 Test with API Tools
               </h2>
               <p className="text-muted-foreground mb-4">
-                Your tunnel URL works seamlessly with Postman, Insomnia, curl, and other API testing tools.
+                Your tunnel URL works seamlessly with Postman, Insomnia, curl,
+                and other API testing tools.
               </p>
               <div className="space-y-4">
                 <Card>
@@ -522,7 +529,8 @@ app.use(
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      <strong>Step 1:</strong> Start your tunnel and copy the URL
+                      <strong>Step 1:</strong> Start your tunnel and copy the
+                      URL
                     </p>
                     <TerminalBlock
                       title="terminal"
@@ -530,16 +538,17 @@ app.use(
 
 Tunnel established
   Local server:  http://localhost:3000
-  Public URL:    https://cosmic-river-847.tunnel.stylnode.in
+  Public URL:    https://cosmic-river-847.tunnl.stylnode.in.in
   Tunnel ID:     t-abc123`}
                     />
                     <p className="text-sm text-muted-foreground">
-                      <strong>Step 2:</strong> Open Postman and create a new request
+                      <strong>Step 2:</strong> Open Postman and create a new
+                      request
                     </p>
                     <TerminalBlock
                       title="Postman - GET Request"
                       code={`Method: GET
-URL: https://cosmic-river-847.tunnel.stylnode.in/api/users
+URL: https://cosmic-river-847.tunnl.stylnode.in.in/api/users
 
 Headers:
   Content-Type: application/json`}
@@ -550,7 +559,7 @@ Headers:
                     <TerminalBlock
                       title="Postman - POST Request"
                       code={`Method: POST
-URL: https://cosmic-river-847.tunnel.stylnode.in/api/users
+URL: https://cosmic-river-847.tunnl.stylnode.in.in/api/users
 
 Headers:
   Content-Type: application/json
@@ -562,8 +571,12 @@ Body (raw JSON):
 }`}
                     />
                     <div className="mt-3 text-xs border border-primary/20 bg-primary/5 px-3 py-3 rounded">
-                      <p className="text-green-400 font-semibold mb-2">✓ Password Protected Tunnels</p>
-                      <p className="text-muted-foreground mb-2">If your tunnel has password protection:</p>
+                      <p className="text-green-400 font-semibold mb-2">
+                        ✓ Password Protected Tunnels
+                      </p>
+                      <p className="text-muted-foreground mb-2">
+                        If your tunnel has password protection:
+                      </p>
                       <code className="bg-zinc-800 px-2 py-1 rounded text-xs">
                         Header: X-Tunnel-Password: your-password
                       </code>
@@ -579,15 +592,15 @@ Body (raw JSON):
                     <TerminalBlock
                       title="terminal"
                       code={`# GET request
-$ curl https://cosmic-river-847.tunnel.stylnode.in/api/users
+$ curl https://cosmic-river-847.tunnl.stylnode.in.in/api/users
 
 # POST request
-$ curl -X POST https://cosmic-river-847.tunnel.stylnode.in/api/users \\
+$ curl -X POST https://cosmic-river-847.tunnl.stylnode.in.in/api/users \\
   -H "Content-Type: application/json" \\
   -d '{"name":"John","email":"john@example.com"}'
 
 # With password
-$ curl https://cosmic-river-847.tunnel.stylnode.in/api/users \\
+$ curl https://cosmic-river-847.tunnl.stylnode.in.in/api/users \\
   -H "X-Tunnel-Password: secret123"`}
                     />
                   </CardContent>
@@ -602,12 +615,24 @@ $ curl https://cosmic-river-847.tunnel.stylnode.in/api/users \\
                       Your tunnel works with any HTTP client:
                     </p>
                     <div className="flex flex-wrap gap-2 text-sm">
-                      <code className="bg-zinc-800 px-3 py-2 rounded">Postman</code>
-                      <code className="bg-zinc-800 px-3 py-2 rounded">Insomnia</code>
-                      <code className="bg-zinc-800 px-3 py-2 rounded">Thunder Client</code>
-                      <code className="bg-zinc-800 px-3 py-2 rounded">curl</code>
-                      <code className="bg-zinc-800 px-3 py-2 rounded">wget</code>
-                      <code className="bg-zinc-800 px-3 py-2 rounded">fetch</code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">
+                        Postman
+                      </code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">
+                        Insomnia
+                      </code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">
+                        Thunder Client
+                      </code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">
+                        curl
+                      </code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">
+                        wget
+                      </code>
+                      <code className="bg-zinc-800 px-3 py-2 rounded">
+                        fetch
+                      </code>
                     </div>
                   </CardContent>
                 </Card>

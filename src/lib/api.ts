@@ -1,6 +1,6 @@
 // API client for DevPortal Tunnel Server
 
-const API_URL = import.meta.env.VITE_API_URL || "https://tunnel.stylnode.in";
+const API_URL = import.meta.env.VITE_API_URL || "https://tunnl.stylnode.in.in";
 
 export interface TunnelData {
   id: string;
@@ -107,7 +107,9 @@ export async function getRequestLogs(params: {
 }
 
 // Get single request log details
-export async function getRequestLogDetails(id: string): Promise<RequestLogDetails> {
+export async function getRequestLogDetails(
+  id: string,
+): Promise<RequestLogDetails> {
   const response = await fetch(`${API_URL}/api/requests/${id}`);
   if (!response.ok) {
     throw new Error("Failed to fetch request log details");

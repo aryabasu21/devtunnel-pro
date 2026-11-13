@@ -74,7 +74,7 @@ devportal-tunnel start 3000
 # Output:
 # ✓ Tunnel established
 # Local server:  http://localhost:3000
-# Public URL:    https://happy-tiger-a1b2c3d4.tunnel.stylnode.in
+# Public URL:    https://happy-tiger-a1b2c3d4.tunnl.stylnode.in.in
 # Tunnel ID:     t-abc123`,
     },
     {
@@ -89,11 +89,11 @@ devportal-tunnel start 3000
 devportal-tunnel start 4000 --subdomain myapi
 
 # Your API is now available at:
-# https://myapi.tunnel.stylnode.in
+# https://myapi.tunnl.stylnode.in.in
 
 # Test your endpoints:
-curl https://myapi.tunnel.stylnode.in/api/users
-curl -X POST https://myapi.tunnel.stylnode.in/api/login`,
+curl https://myapi.tunnl.stylnode.in.in/api/users
+curl -X POST https://myapi.tunnl.stylnode.in.in/api/login`,
     },
     {
       title: "Webhook Development",
@@ -111,8 +111,8 @@ node webhook-server.js
 devportal-tunnel start 3001 --subdomain webhooks
 
 # Use this URL in your webhook configuration:
-# https://webhooks.tunnel.stylnode.in/stripe
-# https://webhooks.tunnel.stylnode.in/github`,
+# https://webhooks.tunnl.stylnode.in.in/stripe
+# https://webhooks.tunnl.stylnode.in.in/github`,
     },
     {
       title: "Multiple Services with Port Forwarding",
@@ -135,8 +135,8 @@ devportal-tunnel start 3000
 devportal-tunnel start 4000 --forward 8080:4000
 
 # Now you have:
-# Frontend: https://tunnel1.tunnel.stylnode.in
-# API:      https://tunnel2.tunnel.stylnode.in (port 8080)`,
+# Frontend: https://tunnel1.tunnl.stylnode.in.in
+# API:      https://tunnel2.tunnl.stylnode.in.in (port 8080)`,
     },
   ];
 
@@ -159,7 +159,7 @@ jobs:
       - name: Create Tunnel
         run: |
           npx devportal-tunnel start 3000 --subdomain pr-\${{ github.event.number }}
-          echo "Preview: https://pr-\${{ github.event.number }}.tunnel.stylnode.in"`,
+          echo "Preview: https://pr-\${{ github.event.number }}.tunnl.stylnode.in.in"`,
     },
     {
       title: "Docker Integration",
@@ -186,7 +186,7 @@ npm run dev
 devportal-tunnel start 3000 --subdomain loadtest
 
 # Terminal 3: Run load test
-artillery quick --count 100 --num 10 https://loadtest.tunnel.stylnode.in
+artillery quick --count 100 --num 10 https://loadtest.tunnl.stylnode.in.in
 
 # Monitor requests in terminal 2 for real-time feedback`,
     },

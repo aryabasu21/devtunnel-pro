@@ -43,7 +43,7 @@ const ALLOWED_IMAGE_TYPES = [
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/wav", "video/webm"];
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
-const API_URL = import.meta.env.VITE_API_URL || "https://tunnel.stylnode.in";
+const API_URL = import.meta.env.VITE_API_URL || "https://tunnl.stylnode.in.in";
 
 const Support = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);

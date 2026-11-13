@@ -37,7 +37,7 @@ export async function sendTicketNotification(
     return false;
   }
 
-  const apiBaseUrl = process.env.API_BASE_URL || "https://tunnel.stylnode.in";
+  const apiBaseUrl = process.env.API_BASE_URL || "https://tunnl.stylnode.in";
 
   // Format attachments list
   const attachmentsList =
