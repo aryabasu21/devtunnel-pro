@@ -18,7 +18,7 @@
    - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm start`
 5. Add Environment Variable:
-   - `DOMAIN` = `tunnel.stylnode.in`
+   - `DOMAIN` = `tunnl.stylnode.in.in`
 6. Click **Create Web Service**
 
 ### Custom Domain Setup
@@ -26,8 +26,8 @@
 After deployment:
 
 1. Go to your service → **Settings** → **Custom Domains**
-2. Add `tunnel.stylnode.in`
-3. Add `*.tunnel.stylnode.in` (for wildcard subdomains)
+2. Add `tunnl.stylnode.in.in`
+3. Add `*.tunnl.stylnode.in.in` (for wildcard subdomains)
 4. Render will show you the DNS records to add
 
 ### DNS Records

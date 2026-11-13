@@ -354,7 +354,7 @@ const httpServer = createServer(app);
  *
  * Example:
  *
- * wss://tunnel.stylnode.in/ws
+ * wss://tunnl.stylnode.in.in/ws
  */
 const wss = new WebSocketServer({
   noServer: true,
@@ -365,7 +365,7 @@ const wss = new WebSocketServer({
  *
  * Example:
  *
- * wss://clever-hawk-a5a4b5df.tunnel.stylnode.in/
+ * wss://clever-hawk-a5a4b5df.tunnl.stylnode.in.in/
  *
  * These connections are forwarded through
  * the CLI control WebSocket.
