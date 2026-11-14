@@ -15,7 +15,7 @@ import { useState, useEffect } from "react";
 
 const InteractiveFooter = () => {
   const currentYear = new Date().getFullYear();
-  const UPTIME = 58.9;
+  const UPTIME = 99.7;
 
   // Dynamic stats that increase with real usage
   const [stats, setStats] = useState({
@@ -87,7 +87,7 @@ const InteractiveFooter = () => {
     { label: "API Reference", href: "/api", icon: Zap },
     { label: "Examples", href: "/examples", icon: Globe },
     { label: "Support", href: "/support", icon: Heart },
-        {
+    {
       label: "NPM Package",
       href: "https://www.npmjs.com/package/devportal-tunnel",
       icon: Coffee,
@@ -277,7 +277,7 @@ const InteractiveFooter = () => {
           <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/30" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Activity className="w-4 h-4 text-primary animate-pulse" />
-            <span>58.9% uptime guaranteed</span>
+            <span>99.7% uptime guaranteed</span>
           </div>
           <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/30" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
