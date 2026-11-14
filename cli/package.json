@@ -1,6 +1,6 @@
 {
   "name": "devportal-tunnel",
-  "version": "1.0.3",
+  "version": "1.0.7",
   "description": "Expose your localhost to the internet with a single command",
   "main": "dist/index.js",
   "bin": {

@@ -10,21 +10,16 @@ export interface Tunnel {
   status: "live" | "stopped";
   createdAt: string;
   expiresAt: string | null;
-
-  // CLI control WebSocket
   ws: WebSocket;
 }
 
 export class TunnelManager {
   private tunnels: Map<string, Tunnel> = new Map();
-
   private tunnelsByName: Map<string, string> = new Map();
-
   private tunnelsByDevice: Map<string, Set<string>> = new Map();
 
   addTunnel(tunnel: Tunnel): void {
     this.tunnels.set(tunnel.id, tunnel);
-
     this.tunnelsByName.set(tunnel.name, tunnel.id);
 
     if (!this.tunnelsByDevice.has(tunnel.deviceId)) {
@@ -40,16 +35,13 @@ export class TunnelManager {
 
   getTunnelByName(name: string): Tunnel | undefined {
     const id = this.tunnelsByName.get(name);
-
     return id ? this.tunnels.get(id) : undefined;
   }
 
   getTunnelsByDevice(deviceId: string): Tunnel[] {
     const ids = this.tunnelsByDevice.get(deviceId);
 
-    if (!ids) {
-      return [];
-    }
+    if (!ids) return [];
 
     return Array.from(ids)
       .map((id) => this.tunnels.get(id))
@@ -58,25 +50,27 @@ export class TunnelManager {
 
   getTunnelByWebSocket(ws: WebSocket): Tunnel | undefined {
     for (const tunnel of this.tunnels.values()) {
-      if (tunnel.ws === ws) {
-        return tunnel;
-      }
+      if (tunnel.ws === ws) return tunnel;
     }
 
     return undefined;
   }
 
-  removeTunnel(id: string): void {
+  /**
+   * Removes tunnel registration and all indexes.
+   *
+   * closeConnection defaults to true to preserve existing behavior.
+   * Pass false when the caller needs to send an acknowledgement
+   * before closing the control WebSocket.
+   */
+  removeTunnel(id: string, closeConnection = true): void {
     const tunnel = this.tunnels.get(id);
-
-    if (!tunnel) {
-      return;
-    }
+    if (!tunnel) return;
 
     this.tunnels.delete(id);
-
-    this.tunnelsByName.delete(tunnel.name);
-
+    if (this.tunnelsByName.get(tunnel.name) === id) {
+      this.tunnelsByName.delete(tunnel.name);
+    }
     const deviceTunnels = this.tunnelsByDevice.get(tunnel.deviceId);
 
     if (deviceTunnels) {
@@ -88,8 +82,9 @@ export class TunnelManager {
     }
 
     if (
-      tunnel.ws.readyState === WebSocket.OPEN ||
-      tunnel.ws.readyState === WebSocket.CONNECTING
+      closeConnection &&
+      (tunnel.ws.readyState === WebSocket.OPEN ||
+        tunnel.ws.readyState === WebSocket.CONNECTING)
     ) {
       tunnel.ws.close();
     }
@@ -105,10 +100,15 @@ export class TunnelManager {
     }
   }
 
-  getActiveTunnelCount(): number {
+  getActiveTunnels(): Tunnel[] {
     return Array.from(this.tunnels.values()).filter(
-      (tunnel) => tunnel.status === "live",
-    ).length;
+      (tunnel) =>
+        tunnel.status === "live" && tunnel.ws.readyState === WebSocket.OPEN,
+    );
+  }
+
+  getActiveTunnelCount(): number {
+    return this.getActiveTunnels().length;
   }
 
   getAllTunnels(): Tunnel[] {
@@ -121,7 +121,6 @@ export class TunnelManager {
     for (const tunnel of this.tunnels.values()) {
       if (tunnel.expiresAt && new Date(tunnel.expiresAt) < now) {
         console.log(`Tunnel expired: ${tunnel.name}`);
-
         this.removeTunnel(tunnel.id);
       }
     }
