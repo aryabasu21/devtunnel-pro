@@ -306,6 +306,33 @@ export class TunnelClient extends EventEmitter {
     };
 
     // Forward useful headers but remove proxy-specific ones.
+
+    // Extract WebSocket subprotocols separately.
+    const protocols: string[] = [];
+
+    const protocolHeader = Object.entries(headers || {}).find(
+      ([key]) => key.toLowerCase() === "sec-websocket-protocol",
+    )?.[1];
+
+    if (typeof protocolHeader === "string") {
+      protocols.push(
+        ...protocolHeader
+          .split(",")
+          .map((p: string) => p.trim())
+          .filter(Boolean),
+      );
+    } else if (Array.isArray(protocolHeader)) {
+      protocols.push(
+        ...protocolHeader.flatMap((p: string) =>
+          p
+            .split(",")
+            .map((v: string) => v.trim())
+            .filter(Boolean),
+        ),
+      );
+    }
+
+    // Forward useful headers, excluding WebSocket handshake headers.
     if (headers && typeof headers === "object") {
       for (const [key, value] of Object.entries(headers)) {
         if (
@@ -317,6 +344,7 @@ export class TunnelClient extends EventEmitter {
             "sec-websocket-key",
             "sec-websocket-version",
             "sec-websocket-extensions",
+            "sec-websocket-protocol",
             "content-length",
             "x-forwarded-host",
             "x-forwarded-proto",
@@ -328,9 +356,14 @@ export class TunnelClient extends EventEmitter {
       }
     }
 
-    const localWs = new WebSocket(localUrl, {
-      headers: localHeaders,
-    });
+    // Connect to the local application with the requested subprotocols.
+    const localWs = protocols.length
+      ? new WebSocket(localUrl, protocols, {
+          headers: localHeaders,
+        })
+      : new WebSocket(localUrl, {
+          headers: localHeaders,
+        });
 
     this.localWebSockets.set(wsId, localWs);
 
@@ -370,8 +403,9 @@ export class TunnelClient extends EventEmitter {
       this.localWebSockets.delete(wsId);
 
       this.send({
-        type: "ws-close",
+        type: "ws-error",
         wsId,
+        message: error.message,
       });
     });
   }

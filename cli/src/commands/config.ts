@@ -30,7 +30,7 @@ export async function configCommand(
       break;
 
     case "reset":
-      setServerUrl("https://devportal.live");
+      setServerUrl("https://devportal.stylnode.in");
       console.log(chalk.green("Config reset to defaults"));
       break;
 

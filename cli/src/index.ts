@@ -41,7 +41,7 @@ program
     "--forward <ports>",
     "Port forwarding (format: remote:local, e.g., 8080:3000)",
   )
-  .action(async (port, options) => {
+  .action(async (port: string, options: Record<string, unknown>) => {
     if (port && !isNaN(parseInt(port))) {
       await startTunnel(parseInt(port), options);
     } else {
@@ -135,4 +135,4 @@ program
     console.log(chalk.gray("Device ID:"), chalk.cyan(deviceId));
   });
 
-program.parse();
+program.parse(process.argv);

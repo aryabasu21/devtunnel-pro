@@ -40,12 +40,15 @@ export function saveConfig(config: Partial<Config>): void {
 }
 
 export function setServerUrl(url: string): void {
-  // Derive WebSocket URL from HTTP URL (same host, /ws path)
-  const wsUrl = url.replace("https://", "wss://").replace("http://", "ws://");
-  const wsWithPath = wsUrl.replace(/\/$/, "") + "/ws";
+  const normalizedUrl = url.replace(/\/+$/, "");
+  const parsedUrl = new URL(normalizedUrl);
+
+  const wsProtocol = parsedUrl.protocol === "https:" ? "wss:" : "ws:";
+
+  const wsUrl = `${wsProtocol}//${parsedUrl.host}/ws`;
 
   saveConfig({
-    serverUrl: url.replace(/\/$/, ""),
-    wsUrl: wsWithPath,
+    serverUrl: normalizedUrl,
+    wsUrl,
   });
 }

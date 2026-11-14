@@ -1,11 +1,11 @@
 {
   "name": "devportal-tunnel",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Expose your localhost to the internet with a single command",
   "main": "dist/index.js",
   "bin": {
-    "devportal": "./dist/index.js",
-    "devportal-tunnel": "./dist/index.js"
+    "devportal": "dist/index.js",
+    "devportal-tunnel": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -27,13 +27,13 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
-    "ora": "^5.4.1",
+    "ora": "^6.3.1",
     "qrcode-terminal": "^0.12.0",
     "ws": "^8.16.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "@types/ws": "^8.5.10",
+    "@types/ws": "^8.18.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.0"
   },

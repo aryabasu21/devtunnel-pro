@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import ora from "ora";
+import ora, { type Ora } from "ora";
 import * as http from "http";
 import { TunnelClient, TunnelInfo } from "../utils/tunnelClient";
 import {
@@ -116,6 +116,7 @@ export async function startTunnel(
     return;
   }
 
+  console.log(chalk.gray(`Connecting to DevPortal WebSocket: ${config.wsUrl}`));
   // Connect to real server
   try {
     const client = new TunnelClient({
@@ -146,7 +147,7 @@ export async function startTunnel(
     });
 
     client.on("error", (error) => {
-      console.error(chalk.red("Error:"), error.message);
+      console.error(chalk.red("Tunnel client error:"), error.message);
     });
 
     client.on("disconnected", () => {
@@ -222,19 +223,24 @@ export async function startTunnel(
 
     // Keep process alive
     await new Promise(() => {});
-  } catch (error: any) {
+  } catch (error: unknown) {
     spinner.fail(chalk.red("Failed to connect"));
     console.log();
-    console.log(chalk.red("Error:"), error.message);
+
+    const message = error instanceof Error ? error.message : String(error);
+
+    console.error(chalk.red("Error:"), message);
+    console.log();
+
+    console.log(chalk.gray(`Server URL: ${config.serverUrl}`));
+    console.log(chalk.gray(`WebSocket URL: ${config.wsUrl}`));
+
     console.log();
     console.log(chalk.gray("Troubleshooting:"));
-    console.log(chalk.gray("  1. Check your internet connection"));
-    console.log(
-      chalk.gray("  2. Verify the server URL in ~/.devportal/config.json"),
-    );
-    console.log(
-      chalk.gray("  3. Try running with --local for simulation mode"),
-    );
+    console.log(chalk.gray("1. Check your internet connection."));
+    console.log(chalk.gray("2. Verify ~/.devportal/config.json."));
+    console.log(chalk.gray("3. Confirm the server is running."));
+    console.log();
     process.exit(1);
   }
 }
@@ -243,7 +249,7 @@ async function startSimulatedTunnel(
   localPort: number,
   remotePort: number,
   options: StartOptions,
-  spinner: ora.Ora,
+  spinner: Ora,
 ): Promise<void> {
   // Simulate connection delay
   await sleep(1000);
