@@ -1066,18 +1066,19 @@ function handleClientMessage(
       break;
     }
   }
+}
 
-  // ============================================================
-  // START SERVER
-  // ============================================================
+// ============================================================
+// START SERVER
+// ============================================================
 
-  httpServer.listen(
-    {
-      port: PORT,
-      host: "0.0.0.0",
-    },
-    () => {
-      console.log(`
+httpServer.listen(
+  {
+    port: PORT,
+    host: "0.0.0.0",
+  },
+  () => {
+    console.log(`
 ╔═══════════════════════════════════════════════════════╗
 ║           DevPortal Server v1.0.2                     ║
 ╠═══════════════════════════════════════════════════════╣
@@ -1086,48 +1087,47 @@ function handleClientMessage(
 ║  Domain:    ${DOMAIN.padEnd(42)}║
 ╚═══════════════════════════════════════════════════════╝
 `);
-    },
-  );
+  },
+);
 
-  // ============================================================
-  // EXPIRED TUNNEL CLEANUP
-  // ============================================================
+// ============================================================
+// EXPIRED TUNNEL CLEANUP
+// ============================================================
 
-  setInterval(() => {
-    tunnelManager.cleanupExpired();
-  }, 60000);
+setInterval(() => {
+  tunnelManager.cleanupExpired();
+}, 60000);
 
-  // ============================================================
-  // GRACEFUL SHUTDOWN
-  // ============================================================
+// ============================================================
+// GRACEFUL SHUTDOWN
+// ============================================================
 
-  process.on("SIGTERM", () => {
-    console.log("Shutting down...");
+process.on("SIGTERM", () => {
+  console.log("Shutting down...");
 
-    // Close browser sockets
-    for (const browserWs of browserSockets.values()) {
-      if (
-        browserWs.readyState === WebSocket.OPEN ||
-        browserWs.readyState === WebSocket.CONNECTING
-      ) {
-        browserWs.close();
-      }
+  // Close browser sockets
+  for (const browserWs of browserSockets.values()) {
+    if (
+      browserWs.readyState === WebSocket.OPEN ||
+      browserWs.readyState === WebSocket.CONNECTING
+    ) {
+      browserWs.close();
     }
+  }
 
-    browserSockets.clear();
+  browserSockets.clear();
 
-    browserSocketTunnels.clear();
+  browserSocketTunnels.clear();
 
-    // Close WebSocket servers
-    wss.close();
+  // Close WebSocket servers
+  wss.close();
 
-    tunnelWss.close();
+  tunnelWss.close();
 
-    // Close HTTP server
-    httpServer.close(() => {
-      console.log("Server closed");
+  // Close HTTP server
+  httpServer.close(() => {
+    console.log("Server closed");
 
-      process.exit(0);
-    });
+    process.exit(0);
   });
-}
+});
