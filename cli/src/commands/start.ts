@@ -5,6 +5,7 @@ import { TunnelClient } from "../utils/tunnelClient";
 import {
   addTunnel,
   getTunnels,
+  updateTunnel,
   removeTunnel as removeStoredTunnel,
   TunnelInfo as StoredTunnel,
 } from "../utils/tunnels";
@@ -68,9 +69,17 @@ export async function startTunnel(
   }
 
   // Check for existing tunnels on the same local port.
-  const existingTunnels = getTunnels().filter(
-    (t) => t.status === "live" && t.localPort === localPort,
-  );
+  // Records whose process has died are stale: mark them stopped.
+  const existingTunnels = getTunnels().filter((t) => {
+    if (t.status !== "live" || t.localPort !== localPort) return false;
+
+    if (!isProcessAlive(t.pid)) {
+      updateTunnel(t.id, { status: "stopped" });
+      return false;
+    }
+
+    return true;
+  });
 
   if (existingTunnels.length > 0) {
     spinner.fail(chalk.red(`Port ${localPort} is already being tunneled`));
@@ -287,6 +296,7 @@ export async function startTunnel(
 
           process.off("SIGINT", gracefulShutdown);
           process.off("SIGTERM", gracefulShutdown);
+          process.off("SIGHUP", gracefulShutdown);
 
           resolve();
         }
@@ -294,6 +304,7 @@ export async function startTunnel(
 
       process.on("SIGINT", gracefulShutdown);
       process.on("SIGTERM", gracefulShutdown);
+      process.on("SIGHUP", gracefulShutdown); // terminal closed
     });
   } catch (error: unknown) {
     spinner.fail(chalk.red("Failed to connect"));
@@ -449,6 +460,17 @@ async function checkPort(port: number): Promise<boolean> {
 
     req.end();
   });
+}
+
+function isProcessAlive(pid?: number): boolean {
+  if (!pid) return false;
+
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function sleep(ms: number): Promise<void> {
