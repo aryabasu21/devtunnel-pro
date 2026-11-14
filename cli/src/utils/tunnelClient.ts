@@ -656,32 +656,69 @@ export class TunnelClient extends EventEmitter {
 
   async stop(): Promise<void> {
     this.shouldReconnect = false;
-
     this.stopPingInterval();
-
     this.closeAllLocalWebSockets();
 
-    if (this.tunnelInfo) {
-      this.send({
-        type: "stop",
-        tunnelId: this.tunnelInfo.id,
-      });
+    const ws = this.ws;
+    const tunnelId = this.tunnelInfo?.id;
+
+    if (!ws || ws.readyState !== WebSocket.OPEN || !tunnelId) {
+      if (ws && ws.readyState !== WebSocket.CLOSED) {
+        ws.close();
+      }
+      return;
     }
 
-    return new Promise((resolve) => {
-      if (this.ws?.readyState === WebSocket.OPEN) {
-        const timeout = setTimeout(() => resolve(), 500);
+    await new Promise<void>((resolve) => {
+      let completed = false;
 
-        this.ws.once("close", () => {
-          clearTimeout(timeout);
+      const cleanup = () => {
+        if (completed) return;
+        completed = true;
 
-          resolve();
-        });
+        clearTimeout(timeout);
+        this.removeListener("stopped", onStopped);
+        ws.removeListener("close", onClose);
 
-        this.ws.close();
-      } else {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close(1000, "Tunnel stopped");
+        }
+
         resolve();
-      }
+      };
+
+      const onStopped = (stoppedTunnelId: string) => {
+        if (stoppedTunnelId === tunnelId) {
+          cleanup();
+        }
+      };
+
+      const onClose = () => cleanup();
+
+      // Wait for the backend's confirmation.
+      this.once("stopped", onStopped);
+      ws.once("close", onClose);
+
+      // Fallback if the server doesn't acknowledge.
+      const timeout = setTimeout(() => {
+        console.warn(
+          chalk.yellow("\nStop acknowledgement timed out. Closing connection."),
+        );
+        cleanup();
+      }, 3000);
+
+      ws.send(
+        JSON.stringify({
+          type: "stop",
+          tunnelId,
+        }),
+        (error) => {
+          if (error) {
+            console.error("Failed to send stop request:", error.message);
+            cleanup();
+          }
+        },
+      );
     });
   }
 

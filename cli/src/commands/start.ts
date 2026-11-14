@@ -213,13 +213,28 @@ export async function startTunnel(
     console.log();
 
     // Handle shutdown
-    process.on("SIGINT", async () => {
+
+    let isShuttingDown = false;
+
+    const gracefulShutdown = async () => {
+      if (isShuttingDown) return;
+
+      isShuttingDown = true;
+
       console.log();
       console.log(chalk.yellow("Stopping tunnel..."));
-      await client.stop();
-      console.log(chalk.green("Tunnel stopped"));
-      process.exit(0);
-    });
+
+      try {
+        await client.stop();
+        console.log(chalk.green("✔ Tunnel stopped successfully"));
+      } catch (error) {
+        console.error(chalk.red("Failed to stop tunnel cleanly:"), error);
+        process.exitCode = 1;
+      }
+    };
+
+    process.once("SIGINT", gracefulShutdown);
+    process.once("SIGTERM", gracefulShutdown);
 
     // Keep process alive
     await new Promise(() => {});
