@@ -1008,75 +1008,76 @@ function handleClientMessage(
     // ========================================================
 
     case "stop": {
-  const { tunnelId } = message;
+      const { tunnelId } = message;
 
-  // Ensure this control connection owns the tunnel.
-  const tunnel = tunnelManager.getTunnelByWebSocket(ws);
+      // Ensure this control connection owns the tunnel.
+      const tunnel = tunnelManager.getTunnelByWebSocket(ws);
 
-  if (!tunnel || tunnel.id !== tunnelId) {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(
-        JSON.stringify({
-          type: "error",
-          message: "Invalid tunnel stop request",
-        }),
-      );
+      if (!tunnel || tunnel.id !== tunnelId) {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(
+            JSON.stringify({
+              type: "error",
+              message: "Invalid tunnel stop request",
+            }),
+          );
+        }
+        break;
+      }
+
+      console.log(`Stopping tunnel: ${tunnel.name} (${tunnelId})`);
+
+      try {
+        // Close browser WebSocket connections first.
+        closeBrowserSocketsForTunnel(tunnelId);
+
+        // Remove tunnel from all registry indexes.
+        // Keep the CLI control connection open temporarily.
+        tunnelManager.removeTunnel(tunnelId, false);
+
+        // Send acknowledgement before closing the control connection.
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(
+            JSON.stringify({
+              type: "stopped",
+              tunnelId,
+            }),
+            (error) => {
+              if (error) {
+                console.error(
+                  `Failed to acknowledge tunnel stop (${tunnelId}):`,
+                  error,
+                );
+              }
+
+              if (
+                ws.readyState === WebSocket.OPEN ||
+                ws.readyState === WebSocket.CONNECTING
+              ) {
+                ws.close(1000, "Tunnel stopped");
+              }
+            },
+          );
+        }
+      } catch (error) {
+        console.error(`Tunnel shutdown failed (${tunnelId}):`, error);
+      }
+
+      break;
     }
-    break;
   }
 
-  console.log(`Stopping tunnel: ${tunnel.name} (${tunnelId})`);
+  // ============================================================
+  // START SERVER
+  // ============================================================
 
-  try {
-    // Close browser WebSocket connections first.
-    closeBrowserSocketsForTunnel(tunnelId);
-
-    // Remove tunnel from all registry indexes.
-    // Keep the CLI control connection open temporarily.
-    tunnelManager.removeTunnel(tunnelId, false);
-
-    // Send acknowledgement before closing the control connection.
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(
-        JSON.stringify({
-          type: "stopped",
-          tunnelId,
-        }),
-        (error) => {
-          if (error) {
-            console.error(
-              `Failed to acknowledge tunnel stop (${tunnelId}):`,
-              error,
-            );
-          }
-
-          if (
-            ws.readyState === WebSocket.OPEN ||
-            ws.readyState === WebSocket.CONNECTING
-          ) {
-            ws.close(1000, "Tunnel stopped");
-          }
-        },
-      );
-    }
-  } catch (error) {
-    console.error(`Tunnel shutdown failed (${tunnelId}):`, error);
-  }
-
-  break;
-}
-
-// ============================================================
-// START SERVER
-// ============================================================
-
-httpServer.listen(
-  {
-    port: PORT,
-    host: "0.0.0.0",
-  },
-  () => {
-    console.log(`
+  httpServer.listen(
+    {
+      port: PORT,
+      host: "0.0.0.0",
+    },
+    () => {
+      console.log(`
 ╔═══════════════════════════════════════════════════════╗
 ║           DevPortal Server v1.0.2                     ║
 ╠═══════════════════════════════════════════════════════╣
@@ -1085,47 +1086,48 @@ httpServer.listen(
 ║  Domain:    ${DOMAIN.padEnd(42)}║
 ╚═══════════════════════════════════════════════════════╝
 `);
-  },
-);
+    },
+  );
 
-// ============================================================
-// EXPIRED TUNNEL CLEANUP
-// ============================================================
+  // ============================================================
+  // EXPIRED TUNNEL CLEANUP
+  // ============================================================
 
-setInterval(() => {
-  tunnelManager.cleanupExpired();
-}, 60000);
+  setInterval(() => {
+    tunnelManager.cleanupExpired();
+  }, 60000);
 
-// ============================================================
-// GRACEFUL SHUTDOWN
-// ============================================================
+  // ============================================================
+  // GRACEFUL SHUTDOWN
+  // ============================================================
 
-process.on("SIGTERM", () => {
-  console.log("Shutting down...");
+  process.on("SIGTERM", () => {
+    console.log("Shutting down...");
 
-  // Close browser sockets
-  for (const browserWs of browserSockets.values()) {
-    if (
-      browserWs.readyState === WebSocket.OPEN ||
-      browserWs.readyState === WebSocket.CONNECTING
-    ) {
-      browserWs.close();
+    // Close browser sockets
+    for (const browserWs of browserSockets.values()) {
+      if (
+        browserWs.readyState === WebSocket.OPEN ||
+        browserWs.readyState === WebSocket.CONNECTING
+      ) {
+        browserWs.close();
+      }
     }
-  }
 
-  browserSockets.clear();
+    browserSockets.clear();
 
-  browserSocketTunnels.clear();
+    browserSocketTunnels.clear();
 
-  // Close WebSocket servers
-  wss.close();
+    // Close WebSocket servers
+    wss.close();
 
-  tunnelWss.close();
+    tunnelWss.close();
 
-  // Close HTTP server
-  httpServer.close(() => {
-    console.log("Server closed");
+    // Close HTTP server
+    httpServer.close(() => {
+      console.log("Server closed");
 
-    process.exit(0);
+      process.exit(0);
+    });
   });
-});
+}
