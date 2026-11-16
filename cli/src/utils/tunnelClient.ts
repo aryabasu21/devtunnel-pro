@@ -311,7 +311,7 @@ export class TunnelClient extends EventEmitter {
       }
 
       default: {
-        console.warn("Unknown server message:", message.type);
+        console.warn("Message from DevPortal Server:", message.type);
       }
     }
   }
