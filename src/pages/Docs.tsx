@@ -458,7 +458,7 @@ app.use(
       }
 
       // Allow DevTunnel subdomains
-      if (/^https:\\/\\/[a-z0-9-]+\\.tunnel\\.stylnode\\.in$/.test(origin)) {
+      if (/^https:\\/\\/[a-z0-9-]+\\.tunnl\\.stylnode\\.in$/.test(origin)) {
         return callback(null, true);
       }
 

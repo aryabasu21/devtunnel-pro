@@ -34,7 +34,7 @@ const lines = [
     color: "text-muted-foreground",
   },
   {
-    text: "  Public URL:    https://purple-horizon-218.tunnl.stylnode.in.in",
+    text: "  Public URL:    https://purple-horizon-218.tunnl.stylnode.in",
     delay: 1.4,
     color: "text-primary",
   },
